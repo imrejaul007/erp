@@ -1,0 +1,683 @@
+// ============================================================================
+// ENHANCED CRM MODELS (Missing Models to be Added to Main Schema)
+// ============================================================================
+// This file contains the additional CRM models that need to be added to the main schema.prisma file
+
+// Add these relations to the User model:
+// customerHistory         CustomerHistory[]        @relation("CustomerHistoryCreatedBy")
+// communications          Communication[]          @relation("CommunicationCreatedBy")
+// ticketsAssigned         SupportTicket[]          @relation("TicketAssignedTo")
+// ticketResponses         TicketResponse[]         @relation("TicketResponseCreatedBy")
+// personalShopperProfile  PersonalShopper?         @relation("PersonalShopperUser")
+// giftCardsPurchased      GiftCard[]               @relation("GiftCardPurchasedBy")
+// giftCardTransactions    GiftCardTransaction[]    @relation("GiftCardTransactionCreatedBy")
+// campaignsCreated        Campaign[]               @relation("CampaignCreatedBy")
+
+// Replace the Customer model with this enhanced version:
+model Customer {
+  id               String        @id @default(cuid())
+  code             String        @unique
+  customerType     CustomerType  @default(INDIVIDUAL)
+  segment          CustomerSegment @default(REGULAR)
+
+  // Basic Info
+  name             String
+  nameArabic       String?
+  email            String?       @unique
+  phone            String?
+  alternatePhone   String?
+
+  // UAE-specific address
+  address          String?
+  addressArabic    String?
+  city             String?
+  emirate          String?
+  area             String?
+  postalCode       String?
+  country          String        @default("UAE")
+
+  // Business Info
+  companyName      String?
+  tradeLicense     String?
+  taxId            String?
+  vatNumber        String?
+
+  // Demographics
+  dateOfBirth      DateTime?
+  gender           Gender?
+  nationality      String?
+  language         String        @default("en")
+
+  // Financial
+  creditLimit      Decimal?
+  totalLifetimeValue Decimal     @default(0)
+
+  // Status
+  status           CustomerStatus @default(ACTIVE)
+  isActive         Boolean       @default(true)
+  lastInteraction  DateTime?
+
+  // Meta
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  createdById      String?
+
+  // Relations
+  sales            Sale[]
+  loyaltyAccount   LoyaltyAccount?
+  communications   Communication[]
+  tickets          SupportTicket[]
+  history          CustomerHistory[]
+  preferences      CustomerPreference?
+  feedback         CustomerFeedback[]
+  personalShopper  PersonalShopperAssignment?
+  giftCards        GiftCard[]
+  orders           Order[]
+  analytics        CustomerAnalytics?
+  campaignExecutions CampaignExecution[]
+  createdBy        User?         @relation("CustomerCreatedBy", fields: [createdById], references: [id])
+
+  @@index([segment])
+  @@index([customerType])
+  @@index([emirate])
+  @@index([status])
+  @@index([totalLifetimeValue])
+  @@map("customers")
+}
+
+// Enhanced Customer History Model
+model CustomerHistory {
+  id          String   @id @default(cuid())
+  customerId  String
+  eventType   String
+  description String
+  amount      Decimal?
+  currency    String   @default("AED")
+  referenceId String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  createdById String
+
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("CustomerHistoryCreatedBy", fields: [createdById], references: [id])
+
+  @@index([customerId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("customer_history")
+}
+
+// Customer Preferences for Personalization
+model CustomerPreference {
+  id              String   @id @default(cuid())
+  customerId      String   @unique
+  fragranceTypes  String[] // Oud, Floral, Woody, etc.
+  preferredBrands String[]
+  priceRangeMin   Decimal?
+  priceRangeMax   Decimal?
+  occasions       String[] // Wedding, Daily, Evening, etc.
+  seasons         String[] // Summer, Winter, All year
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_preferences")
+}
+
+// Enhanced Loyalty System
+model LoyaltyAccount {
+  id            String      @id @default(cuid())
+  customerId    String      @unique
+  points        Int         @default(0)
+  tier          LoyaltyTier @default(BRONZE)
+  totalEarned   Int         @default(0)
+  totalRedeemed Int         @default(0)
+  tierProgress  Int         @default(0)
+  nextTierPoints Int        @default(1000)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  customer       Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  transactions   LoyaltyTransaction[]
+  rewardsClaimed RewardClaim[]
+
+  @@index([tier])
+  @@index([points])
+  @@map("loyalty_accounts")
+}
+
+model LoyaltyTransaction {
+  id          String   @id @default(cuid())
+  accountId   String
+  type        LoyaltyTransactionType
+  points      Int
+  description String
+  referenceId String?
+  orderId     String?
+  createdAt   DateTime @default(now())
+
+  account LoyaltyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("loyalty_transactions")
+}
+
+// Rewards System
+model Reward {
+  id                String      @id @default(cuid())
+  name              String
+  nameArabic        String?
+  description       String
+  descriptionArabic String?
+  type              RewardType
+  pointsCost        Int
+  discountPercent   Decimal?
+  freeProductId     String?
+  minTier           LoyaltyTier @default(BRONZE)
+  isActive          Boolean     @default(true)
+  validFrom         DateTime
+  validUntil        DateTime?
+  usageLimit        Int?
+  timesUsed         Int         @default(0)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  claims RewardClaim[]
+
+  @@index([isActive])
+  @@index([minTier])
+  @@map("rewards")
+}
+
+model RewardClaim {
+  id         String      @id @default(cuid())
+  accountId  String
+  rewardId   String
+  pointsUsed Int
+  orderId    String?
+  status     ClaimStatus @default(ACTIVE)
+  claimedAt  DateTime    @default(now())
+  usedAt     DateTime?
+  expiresAt  DateTime?
+
+  account LoyaltyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  reward  Reward         @relation(fields: [rewardId], references: [id])
+
+  @@index([accountId])
+  @@index([status])
+  @@map("reward_claims")
+}
+
+// Communications System
+model Communication {
+  id              String            @id @default(cuid())
+  customerId      String
+  type            CommunicationType
+  subject         String?
+  content         String
+  contentArabic   String?
+  channel         String?
+  status          CommunicationStatus @default(SENT)
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  readAt          DateTime?
+  failureReason   String?
+  templateId      String?
+  createdAt       DateTime          @default(now())
+  createdById     String
+
+  customer  Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("CommunicationCreatedBy", fields: [createdById], references: [id])
+  template  MessageTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([customerId])
+  @@index([type])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("communications")
+}
+
+model MessageTemplate {
+  id            String            @id @default(cuid())
+  name          String
+  type          CommunicationType
+  subject       String?
+  content       String
+  contentArabic String?
+  variables     String[]
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  communications Communication[]
+
+  @@index([type])
+  @@index([isActive])
+  @@map("message_templates")
+}
+
+// Support System
+model SupportTicket {
+  id             String        @id @default(cuid())
+  ticketNumber   String        @unique
+  customerId     String
+  subject        String
+  description    String
+  priority       TicketPriority @default(MEDIUM)
+  status         TicketStatus   @default(OPEN)
+  category       String?
+  assignedToId   String?
+  resolutionTime Int? // minutes
+  satisfaction   Int? // 1-5 rating
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  resolvedAt     DateTime?
+  closedAt       DateTime?
+
+  customer   Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  assignedTo User?            @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
+  responses  TicketResponse[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([priority])
+  @@index([assignedToId])
+  @@map("support_tickets")
+}
+
+model TicketResponse {
+  id         String   @id @default(cuid())
+  ticketId   String
+  content    String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  createdById String
+
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("TicketResponseCreatedBy", fields: [createdById], references: [id])
+
+  @@index([ticketId])
+  @@map("ticket_responses")
+}
+
+// Customer Feedback & NPS
+model CustomerFeedback {
+  id         String      @id @default(cuid())
+  customerId String
+  orderId    String?
+  type       FeedbackType @default(GENERAL)
+  rating     Int // 1-5 or 0-10 for NPS
+  npsScore   Int? // Net Promoter Score (0-10)
+  comment    String?
+  commentArabic String?
+  isPublic   Boolean     @default(false)
+  tags       String[] // categorization tags
+  createdAt  DateTime    @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order    Order?   @relation(fields: [orderId], references: [id])
+
+  @@index([customerId])
+  @@index([type])
+  @@index([rating])
+  @@index([npsScore])
+  @@map("customer_feedback")
+}
+
+// VIP Management
+model PersonalShopper {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  name         String
+  nameArabic   String?
+  email        String
+  phone        String
+  languages    String[] // en, ar
+  specialties  String[] // Oud, Oriental, Western, etc.
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user        User                        @relation("PersonalShopperUser", fields: [userId], references: [id])
+  assignments PersonalShopperAssignment[]
+
+  @@map("personal_shoppers")
+}
+
+model PersonalShopperAssignment {
+  id         String   @id @default(cuid())
+  shopperId  String
+  customerId String
+  assignedAt DateTime @default(now())
+  isActive   Boolean  @default(true)
+  notes      String?
+
+  shopper  PersonalShopper @relation(fields: [shopperId], references: [id])
+  customer Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId]) // One personal shopper per VIP customer
+  @@index([shopperId])
+  @@map("personal_shopper_assignments")
+}
+
+// Gift Cards System
+model GiftCard {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  qrCode         String?       @unique
+  customerId     String?       // Who received/owns it
+  purchasedById  String?       // Who purchased it
+  amount         Decimal
+  currency       String        @default("AED")
+  balance        Decimal       // Current balance
+  status         GiftCardStatus @default(ACTIVE)
+  expiresAt      DateTime?
+  issuedAt       DateTime      @default(now())
+  activatedAt    DateTime?
+  notes          String?
+
+  customer     Customer?            @relation(fields: [customerId], references: [id])
+  purchasedBy  User?                @relation("GiftCardPurchasedBy", fields: [purchasedById], references: [id])
+  transactions GiftCardTransaction[]
+
+  @@index([code])
+  @@index([status])
+  @@index([customerId])
+  @@map("gift_cards")
+}
+
+model GiftCardTransaction {
+  id         String             @id @default(cuid())
+  giftCardId String
+  type       GiftCardTransactionType
+  amount     Decimal
+  orderId    String?
+  notes      String?
+  createdAt  DateTime           @default(now())
+  createdById String
+
+  giftCard  GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("GiftCardTransactionCreatedBy", fields: [createdById], references: [id])
+
+  @@index([giftCardId])
+  @@index([type])
+  @@map("gift_card_transactions")
+}
+
+// Automated Campaigns
+model Campaign {
+  id            String         @id @default(cuid())
+  name          String
+  nameArabic    String?
+  type          CampaignType
+  status        CampaignStatus @default(DRAFT)
+  triggerType   CampaignTriggerType
+  triggerValue  Json? // trigger configuration
+  segmentFilter Json? // customer segment filters
+
+  // Content
+  subject       String?
+  content       String
+  contentArabic String?
+  templateId    String?
+
+  // Scheduling
+  scheduledAt   DateTime?
+  startDate     DateTime?
+  endDate       DateTime?
+
+  // Statistics
+  targetCount   Int            @default(0)
+  sentCount     Int            @default(0)
+  deliveredCount Int           @default(0)
+  openedCount   Int            @default(0)
+  clickedCount  Int            @default(0)
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  createdById   String
+
+  createdBy User               @relation("CampaignCreatedBy", fields: [createdById], references: [id])
+  executions CampaignExecution[]
+
+  @@index([type])
+  @@index([status])
+  @@index([triggerType])
+  @@map("campaigns")
+}
+
+model CampaignExecution {
+  id          String                   @id @default(cuid())
+  campaignId  String
+  customerId  String
+  status      CampaignExecutionStatus  @default(PENDING)
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  errorMessage String?
+  createdAt   DateTime                 @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([customerId])
+  @@index([status])
+  @@map("campaign_executions")
+}
+
+// Analytics & Predictions
+model CustomerAnalytics {
+  id                   String   @id @default(cuid())
+  customerId           String   @unique
+
+  // Lifetime Value
+  totalLifetimeValue   Decimal  @default(0)
+  averageOrderValue    Decimal  @default(0)
+  orderFrequency       Decimal  @default(0) // orders per month
+  lastOrderDate        DateTime?
+
+  // Behavior Analysis
+  preferredCategories  String[]
+  preferredBrands      String[]
+  seasonalPatterns     Json? // seasonal buying patterns
+
+  // Predictions
+  predictedLifetimeValue Decimal @default(0)
+  churnProbability     Decimal  @default(0) // 0-1 probability
+  nextOrderPrediction  DateTime?
+
+  // Engagement
+  emailOpenRate        Decimal  @default(0)
+  smsResponseRate      Decimal  @default(0)
+  whatsappEngagementRate Decimal @default(0)
+
+  lastCalculated       DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_analytics")
+}
+
+// Order model (simplified for CRM purposes)
+model Order {
+  id           String      @id @default(cuid())
+  orderNo      String      @unique
+  customerId   String?
+  storeId      String
+  status       OrderStatus @default(PENDING)
+  totalAmount  Decimal     @default(0)
+  currency     String      @default("AED")
+  orderDate    DateTime    @default(now())
+  deliveryDate DateTime?
+
+  customer Customer?          @relation(fields: [customerId], references: [id])
+  store    Store              @relation(fields: [storeId], references: [id])
+  feedback CustomerFeedback[]
+
+  @@index([customerId])
+  @@index([orderDate])
+  @@map("orders")
+}
+
+// ============================================================================
+// ADDITIONAL CRM ENUMS
+// ============================================================================
+
+enum CustomerSegment {
+  VIP
+  REGULAR
+  WHOLESALE
+  EXPORT
+  CORPORATE
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+  SUSPENDED
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+enum LoyaltyTransactionType {
+  EARN
+  REDEEM
+  EXPIRE
+  BONUS
+  ADJUSTMENT
+}
+
+enum RewardType {
+  DISCOUNT
+  FREE_PRODUCT
+  EXCLUSIVE_ACCESS
+  FREE_SHIPPING
+}
+
+enum ClaimStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  CANCELLED
+}
+
+enum CommunicationType {
+  SMS
+  EMAIL
+  WHATSAPP
+  PHONE_CALL
+  IN_PERSON
+  PUSH_NOTIFICATION
+}
+
+enum CommunicationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  CANCELLED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FeedbackType {
+  PRODUCT
+  SERVICE
+  GENERAL
+  COMPLAINT
+  SUGGESTION
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  CANCELLED
+  SUSPENDED
+}
+
+enum GiftCardTransactionType {
+  ISSUED
+  REDEEMED
+  REFUNDED
+  EXPIRED
+}
+
+enum CampaignType {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH_NOTIFICATION
+  MIXED
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum CampaignTriggerType {
+  BIRTHDAY
+  ANNIVERSARY
+  RESTOCK_ALERT
+  ABANDONED_CART
+  WIN_BACK
+  VIP_UPGRADE
+  SEASONAL
+  MANUAL
+}
+
+enum CampaignExecutionStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  FAILED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}

@@ -1,0 +1,45 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: oud-erp-db
+    env: docker
+    plan: free
+    region: oregon
+    disk:
+      name: oud-erp-db-disk
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 1
+    ipAllowList: []
+
+  # Web Service (Next.js App)
+  - type: web
+    name: oud-erp
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build:render
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: oud-erp-db
+          property: connectionString
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Oud & Perfume ERP
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+databases:
+  - name: oud-erp-db
+    databaseName: oud_perfume_erp
+    user: oud_erp_user
+    plan: free
+    region: oregon

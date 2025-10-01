@@ -1,0 +1,555 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Settings,
+  User,
+  Shield,
+  Globe,
+  Bell,
+  Palette,
+  Database,
+  CreditCard,
+  Building,
+  Users,
+  Lock,
+  Key,
+  Mail,
+  Smartphone,
+  Monitor,
+  Cloud,
+  Archive,
+  Download,
+  Upload,
+  Zap,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Trash2,
+  Edit,
+  Plus,
+  Save,
+  RefreshCw
+} from 'lucide-react';
+
+const SettingsPage = () => {
+  const [activeTab, setActiveTab] = useState('general');
+
+  // Sample settings data
+  const generalSettings = {
+    companyName: 'Oud Palace UAE',
+    businessType: 'Perfume & Oud Retail',
+    taxNumber: 'TRN-100123456789',
+    currency: 'AED',
+    timezone: 'Asia/Dubai',
+    language: 'English',
+    secondaryLanguage: 'Arabic',
+    vatRate: 5,
+    fiscalYearStart: 'January'
+  };
+
+  const systemSettings = {
+    autoBackup: true,
+    backupFrequency: 'daily',
+    dataRetention: '7 years',
+    auditLogs: true,
+    performanceMonitoring: true,
+    errorReporting: true,
+    maintenanceMode: false
+  };
+
+  const userRoles = [
+    {
+      id: 'admin',
+      name: 'Administrator',
+      description: 'Full system access',
+      users: 3,
+      permissions: ['all_modules', 'user_management', 'system_settings'],
+      status: 'active'
+    },
+    {
+      id: 'manager',
+      name: 'Store Manager',
+      description: 'Store operations and staff management',
+      users: 8,
+      permissions: ['pos', 'inventory', 'reports', 'staff_management'],
+      status: 'active'
+    },
+    {
+      id: 'sales',
+      name: 'Sales Associate',
+      description: 'POS and customer service',
+      users: 24,
+      permissions: ['pos', 'customers', 'basic_inventory'],
+      status: 'active'
+    },
+    {
+      id: 'warehouse',
+      name: 'Warehouse Staff',
+      description: 'Inventory and stock management',
+      users: 12,
+      permissions: ['inventory', 'purchasing', 'transfers'],
+      status: 'active'
+    }
+  ];
+
+  const notifications = {
+    lowStock: true,
+    newOrders: true,
+    paymentReceived: true,
+    staffAbsence: true,
+    systemAlerts: true,
+    reportGenerated: false,
+    emailNotifications: true,
+    smsNotifications: true,
+    pushNotifications: false
+  };
+
+  const integrations = [
+    {
+      name: 'WhatsApp Business',
+      description: 'Customer communication and order updates',
+      status: 'connected',
+      lastSync: '2 minutes ago',
+      icon: Smartphone
+    },
+    {
+      name: 'UAE Payment Gateway',
+      description: 'Credit card and digital payments',
+      status: 'connected',
+      lastSync: '1 hour ago',
+      icon: CreditCard
+    },
+    {
+      name: 'Emirates Post',
+      description: 'Shipping and delivery tracking',
+      status: 'connected',
+      lastSync: '30 minutes ago',
+      icon: Archive
+    },
+    {
+      name: 'Dubai Customs',
+      description: 'Import/export documentation',
+      status: 'pending',
+      lastSync: 'Never',
+      icon: Globe
+    },
+    {
+      name: 'Google Analytics',
+      description: 'E-commerce tracking and insights',
+      status: 'disconnected',
+      lastSync: '3 days ago',
+      icon: Monitor
+    }
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'connected': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'disconnected': return 'bg-red-100 text-red-800';
+      case 'active': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'connected': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'pending': return <Clock className="h-4 w-4 text-yellow-600" />;
+      case 'disconnected': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      case 'active': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      default: return <AlertTriangle className="h-4 w-4 text-gray-600" />;
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Settings & Administration</h1>
+          <p className="text-gray-600">Configure system settings, user management, and integrations</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export Settings
+          </Button>
+          <Button>
+            <Save className="h-4 w-4 mr-2" />
+            Save Changes
+          </Button>
+        </div>
+      </div>
+
+      {/* Settings Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="general" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            General
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Users & Roles
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="integrations" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Integrations
+          </TabsTrigger>
+          <TabsTrigger value="system" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            System
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Security
+          </TabsTrigger>
+        </TabsList>
+
+        {/* General Settings */}
+        <TabsContent value="general" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Company Information</CardTitle>
+              <CardDescription>Basic company details and business configuration</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Company Name</label>
+                  <Input value={generalSettings.companyName} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Business Type</label>
+                  <Input value={generalSettings.businessType} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Tax Registration Number</label>
+                  <Input value={generalSettings.taxNumber} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">VAT Rate (%)</label>
+                  <Input type="number" value={generalSettings.vatRate} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Primary Currency</label>
+                  <Select value={generalSettings.currency}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AED">AED - UAE Dirham</SelectItem>
+                      <SelectItem value="USD">USD - US Dollar</SelectItem>
+                      <SelectItem value="EUR">EUR - Euro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Timezone</label>
+                  <Select value={generalSettings.timezone}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Asia/Dubai">Asia/Dubai (UAE)</SelectItem>
+                      <SelectItem value="Asia/Riyadh">Asia/Riyadh (KSA)</SelectItem>
+                      <SelectItem value="UTC">UTC</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Localization</CardTitle>
+              <CardDescription>Language and regional settings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Primary Language</label>
+                  <Select value={generalSettings.language}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="Arabic">العربية</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Secondary Language</label>
+                  <Select value={generalSettings.secondaryLanguage}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Arabic">العربية</SelectItem>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="None">None</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Users & Roles */}
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>User Roles & Permissions</CardTitle>
+                  <CardDescription>Manage user roles and access levels</CardDescription>
+                </div>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Role
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {userRoles.map((role) => (
+                  <div key={role.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Shield className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold">{role.name}</h3>
+                            <Badge className={getStatusColor(role.status)}>
+                              {role.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">{role.description}</p>
+                          <p className="text-xs text-gray-500 mt-1">{role.users} users assigned</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Users className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <div className="text-sm font-medium mb-2">Permissions:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {role.permissions.map((permission) => (
+                          <Badge key={permission} variant="secondary" className="text-xs">
+                            {permission.replace('_', ' ')}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Notifications */}
+        <TabsContent value="notifications" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notification Preferences</CardTitle>
+              <CardDescription>Configure when and how you receive notifications</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-medium mb-4">Business Alerts</h3>
+                <div className="space-y-3">
+                  {Object.entries(notifications).slice(0, 6).map(([key, enabled]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <label className="text-sm">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</label>
+                      <Switch checked={enabled} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-4">Delivery Methods</h3>
+                <div className="space-y-3">
+                  {Object.entries(notifications).slice(6).map(([key, enabled]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <label className="text-sm">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</label>
+                      <Switch checked={enabled} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Integrations */}
+        <TabsContent value="integrations" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Third-Party Integrations</CardTitle>
+              <CardDescription>Manage connections with external services and APIs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {integrations.map((integration) => (
+                  <div key={integration.name} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-gray-100 rounded-lg">
+                          <integration.icon className="h-6 w-6 text-gray-600" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold">{integration.name}</h3>
+                            <Badge className={getStatusColor(integration.status)}>
+                              {getStatusIcon(integration.status)}
+                              {integration.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">{integration.description}</p>
+                          <p className="text-xs text-gray-500 mt-1">Last sync: {integration.lastSync}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* System Settings */}
+        <TabsContent value="system" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Configuration</CardTitle>
+              <CardDescription>Core system settings and maintenance options</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-medium mb-4">Data Management</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Automatic Backup</label>
+                    <Switch checked={systemSettings.autoBackup} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Audit Logging</label>
+                    <Switch checked={systemSettings.auditLogs} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Performance Monitoring</label>
+                    <Switch checked={systemSettings.performanceMonitoring} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Error Reporting</label>
+                    <Switch checked={systemSettings.errorReporting} />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-4">Maintenance</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Maintenance Mode</label>
+                    <Switch checked={systemSettings.maintenanceMode} />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Security */}
+        <TabsContent value="security" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Settings</CardTitle>
+              <CardDescription>Configure authentication and security policies</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-medium mb-4">Authentication</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Two-Factor Authentication</label>
+                    <Switch />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Password Expiry (90 days)</label>
+                    <Switch />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Login Session Timeout</label>
+                    <Select defaultValue="8hours">
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2hours">2 hours</SelectItem>
+                        <SelectItem value="4hours">4 hours</SelectItem>
+                        <SelectItem value="8hours">8 hours</SelectItem>
+                        <SelectItem value="24hours">24 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-4">Data Protection</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">Data Encryption at Rest</label>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">API Rate Limiting</label>
+                    <Switch defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm">IP Whitelist</label>
+                    <Switch />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default SettingsPage;

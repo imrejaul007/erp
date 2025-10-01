@@ -1,0 +1,482 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useInventoryStore } from '@/store/inventory-store'
+import { InventoryDashboard } from '@/components/inventory/inventory-dashboard'
+import { RawMaterialList } from '@/components/inventory/raw-material-list'
+import { BatchTracking } from '@/components/inventory/batch-tracking'
+import { StockAlerts } from '@/components/inventory/stock-alerts'
+import { AddRawMaterial } from '@/components/inventory/add-raw-material'
+import { UnitConverter } from '@/components/inventory/utils/unit-converter'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Plus,
+  Settings,
+  RefreshCw,
+  Calculator,
+  Package,
+  Package2,
+  Bell,
+  BarChart3,
+  Download,
+  Upload,
+  Filter,
+  Search,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import type { MaterialWithBatches, CreateMaterialForm, CreateMaterialBatchForm } from '@/types/inventory'
+
+// Mock data for categories and suppliers (in real app, fetch from API)
+const mockCategories = [
+  { id: '1', name: 'Essential Oils' },
+  { id: '2', name: 'Oud Oils' },
+  { id: '3', name: 'Attar' },
+  { id: '4', name: 'Base Materials' },
+  { id: '5', name: 'Packaging' },
+]
+
+const mockSuppliers = [
+  'Al Haramain',
+  'Ajmal',
+  'Arabian Oud',
+  'Rasasi',
+  'Swiss Arabian',
+  'Local Supplier',
+]
+
+export default function InventoryPage() {
+  const {
+    materials,
+    batches,
+    stockAlerts,
+    unreadAlertsCount,
+    selectedMaterial,
+    selectedBatch,
+    activeTab,
+    sidebarOpen,
+    setActiveTab,
+    setSidebarOpen,
+    selectMaterial,
+    selectBatch,
+    refreshData,
+  } = useInventoryStore()
+
+  const [showAddMaterial, setShowAddMaterial] = useState(false)
+  const [showAddBatch, setShowAddBatch] = useState(false)
+  const [showUnitConverter, setShowUnitConverter] = useState(false)
+  const [editingMaterial, setEditingMaterial] = useState<MaterialWithBatches | null>(null)
+
+  // Mock API calls (in real app, these would be actual API calls)
+  useEffect(() => {
+    // Initialize with mock data
+    const mockMaterials: MaterialWithBatches[] = [
+      {
+        id: '1',
+        name: 'Cambodian Oud Oil',
+        description: 'Premium quality Cambodian Oud oil with rich, deep fragrance',
+        sku: 'OUD-CAM-001',
+        categoryId: '2',
+        unitOfMeasure: 'ml',
+        density: 0.85,
+        alternateUnits: null,
+        costPerUnit: 50.00,
+        currency: 'USD',
+        currentStock: 250,
+        availableStock: 230,
+        reservedStock: 20,
+        minimumStock: 50,
+        maximumStock: 500,
+        reorderLevel: 75,
+        supplier: 'Arabian Oud',
+        supplierCode: 'AO-CAM-001',
+        supplierPrice: 45.00,
+        grade: 'PREMIUM',
+        origin: 'Cambodia',
+        isActive: true,
+        createdAt: new Date('2024-01-15'),
+        updatedAt: new Date(),
+        category: { id: '2', name: 'Oud Oils', description: null, createdAt: new Date(), updatedAt: new Date(), materials: [] },
+        batches: [],
+        stockAlerts: [],
+        stockMovements: [],
+        unitConversions: [],
+      },
+      {
+        id: '2',
+        name: 'Rose Essential Oil',
+        description: 'Pure Bulgarian rose essential oil',
+        sku: 'ESS-ROS-001',
+        categoryId: '1',
+        unitOfMeasure: 'ml',
+        density: 0.85,
+        alternateUnits: null,
+        costPerUnit: 80.00,
+        currency: 'USD',
+        currentStock: 45,
+        availableStock: 45,
+        reservedStock: 0,
+        minimumStock: 30,
+        maximumStock: 200,
+        reorderLevel: 50,
+        supplier: 'Local Supplier',
+        supplierCode: 'LS-ROS-001',
+        supplierPrice: 75.00,
+        grade: 'PREMIUM',
+        origin: 'Bulgaria',
+        isActive: true,
+        createdAt: new Date('2024-02-01'),
+        updatedAt: new Date(),
+        category: { id: '1', name: 'Essential Oils', description: null, createdAt: new Date(), updatedAt: new Date(), materials: [] },
+        batches: [],
+        stockAlerts: [],
+        stockMovements: [],
+        unitConversions: [],
+      },
+    ]
+
+    // Mock initialization
+    setTimeout(() => {
+      // In real app, you'd call your API endpoints here
+      console.log('Initializing inventory data...')
+    }, 100)
+  }, [])
+
+  // Handle material actions
+  const handleSelectMaterial = (material: MaterialWithBatches) => {
+    selectMaterial(material)
+    setActiveTab('materials')
+  }
+
+  const handleAddMaterial = () => {
+    setEditingMaterial(null)
+    setShowAddMaterial(true)
+  }
+
+  const handleEditMaterial = (material: MaterialWithBatches) => {
+    setEditingMaterial(material)
+    setShowAddMaterial(true)
+  }
+
+  const handleDeleteMaterial = async (material: MaterialWithBatches) => {
+    if (confirm(`Are you sure you want to delete ${material.name}?`)) {
+      try {
+        // In real app, call delete API
+        toast.success('Material deleted successfully')
+      } catch (error) {
+        toast.error('Failed to delete material')
+      }
+    }
+  }
+
+  const handleBulkAction = async (action: string, materialIds: string[]) => {
+    try {
+      switch (action) {
+        case 'export':
+          // In real app, trigger export
+          toast.success(`Exporting ${materialIds.length} materials...`)
+          break
+        case 'update':
+          // In real app, show bulk update dialog
+          toast.info('Bulk update feature coming soon')
+          break
+        case 'delete':
+          if (confirm(`Are you sure you want to delete ${materialIds.length} materials?`)) {
+            // In real app, call bulk delete API
+            toast.success(`Deleted ${materialIds.length} materials`)
+          }
+          break
+      }
+    } catch (error) {
+      toast.error('Failed to perform bulk action')
+    }
+  }
+
+  // Handle material form submission
+  const handleMaterialSubmit = async (data: CreateMaterialForm) => {
+    try {
+      if (editingMaterial) {
+        // Update existing material
+        console.log('Updating material:', editingMaterial.id, data)
+        toast.success('Material updated successfully')
+      } else {
+        // Create new material
+        console.log('Creating new material:', data)
+        toast.success('Material created successfully')
+      }
+
+      setShowAddMaterial(false)
+      setEditingMaterial(null)
+    } catch (error) {
+      toast.error(editingMaterial ? 'Failed to update material' : 'Failed to create material')
+      throw error // Re-throw to prevent dialog from closing
+    }
+  }
+
+  // Handle batch form submission
+  const handleBatchSubmit = async (data: CreateMaterialBatchForm) => {
+    try {
+      console.log('Creating new batch:', data)
+      toast.success('Batch created successfully')
+      setShowAddBatch(false)
+    } catch (error) {
+      toast.error('Failed to create batch')
+      throw error // Re-throw to prevent dialog from closing
+    }
+  }
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    try {
+      await refreshData()
+      toast.success('Inventory data refreshed')
+    } catch (error) {
+      toast.error('Failed to refresh data')
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">Inventory Management</h1>
+            <p className="text-muted-foreground">
+              Comprehensive raw material and stock management for perfume & oud production
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Tools
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Inventory Tools</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setShowUnitConverter(true)}>
+                  <Calculator className="mr-2 h-4 w-4" />
+                  Unit Converter
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import Data
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export Data
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button onClick={handleAddMaterial}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Material
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <div className="flex items-center justify-between">
+            <TabsList className="grid w-fit grid-cols-4">
+              <TabsTrigger value="dashboard">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="materials">
+                <Package className="h-4 w-4 mr-2" />
+                Materials
+              </TabsTrigger>
+              <TabsTrigger value="batches">
+                <Package2 className="h-4 w-4 mr-2" />
+                Batches
+              </TabsTrigger>
+              <TabsTrigger value="alerts" className="relative">
+                <Bell className="h-4 w-4 mr-2" />
+                Alerts
+                {unreadAlertsCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  >
+                    {unreadAlertsCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Quick Actions */}
+            <div className="flex items-center space-x-2">
+              {activeTab === 'materials' && (
+                <Button variant="outline" onClick={() => setShowAddBatch(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Batch
+                </Button>
+              )}
+              {activeTab === 'batches' && (
+                <Button variant="outline" onClick={() => setShowAddBatch(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Batch
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard">
+            <InventoryDashboard
+              onViewMaterial={handleSelectMaterial}
+              onViewAlerts={() => setActiveTab('alerts')}
+            />
+          </TabsContent>
+
+          {/* Materials Tab */}
+          <TabsContent value="materials">
+            <RawMaterialList
+              onSelectMaterial={handleSelectMaterial}
+              onAddMaterial={handleAddMaterial}
+              onEditMaterial={handleEditMaterial}
+              onDeleteMaterial={handleDeleteMaterial}
+              onBulkAction={handleBulkAction}
+              selectable
+              showActions
+            />
+          </TabsContent>
+
+          {/* Batches Tab */}
+          <TabsContent value="batches">
+            <BatchTracking
+              onSelectBatch={selectBatch}
+              onAddBatch={() => setShowAddBatch(true)}
+              onEditBatch={(batch) => {
+                // In real app, implement batch editing
+                toast.info('Batch editing feature coming soon')
+              }}
+              onDeleteBatch={(batch) => {
+                if (confirm(`Are you sure you want to delete batch ${batch.batchNumber}?`)) {
+                  toast.success('Batch deleted successfully')
+                }
+              }}
+              showActions
+            />
+          </TabsContent>
+
+          {/* Alerts Tab */}
+          <TabsContent value="alerts">
+            <StockAlerts
+              onViewMaterial={(materialId) => {
+                const material = materials.find(m => m.id === materialId)
+                if (material) {
+                  handleSelectMaterial(material)
+                }
+              }}
+              onCreatePurchaseOrder={(materialId) => {
+                // In real app, navigate to purchase order creation
+                toast.info('Purchase order creation feature coming soon')
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+
+        {/* Add Material Dialog */}
+        <AddRawMaterial
+          open={showAddMaterial}
+          onOpenChange={setShowAddMaterial}
+          onSubmit={handleMaterialSubmit}
+          editData={editingMaterial ? {
+            name: editingMaterial.name,
+            description: editingMaterial.description || '',
+            sku: editingMaterial.sku,
+            categoryId: editingMaterial.categoryId,
+            unitOfMeasure: editingMaterial.unitOfMeasure,
+            density: editingMaterial.density,
+            alternateUnits: editingMaterial.alternateUnits ? JSON.parse(editingMaterial.alternateUnits as string) : [],
+            costPerUnit: editingMaterial.costPerUnit,
+            currency: editingMaterial.currency,
+            minimumStock: editingMaterial.minimumStock,
+            maximumStock: editingMaterial.maximumStock,
+            reorderLevel: editingMaterial.reorderLevel,
+            supplier: editingMaterial.supplier,
+            supplierCode: editingMaterial.supplierCode,
+            supplierPrice: editingMaterial.supplierPrice,
+            grade: editingMaterial.grade as any,
+            origin: editingMaterial.origin,
+          } : undefined}
+          categories={mockCategories}
+          suppliers={mockSuppliers}
+        />
+
+        {/* Add Batch Dialog */}
+        {showAddBatch && (
+          <Dialog open={showAddBatch} onOpenChange={setShowAddBatch}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Batch</DialogTitle>
+                <DialogDescription>
+                  Create a new material batch with detailed tracking information.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="text-center py-8">
+                <Package2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg font-medium">Batch Creation Form</p>
+                <p className="text-muted-foreground mb-4">
+                  This would be the AddRawMaterialBatch component
+                </p>
+                <Button onClick={() => setShowAddBatch(false)}>
+                  Close
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Unit Converter Dialog */}
+        {showUnitConverter && (
+          <Dialog open={showUnitConverter} onOpenChange={setShowUnitConverter}>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Unit Converter</DialogTitle>
+                <DialogDescription>
+                  Convert between different units used in perfume and oud production.
+                </DialogDescription>
+              </DialogHeader>
+              <UnitConverter
+                showMaterialSpecific
+                onConversionChange={(result) => {
+                  console.log('Conversion result:', result)
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </div>
+  )
+}

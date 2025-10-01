@@ -1,0 +1,365 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Cairo:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* High contrast luxury color variables for better visibility */
+    --background: 0 0% 100%; /* Pure white background */
+    --foreground: 0 0% 10%; /* High contrast dark text */
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 0 0% 10%; /* Dark text on cards */
+    --popover: 0 0% 100%; /* White popover */
+    --popover-foreground: 0 0% 10%; /* Dark text in popover */
+    --primary: 39 32% 45%; /* Darker oud for better contrast */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --secondary: 39 25% 95%; /* Very light background */
+    --secondary-foreground: 0 0% 15%; /* Dark text on secondary */
+    --muted: 39 20% 94%; /* Light muted background */
+    --muted-foreground: 0 0% 40%; /* Medium contrast muted text */
+    --accent: 39 25% 95%; /* Light accent background */
+    --accent-foreground: 0 0% 15%; /* Dark text on accent */
+    --destructive: 0 84% 50%; /* Darker destructive for contrast */
+    --destructive-foreground: 0 0% 100%; /* White text on destructive */
+    --border: 39 25% 85%; /* Visible borders */
+    --input: 0 0% 100%; /* White input backgrounds */
+    --ring: 39 32% 45%; /* Darker ring color */
+    --radius: 0.75rem; /* More elegant rounded corners */
+
+    /* Custom luxury design tokens */
+    --luxury-gold: 51 100% 50%; /* gold-500 */
+    --luxury-royal: 260 30% 43%; /* royal-500 */
+    --luxury-teal: 173 36% 45%; /* teal-500 */
+    --luxury-mahogany: 19 57% 40%; /* mahogany-500 */
+    --surface-elevated: 42 35% 95%;
+    --surface-glass: rgba(255, 255, 255, 0.8);
+    --backdrop-luxury: rgba(200, 168, 118, 0.05);
+  }
+
+  .dark {
+    --background: 0 0% 5%; /* Very dark background */
+    --foreground: 0 0% 95%; /* High contrast light text */
+    --card: 0 0% 8%; /* Dark cards */
+    --card-foreground: 0 0% 95%; /* Light text on cards */
+    --popover: 0 0% 8%; /* Dark popover */
+    --popover-foreground: 0 0% 95%; /* Light text in popover */
+    --primary: 39 42% 75%; /* Bright oud for dark mode */
+    --primary-foreground: 0 0% 5%; /* Dark text on primary */
+    --secondary: 0 0% 12%; /* Dark secondary background */
+    --secondary-foreground: 0 0% 90%; /* Light text on secondary */
+    --muted: 0 0% 12%; /* Dark muted background */
+    --muted-foreground: 0 0% 65%; /* Medium contrast muted text */
+    --accent: 0 0% 12%; /* Dark accent background */
+    --accent-foreground: 0 0% 90%; /* Light text on accent */
+    --destructive: 0 75% 60%; /* Bright destructive for visibility */
+    --destructive-foreground: 0 0% 95%; /* Light text on destructive */
+    --border: 0 0% 20%; /* Visible borders */
+    --input: 0 0% 10%; /* Dark input backgrounds */
+    --ring: 39 42% 75%; /* Bright ring color */
+    --surface-elevated: 0 0% 10%;
+    --surface-glass: rgba(0, 0, 0, 0.8);
+    --backdrop-luxury: rgba(200, 168, 118, 0.1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Enhanced typography hierarchy */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-semibold tracking-tight;
+    line-height: 1.2;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+    font-weight: 700;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+    font-weight: 600;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+    font-weight: 600;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl lg:text-3xl;
+    font-weight: 500;
+  }
+
+  /* Enhanced focus visibility for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    outline-offset: 2px;
+  }
+
+  /* Arabic/RTL support */
+  [dir="rtl"] {
+    font-family: 'Cairo', 'Noto Sans Arabic', 'Inter', system-ui, sans-serif;
+  }
+
+  /* Smooth scrolling for anchor links */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Enhanced selection styling */
+  ::selection {
+    @apply bg-oud-200 text-oud-900;
+  }
+}
+
+@layer components {
+  /* Enhanced Luxury Gradient System */
+  .luxury-gradient {
+    @apply bg-luxury-gradient;
+  }
+
+  .luxury-gradient-warm {
+    @apply bg-luxury-warm;
+  }
+
+  .luxury-gradient-gold {
+    @apply bg-luxury-gold;
+  }
+
+  .luxury-gradient-oud {
+    @apply bg-luxury-oud;
+  }
+
+  .luxury-gradient-royal {
+    @apply bg-luxury-royal;
+  }
+
+  .luxury-gradient-teal {
+    @apply bg-luxury-teal;
+  }
+
+  /* Enhanced Text Gradients */
+  .luxury-text-gradient {
+    @apply bg-gradient-to-r from-oud-700 via-gold-600 to-oud-600 bg-clip-text text-transparent;
+    font-weight: 600;
+  }
+
+  .gold-text-gradient {
+    @apply bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700 bg-clip-text text-transparent;
+    font-weight: 600;
+  }
+
+  .royal-text-gradient {
+    @apply bg-gradient-to-r from-royal-600 via-royal-500 to-royal-700 bg-clip-text text-transparent;
+    font-weight: 600;
+  }
+
+  /* Enhanced Glass Effects */
+  .glass-effect {
+    background: var(--surface-glass);
+    @apply backdrop-blur-md border border-white/20 shadow-luxury;
+    backdrop-filter: blur(12px);
+  }
+
+  .glass-effect-dark {
+    @apply bg-black/20 backdrop-blur-md border border-white/10 shadow-luxury;
+    backdrop-filter: blur(12px);
+  }
+
+  /* Premium Card Styles */
+  .card-luxury {
+    @apply bg-gradient-to-br from-pearl-50 via-white to-oud-50/20 border border-oud-200/40 shadow-luxury-md;
+    position: relative;
+  }
+
+  .card-luxury::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--backdrop-luxury);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .card-luxury-elevated {
+    @apply card-luxury shadow-luxury-lg hover:shadow-luxury-xl transition-all duration-300 hover:-translate-y-1;
+  }
+
+  .card-glass {
+    @apply glass-effect rounded-xl;
+  }
+
+  /* Premium Button Styles */
+  .btn-luxury {
+    @apply bg-luxury-oud text-white shadow-luxury hover:shadow-luxury-md transition-all duration-300 hover:scale-105 active:scale-95;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-luxury::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-luxury:hover::before {
+    left: 100%;
+  }
+
+  .btn-gold {
+    @apply bg-luxury-gold text-white shadow-gold hover:shadow-luxury-md transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-royal {
+    @apply bg-luxury-royal text-white shadow-royal hover:shadow-luxury-md transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-teal {
+    @apply bg-luxury-teal text-white shadow-teal hover:shadow-luxury-md transition-all duration-300 hover:scale-105;
+  }
+
+  /* Enhanced Input Styles */
+  .input-luxury {
+    @apply border-gray-300 focus:border-oud-500 focus:ring-2 focus:ring-oud-500/20 bg-white backdrop-blur-sm transition-all duration-200;
+    @apply placeholder:text-gray-500 text-gray-900;
+  }
+
+  .input-luxury:focus {
+    @apply shadow-inner-luxury;
+  }
+
+  /* Premium Navigation */
+  .nav-luxury {
+    @apply bg-white/95 backdrop-blur-lg border-b border-oud-200/30 shadow-luxury;
+    backdrop-filter: blur(12px);
+  }
+
+  /* Luxury Loading Animation */
+  .loading-luxury {
+    @apply animate-spin rounded-full border-4 border-oud-200 border-t-oud-600;
+  }
+
+  /* Status Indicators */
+  .status-success {
+    @apply bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-teal;
+  }
+
+  .status-warning {
+    @apply bg-gradient-to-r from-gold-500 to-gold-600 text-white shadow-gold;
+  }
+
+  .status-error {
+    @apply bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm;
+  }
+
+  .status-info {
+    @apply bg-gradient-to-r from-royal-500 to-royal-600 text-white shadow-royal;
+  }
+
+  /* Luxury Typography */
+  .heading-luxury {
+    @apply font-serif font-bold text-gray-900;
+  }
+
+  .text-luxury {
+    @apply text-gray-800 leading-relaxed;
+  }
+
+  .text-muted-luxury {
+    @apply text-gray-600 text-sm;
+  }
+
+  /* Enhanced Animations */
+  .animate-fade-in {
+    @apply animate-fade-in;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Luxury Hover Effects */
+  .hover-luxury {
+    @apply transition-all duration-300 hover:shadow-luxury-md hover:-translate-y-0.5;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
+  }
+
+  /* Premium Spacing */
+  .section-luxury {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .container-luxury {
+    @apply container mx-auto px-4 md:px-6 lg:px-8;
+  }
+
+  /* High Contrast Overrides */
+  .high-contrast {
+    @apply text-gray-900 bg-white;
+  }
+
+  .high-contrast-dark {
+    @apply text-white bg-gray-900;
+  }
+
+  /* Force visible text on any background */
+  .text-always-visible {
+    @apply text-gray-900;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+  }
+
+  .text-always-visible-light {
+    @apply text-white;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Ensure minimum contrast ratios */
+  .min-contrast {
+    @apply bg-white text-gray-900 border border-gray-300;
+  }
+
+  .min-contrast-dark {
+    @apply bg-gray-900 text-white border border-gray-600;
+  }
+}
