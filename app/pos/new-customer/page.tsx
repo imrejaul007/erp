@@ -66,9 +66,40 @@ export default function NewCustomerPage() {
     'Abu Dhabi', 'Dubai', 'Sharjah', 'Ajman', 'Umm Al Quwain', 'Ras Al Khaimah', 'Fujairah'
   ];
 
-  const handleSubmit = () => {
-    console.log('Creating new customer:', formData);
-    // Here you would submit the form data
+  const handleSubmit = async () => {
+    try {
+      const fullName = `${formData.personalInfo.firstName} ${formData.personalInfo.lastName}`.trim();
+
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fullName,
+          email: formData.contactInfo.email,
+          phone: formData.contactInfo.phone,
+          customerType: 'INDIVIDUAL',
+          isVIP: false,
+          dateOfBirth: formData.personalInfo.dateOfBirth || null,
+          address: formData.contactInfo.address,
+          emirate: formData.contactInfo.emirate,
+          city: formData.contactInfo.city,
+          loyaltyPoints: formData.loyaltyInfo.joinLoyalty ? 100 : 0, // Welcome bonus
+          notes: formData.notes
+        })
+      });
+
+      if (response.ok) {
+        const customer = await response.json();
+        alert(`Customer "${customer.name}" registered successfully! ${formData.loyaltyInfo.joinLoyalty ? 'Welcome bonus: 100 loyalty points!' : ''}`);
+        handleReset();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error || 'Failed to register customer'}`);
+      }
+    } catch (error) {
+      console.error('Error registering customer:', error);
+      alert('Network error. Please try again.');
+    }
   };
 
   const handleReset = () => {

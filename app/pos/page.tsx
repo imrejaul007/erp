@@ -293,65 +293,110 @@ export default function POSPage() {
   };
 
   // Process payment
-  const processPayment = () => {
+  const processPayment = async () => {
     const totals = calculateTotals();
 
-    // Create receipt data
-    const receiptData = {
-      id: 'RCP-' + Date.now(),
-      date: new Date().toISOString(),
-      items: cart.map(item => ({
-        name: item.product.name,
-        nameArabic: item.product.nameArabic,
-        quantity: item.quantity,
-        unit: item.unit,
-        unitPrice: item.unitPrice,
-        totalPrice: item.totalPrice
-      })),
-      customer: selectedCustomer,
-      payment: {
-        method: paymentMethod,
+    try {
+      // Prepare transaction data for API
+      const transactionData = {
+        storeId: 'default-store-id', // TODO: Get from session/settings
+        cashierId: 'current-user-id', // TODO: Get from session
+        customerId: selectedCustomer?.id || null,
+        items: cart.map(item => ({
+          productId: item.product.id || 'unknown',
+          sku: item.product.sku || 'N/A',
+          name: item.product.name,
+          arabicName: item.product.nameArabic,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: 0,
+          vatRate: 5,
+          vatAmount: item.totalPrice * 0.05 / 1.05,
+          totalPrice: item.totalPrice,
+          category: item.product.category,
+          brand: item.product.brand
+        })),
         subtotal: totals.subtotal,
-        customerDiscount: totals.customerDiscount,
-        customDiscount: totals.customDiscount,
-        vatAmount: totals.vatAmount,
-        total: totals.total,
-        cashReceived: cashReceived,
-        change: paymentMethod === 'cash' ? cashReceived - totals.total : 0
-      },
-      store: {
-        name: 'Oud Palace',
-        nameArabic: 'قصر العود',
-        address: 'Gold Souq, Dubai, UAE',
-        addressArabic: 'سوق الذهب، دبي، الإمارات العربية المتحدة',
-        phone: '+971 4 XXX XXXX',
-        email: 'info@oudpalace.ae',
-        vatNumber: 'VAT123456789',
-        tradeLicense: 'TL123456'
-      },
-      cashier: 'POS User',
-      terminal: 'POS-MAIN'
-    };
+        totalVat: totals.vatAmount,
+        grandTotal: totals.total,
+        currency: 'AED',
+        paymentMethod: paymentMethod,
+        paymentDetails: {
+          method: paymentMethod as any,
+          amountReceived: paymentMethod === 'cash' ? cashReceived : totals.total,
+          changeGiven: paymentMethod === 'cash' ? cashReceived - totals.total : 0
+        },
+        loyaltyPointsEarned: selectedCustomer ? Math.floor(totals.total / 10) : 0
+      };
 
-    // Store receipt data in localStorage
-    localStorage.setItem(`receipt_${receiptData.id}`, JSON.stringify(receiptData));
+      // Save transaction to database
+      const response = await fetch('/api/sales/pos/transaction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transactionData)
+      });
 
-    // Update customer loyalty points
-    if (selectedCustomer) {
-      const pointsEarned = Math.floor(totals.total / 10); // 1 point per AED 10
-      selectedCustomer.loyaltyPoints += pointsEarned;
-      selectedCustomer.totalSpent += totals.total;
+      if (!response.ok) {
+        throw new Error('Failed to save transaction');
+      }
+
+      const savedTransaction = await response.json();
+
+      // Create receipt data
+      const receiptData = {
+        id: savedTransaction.receiptNumber || 'RCP-' + Date.now(),
+        transactionId: savedTransaction.id,
+        date: new Date().toISOString(),
+        items: cart.map(item => ({
+          name: item.product.name,
+          nameArabic: item.product.nameArabic,
+          quantity: item.quantity,
+          unit: item.unit,
+          unitPrice: item.unitPrice,
+          totalPrice: item.totalPrice
+        })),
+        customer: selectedCustomer,
+        payment: {
+          method: paymentMethod,
+          subtotal: totals.subtotal,
+          customerDiscount: totals.customerDiscount,
+          customDiscount: totals.customDiscount,
+          vatAmount: totals.vatAmount,
+          total: totals.total,
+          cashReceived: cashReceived,
+          change: paymentMethod === 'cash' ? cashReceived - totals.total : 0
+        },
+        store: {
+          name: 'Oud Palace',
+          nameArabic: 'قصر العود',
+          address: 'Gold Souq, Dubai, UAE',
+          addressArabic: 'سوق الذهب، دبي، الإمارات العربية المتحدة',
+          phone: '+971 4 XXX XXXX',
+          email: 'info@oudpalace.ae',
+          vatNumber: 'VAT123456789',
+          tradeLicense: 'TL123456'
+        },
+        cashier: 'POS User',
+        terminal: 'POS-MAIN'
+      };
+
+      // Store receipt data in localStorage for printing
+      localStorage.setItem(`receipt_${receiptData.id}`, JSON.stringify(receiptData));
+
+      // Clear cart and reset
+      setCart([]);
+      setSelectedCustomer(null);
+      setCustomDiscount({ type: 'percentage', value: 0 });
+      setCashReceived(0);
+      setIsPaymentDialogOpen(false);
+
+      // Redirect to receipt page
+      window.location.href = `/pos/receipt?id=${receiptData.id}`;
+
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      alert('Failed to process payment. Please try again.');
     }
-
-    // Clear cart and reset
-    setCart([]);
-    setSelectedCustomer(null);
-    setCustomDiscount({ type: 'percentage', value: 0 });
-    setCashReceived(0);
-    setIsPaymentDialogOpen(false);
-
-    // Redirect to receipt page
-    window.location.href = `/pos/receipt?id=${receiptData.id}`;
   };
 
   // Search products
