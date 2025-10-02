@@ -58,6 +58,7 @@ import {
   X,
   Check,
   Archive,
+  MessageSquare,
   Trash2,
   Copy,
   Share,

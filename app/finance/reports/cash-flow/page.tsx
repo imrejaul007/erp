@@ -854,7 +854,7 @@ export default function CashFlowStatementPage() {
                       <div className="bg-blue-500 h-2 rounded-full" style={{width: `${Math.min(ratios.operatingCashFlowRatio * 250, 100)}%`}}></div>
                     </div>
                     <p className="text-sm text-gray-600">
-                      Operating cash flow ÷ Current liabilities (Target: > 0.4)
+                      Operating cash flow ÷ Current liabilities (Target: {'>'} 0.4)
                     </p>
                   </div>
 

@@ -532,7 +532,7 @@ export default function SeasonalIntelligence({ year = new Date().getFullYear(), 
                     <Tooltip
                       formatter={(value: number, name: string) => [
                         name.includes('ROI') ? formatPercentage(value) : formatCurrency(value),
-                        name.replace(/([A-Z])/g, ' $1').replace /^./, str => str.toUpperCase())
+                        name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
                       ]}
                     />
                     <Legend />

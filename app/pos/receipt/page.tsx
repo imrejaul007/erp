@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export default function ReceiptPage() {
+function ReceiptPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -518,5 +518,13 @@ View full receipt: ${window.location.href}`;
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReceiptPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>}>
+      <ReceiptPageContent />
+    </Suspense>
   );
 }

@@ -48,6 +48,7 @@ import {
   Globe,
   Smartphone,
   Star,
+  RotateCcw,
   Heart,
   ThumbsUp,
   Activity,

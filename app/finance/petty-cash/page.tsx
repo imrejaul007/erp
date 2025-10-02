@@ -1018,11 +1018,11 @@ export default function PettyCashPage() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <input type="checkbox" id="photo-receipt" defaultChecked />
-                        <Label htmlFor="photo-receipt">Photo receipt for expenses > AED 25</Label>
+                        <Label htmlFor="photo-receipt">Photo receipt for expenses {'>'}  AED 25</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <input type="checkbox" id="justification" />
-                        <Label htmlFor="justification">Written justification for expenses > AED 100</Label>
+                        <Label htmlFor="justification">Written justification for expenses {'>'} AED 100</Label>
                       </div>
                     </div>
                   </div>
@@ -1033,7 +1033,7 @@ export default function PettyCashPage() {
                       <div>1. Employee submits expense with receipt</div>
                       <div>2. Auto-approve if ≤ AED 50</div>
                       <div>3. Custodian approval if AED 51-200</div>
-                      <div>4. Manager approval if > AED 200</div>
+                      <div>4. Manager approval if {'>'} AED 200</div>
                       <div>5. Record in general ledger</div>
                     </div>
                   </div>

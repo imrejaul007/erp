@@ -37,6 +37,7 @@ import {
   Target,
   TrendingUp,
   BarChart3,
+  Building,
   Eye,
   Edit,
   Trash2,

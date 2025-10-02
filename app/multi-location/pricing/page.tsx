@@ -565,7 +565,7 @@ const PricingManagementPage = () => {
                   <h3 className="font-medium mb-2">Approval Workflows</h3>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span>Price changes > 10%: Requires manager approval</span>
+                      <span>Price changes {'>'} 10%: Requires manager approval</span>
                       <Badge className="bg-blue-100 text-blue-800">Enabled</Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-gray-50 rounded">

@@ -851,7 +851,7 @@ const CurrencySettingsPage = () => {
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
-                  <label className="text-sm">Validate Rate Changes (>5% change alert)</label>
+                  <label className="text-sm">Validate Rate Changes ({'>'}5% change alert)</label>
                   <Switch defaultChecked />
                 </div>
               </div>

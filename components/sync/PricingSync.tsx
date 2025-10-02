@@ -277,7 +277,7 @@ export default function PricingSync({
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{hasVariance}</div>
             <p className="text-xs text-muted-foreground">
-              Products with >10% variance
+              Products with {'>'}10% variance
             </p>
           </CardContent>
         </Card>
