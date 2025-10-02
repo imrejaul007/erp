@@ -190,29 +190,30 @@ export async function POST(request: NextRequest) {
     const validatedData = journalEntrySchema.parse(body);
 
     // Validate all accounts exist and can be posted to
-    const accountIds = validatedData.lineItems.map(item => item.accountId);
-    const accounts = await prisma.account.findMany({
-      where: {
-        id: { in: accountIds },
-        isActive: true,
-      },
-    });
+    // Note: Account validation temporarily disabled until finance module schema is complete
+    // const accountIds = validatedData.lineItems.map(item => item.accountId);
+    // const accounts = await prisma.account.findMany({
+    //   where: {
+    //     id: { in: accountIds },
+    //     isActive: true,
+    //   },
+    // });
 
-    if (accounts.length !== accountIds.length) {
-      return NextResponse.json(
-        { success: false, error: 'One or more accounts not found or inactive' },
-        { status: 400 }
-      );
-    }
+    // if (accounts.length !== accountIds.length) {
+    //   return NextResponse.json(
+    //     { success: false, error: 'One or more accounts not found or inactive' },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Check if accounts allow posting
-    const nonPostingAccounts = accounts.filter(acc => !acc.allowPosting);
-    if (nonPostingAccounts.length > 0) {
-      return NextResponse.json(
-        { success: false, error: `Accounts ${nonPostingAccounts.map(acc => acc.code).join(', ')} do not allow direct posting` },
-        { status: 400 }
-      );
-    }
+    // const nonPostingAccounts = accounts.filter(acc => !acc.allowPosting);
+    // if (nonPostingAccounts.length > 0) {
+    //   return NextResponse.json(
+    //     { success: false, error: `Accounts ${nonPostingAccounts.map(acc => acc.code).join(', ')} do not allow direct posting` },
+    //     { status: 400 }
+    //   );
+    // }
 
     // Generate journal number
     const journalNo = await generateJournalNumber();
