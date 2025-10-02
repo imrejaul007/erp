@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Palette, Building2, Image, FileText, Settings2, Globe } from 'lucide-react';
+import { Loader2, Palette, Building2, Image, FileText, Settings2, Globe, Languages } from 'lucide-react';
+import { autoTranslate } from '@/lib/translate';
 
 interface BrandingData {
   id?: string;
@@ -77,6 +78,7 @@ export default function BrandingPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [translating, setTranslating] = useState<string | null>(null);
   const [branding, setBranding] = useState<BrandingData>({
     companyName: 'Oud & Perfume ERP',
     primaryColor: '#d97706',
@@ -174,6 +176,38 @@ export default function BrandingPage() {
     setBranding((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleAutoTranslate = async (sourceField: keyof BrandingData, targetField: keyof BrandingData) => {
+    const sourceValue = branding[sourceField];
+
+    if (!sourceValue || typeof sourceValue !== 'string') {
+      toast({
+        title: 'Error',
+        description: 'Please enter text in the English field first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setTranslating(targetField as string);
+    try {
+      const translated = await autoTranslate(sourceValue);
+      handleChange(targetField, translated);
+      toast({
+        title: 'Success',
+        description: 'Text translated successfully',
+      });
+    } catch (error) {
+      console.error('Translation error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to translate text. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setTranslating(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -241,7 +275,26 @@ export default function BrandingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="companyNameAr">Company Name (Arabic)</Label>
+                  <Label htmlFor="companyNameAr" className="flex items-center justify-between">
+                    <span>Company Name (Arabic)</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAutoTranslate('companyName', 'companyNameAr')}
+                      disabled={translating === 'companyNameAr'}
+                      className="h-6 px-2 text-xs"
+                    >
+                      {translating === 'companyNameAr' ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Languages className="h-3 w-3 mr-1" />
+                          Auto
+                        </>
+                      )}
+                    </Button>
+                  </Label>
                   <Input
                     id="companyNameAr"
                     value={branding.companyNameAr || ''}
@@ -258,7 +311,26 @@ export default function BrandingPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="taglineAr">Tagline (Arabic)</Label>
+                  <Label htmlFor="taglineAr" className="flex items-center justify-between">
+                    <span>Tagline (Arabic)</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAutoTranslate('tagline', 'taglineAr')}
+                      disabled={translating === 'taglineAr'}
+                      className="h-6 px-2 text-xs"
+                    >
+                      {translating === 'taglineAr' ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Languages className="h-3 w-3 mr-1" />
+                          Auto
+                        </>
+                      )}
+                    </Button>
+                  </Label>
                   <Input
                     id="taglineAr"
                     value={branding.taglineAr || ''}
@@ -701,7 +773,26 @@ export default function BrandingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="invoiceFooterAr">Invoice Footer (Arabic)</Label>
+                <Label htmlFor="invoiceFooterAr" className="flex items-center justify-between">
+                  <span>Invoice Footer (Arabic)</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAutoTranslate('invoiceFooter', 'invoiceFooterAr')}
+                    disabled={translating === 'invoiceFooterAr'}
+                    className="h-6 px-2 text-xs"
+                  >
+                    {translating === 'invoiceFooterAr' ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <>
+                        <Languages className="h-3 w-3 mr-1" />
+                        Auto
+                      </>
+                    )}
+                  </Button>
+                </Label>
                 <Textarea
                   id="invoiceFooterAr"
                   value={branding.invoiceFooterAr || ''}
