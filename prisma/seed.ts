@@ -272,8 +272,10 @@ async function main() {
 
   // 8. Create sample raw materials
   console.log('📝 Creating sample raw materials...');
-  const oudOil = await prisma.rawMaterial.create({
-    data: {
+  const oudOil = await prisma.rawMaterial.upsert({
+    where: { code: 'RM-OUD-001' },
+    update: {},
+    create: {
       code: 'RM-OUD-001',
       name: 'Oud Oil - Premium',
       nameAr: 'زيت العود - ممتاز',
@@ -289,8 +291,10 @@ async function main() {
     },
   });
 
-  const roseOil = await prisma.rawMaterial.create({
-    data: {
+  const roseOil = await prisma.rawMaterial.upsert({
+    where: { code: 'RM-ROSE-001' },
+    update: {},
+    create: {
       code: 'RM-ROSE-001',
       name: 'Rose Oil - Bulgarian',
       nameAr: 'زيت الورد - بلغاري',
@@ -306,8 +310,10 @@ async function main() {
     },
   });
 
-  const alcohol = await prisma.rawMaterial.create({
-    data: {
+  const alcohol = await prisma.rawMaterial.upsert({
+    where: { code: 'RM-ALC-001' },
+    update: {},
+    create: {
       code: 'RM-ALC-001',
       name: 'Perfumer Alcohol 95%',
       nameAr: 'كحول العطور 95٪',
@@ -326,8 +332,10 @@ async function main() {
 
   // 9. Create sample products
   console.log('📝 Creating sample products...');
-  const luxuryOud = await prisma.product.create({
-    data: {
+  const luxuryOud = await prisma.product.upsert({
+    where: { code: 'PRD-OUD-001' },
+    update: {},
+    create: {
       code: 'PRD-OUD-001',
       name: 'Luxury Oud Perfume 100ml',
       nameAr: 'عطر عود فاخر 100 مل',
@@ -347,8 +355,10 @@ async function main() {
     },
   });
 
-  const roseAttar = await prisma.product.create({
-    data: {
+  const roseAttar = await prisma.product.upsert({
+    where: { code: 'PRD-RSE-001' },
+    update: {},
+    create: {
       code: 'PRD-RSE-001',
       name: 'Rose Attar 12ml',
       nameAr: 'عطر الورد 12 مل',
@@ -371,47 +381,56 @@ async function main() {
 
   // 10. Create initial inventory
   console.log('📝 Creating initial inventory...');
-  await prisma.storeInventory.create({
-    data: {
-      storeId: warehouse.id,
-      rawMaterialId: oudOil.id,
-      quantity: 500,
-      unit: 'grams',
+  const existingInventory = await prisma.storeInventory.findMany({
+    where: {
+      OR: [
+        { storeId: warehouse.id, rawMaterialId: oudOil.id },
+        { storeId: warehouse.id, rawMaterialId: roseOil.id },
+        { storeId: mainStore.id, productId: luxuryOud.id },
+        { storeId: mainStore.id, productId: roseAttar.id },
+      ],
     },
   });
 
-  await prisma.storeInventory.create({
-    data: {
-      storeId: warehouse.id,
-      rawMaterialId: roseOil.id,
-      quantity: 1000,
-      unit: 'ml',
-    },
-  });
-
-  await prisma.storeInventory.create({
-    data: {
-      storeId: mainStore.id,
-      productId: luxuryOud.id,
-      quantity: 25,
-      unit: 'pieces',
-    },
-  });
-
-  await prisma.storeInventory.create({
-    data: {
-      storeId: mainStore.id,
-      productId: roseAttar.id,
-      quantity: 50,
-      unit: 'pieces',
-    },
-  });
+  if (existingInventory.length === 0) {
+    await prisma.storeInventory.createMany({
+      data: [
+        {
+          storeId: warehouse.id,
+          rawMaterialId: oudOil.id,
+          quantity: 500,
+          unit: 'grams',
+        },
+        {
+          storeId: warehouse.id,
+          rawMaterialId: roseOil.id,
+          quantity: 1000,
+          unit: 'ml',
+        },
+        {
+          storeId: mainStore.id,
+          productId: luxuryOud.id,
+          quantity: 25,
+          unit: 'pieces',
+        },
+        {
+          storeId: mainStore.id,
+          productId: roseAttar.id,
+          quantity: 50,
+          unit: 'pieces',
+        },
+      ],
+      skipDuplicates: true,
+    });
+  }
   console.log('✅ Created initial inventory');
 
   // 11. Create sample customer
   console.log('📝 Creating sample customer...');
-  const customer = await prisma.customer.create({
-    data: {
+  const customer = await prisma.customer.upsert({
+    where: { customerNo: 'CUST-001' },
+    update: {},
+    create: {
       customerNo: 'CUST-001',
       type: 'INDIVIDUAL',
       firstName: 'Ahmed',
@@ -432,8 +451,10 @@ async function main() {
 
   // 12. Create sample supplier
   console.log('📝 Creating sample supplier...');
-  const supplier = await prisma.supplier.create({
-    data: {
+  const supplier = await prisma.supplier.upsert({
+    where: { code: 'SUP-001' },
+    update: {},
+    create: {
       code: 'SUP-001',
       name: 'Cambodia Oud Suppliers Co.',
       nameAr: 'شركة موردي العود الكمبودية',
@@ -454,8 +475,10 @@ async function main() {
 
   // 13. Create chart of accounts
   console.log('📝 Creating chart of accounts...');
-  const assetAccount = await prisma.account.create({
-    data: {
+  const assetAccount = await prisma.account.upsert({
+    where: { code: '1000' },
+    update: {},
+    create: {
       code: '1000',
       name: 'Cash',
       nameAr: 'النقد',
@@ -466,8 +489,10 @@ async function main() {
     },
   });
 
-  const revenueAccount = await prisma.account.create({
-    data: {
+  const revenueAccount = await prisma.account.upsert({
+    where: { code: '4000' },
+    update: {},
+    create: {
       code: '4000',
       name: 'Sales Revenue',
       nameAr: 'إيرادات المبيعات',
@@ -481,8 +506,10 @@ async function main() {
 
   // 14. Create loyalty program
   console.log('📝 Creating loyalty program...');
-  const loyaltyProgram = await prisma.loyaltyProgram.create({
-    data: {
+  const loyaltyProgram = await prisma.loyaltyProgram.upsert({
+    where: { name: 'Gold Rewards' },
+    update: {},
+    create: {
       name: 'Gold Rewards',
       nameAr: 'مكافآت الذهب',
       description: 'Earn 1 point per AED spent',
