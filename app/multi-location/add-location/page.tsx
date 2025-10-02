@@ -30,10 +30,44 @@ export default function AddLocationPage() {
     notes: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Location added successfully!');
-    router.push('/multi-location');
+
+    try {
+      const response = await fetch('/api/stores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          nameArabic: formData.nameArabic,
+          type: formData.type.toUpperCase(),
+          address: formData.address,
+          emirate: formData.emirate,
+          city: formData.city,
+          phone: formData.phone,
+          email: formData.email,
+          manager: formData.manager,
+          openingTime: formData.openingTime,
+          closingTime: formData.closingTime,
+          targetRevenue: formData.targetRevenue ? Number(formData.targetRevenue) : 0,
+          maxStaff: formData.maxStaff ? Number(formData.maxStaff) : 0,
+          notes: formData.notes,
+          isActive: true
+        })
+      });
+
+      if (response.ok) {
+        const store = await response.json();
+        toast.success(`Location "${store.name}" added successfully!`);
+        router.push('/multi-location');
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to add location');
+      }
+    } catch (error) {
+      console.error('Error adding location:', error);
+      toast.error('Network error. Please try again.');
+    }
   };
 
   const handleChange = (field: string, value: string) => {

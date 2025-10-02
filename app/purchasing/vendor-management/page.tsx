@@ -734,17 +734,38 @@ export default function PurchasingVendorManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [vendorTypeFilter, setVendorTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [vendors, setVendors] = useState<any[]>(vendorsDatabase);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const response = await fetch('/api/suppliers?limit=100');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.suppliers && data.suppliers.length > 0) {
+            setVendors(data.suppliers);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching suppliers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVendors();
+  }, []);
 
   // Calculate purchasing statistics
   const calculatePurchasingStats = () => {
-    const totalVendors = vendorsDatabase.length;
-    const activeVendors = vendorsDatabase.filter(v => v.status === 'Active').length;
+    const totalVendors = vendors.length;
+    const activeVendors = vendors.filter((v: any) => v.isActive || v.status === 'Active').length;
     const totalPOs = purchaseOrders.length;
     const pendingPOs = purchaseOrders.filter(po => po.status !== 'Delivered').length;
 
     const totalPOValue = purchaseOrders.reduce((sum, po) => sum + po.totalAmount, 0);
-    const avgVendorRating = vendorsDatabase.reduce((sum, vendor) => sum + vendor.rating, 0) / totalVendors;
-    const onTimeDelivery = vendorsDatabase.reduce((sum, vendor) => sum + vendor.performance.onTimeDelivery, 0) / totalVendors;
+    const avgVendorRating = vendors.reduce((sum: number, vendor: any) => sum + (vendor.performanceScore || vendor.rating || 0), 0) / (totalVendors || 1);
+    const onTimeDelivery = vendors.reduce((sum: number, vendor: any) => sum + (vendor.onTimeDeliveryRate || vendor.performance?.onTimeDelivery || 0), 0) / (totalVendors || 1);
 
     return {
       totalVendors,

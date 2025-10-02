@@ -54,9 +54,38 @@ const CreatePurchaseOrderPage = () => {
   const [currency, setCurrency] = useState('AED');
   const [shippingMethod, setShippingMethod] = useState('sea');
   const [paymentTerms, setPaymentTerms] = useState('net30');
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample vendor data
-  const vendors = [
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [vendorsRes, productsRes] = await Promise.all([
+          fetch('/api/suppliers?limit=100'),
+          fetch('/api/products?limit=100')
+        ]);
+
+        if (vendorsRes.ok) {
+          const vendorsData = await vendorsRes.json();
+          setVendors(vendorsData.suppliers || []);
+        }
+
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          setProducts(productsData.products || []);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Sample vendor data (fallback)
+  const vendorsFallback = [
     {
       id: 1,
       name: 'Al-Rashid Oud Suppliers',
@@ -107,8 +136,8 @@ const CreatePurchaseOrderPage = () => {
     }
   ];
 
-  // Sample products
-  const products = [
+  // Sample products (fallback)
+  const productsFallback = [
     { id: 1, name: 'Premium Cambodian Oud Oil', category: 'Oud Oil', unit: 'ml' },
     { id: 2, name: 'Taif Rose Oil', category: 'Floral Oil', unit: 'ml' },
     { id: 3, name: 'Sandalwood Attar', category: 'Attar', unit: 'ml' },
@@ -116,6 +145,9 @@ const CreatePurchaseOrderPage = () => {
     { id: 5, name: 'Rose Water Premium', category: 'Hydrosol', unit: 'liters' },
     { id: 6, name: 'White Musk Oil', category: 'Musk', unit: 'ml' }
   ];
+
+  const displayVendors = vendors.length > 0 ? vendors : vendorsFallback;
+  const displayProducts = products.length > 0 ? products : productsFallback;
 
   const updateOrderItem = (index, field, value) => {
     const updatedItems = [...orderItems];
