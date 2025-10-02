@@ -38,6 +38,7 @@ import {
   Camera,
   BarChart3,
   TrendingUp,
+  Flower2 as Nose,
   Filter,
   Search,
   Download,
