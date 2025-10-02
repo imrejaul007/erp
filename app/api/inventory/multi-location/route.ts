@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 // Validation schemas
@@ -59,151 +60,102 @@ export async function GET(req: NextRequest) {
     const params = Object.fromEntries(url.searchParams.entries());
     const filters = InventoryFiltersSchema.parse(params);
 
-    // Filter by user's accessible stores if not admin/owner
-    const userStores = session.user.stores || [];
-    const accessibleStores = ['OWNER', 'ADMIN'].includes(userRole) ? null : userStores;
-
-    // TODO: Replace with actual database queries
-    const mockInventories = [
-      {
-        id: '1',
-        storeId: '1',
-        store: {
-          id: '1',
-          name: 'Dubai Mall Store',
-          code: 'DUBOUT001',
-          city: 'Downtown Dubai',
-          emirate: 'DUBAI'
-        },
-        productId: 'prod1',
-        product: {
-          id: 'prod1',
-          name: 'Oud Al Malaki',
-          sku: 'OUD001',
-          category: { id: 'cat1', name: 'Oud' },
-          brand: { id: 'brand1', name: 'Royal Essence' },
-          costPrice: 400,
-          sellingPrice: 600,
-          stockQuantity: 45
-        },
-        quantity: 45,
-        reservedQuantity: 5,
-        availableQuantity: 40,
-        minLevel: 10,
-        maxLevel: 100,
-        reorderPoint: 15,
-        averageCost: 420,
-        lastMovementDate: new Date('2024-09-15'),
-        lastCountDate: new Date('2024-09-01'),
-        status: 'IN_STOCK'
-      },
-      {
-        id: '2',
-        storeId: '1',
-        store: {
-          id: '1',
-          name: 'Dubai Mall Store',
-          code: 'DUBOUT001',
-          city: 'Downtown Dubai',
-          emirate: 'DUBAI'
-        },
-        productId: 'prod2',
-        product: {
-          id: 'prod2',
-          name: 'Rose Perfume',
-          sku: 'ROSE001',
-          category: { id: 'cat2', name: 'Floral' },
-          brand: { id: 'brand1', name: 'Royal Essence' },
-          costPrice: 250,
-          sellingPrice: 400,
-          stockQuantity: 8
-        },
-        quantity: 8,
-        reservedQuantity: 2,
-        availableQuantity: 6,
-        minLevel: 15,
-        maxLevel: 80,
-        reorderPoint: 20,
-        averageCost: 260,
-        lastMovementDate: new Date('2024-09-14'),
-        lastCountDate: new Date('2024-09-01'),
-        status: 'LOW_STOCK'
-      },
-      {
-        id: '3',
-        storeId: '2',
-        store: {
-          id: '2',
-          name: 'Mall of the Emirates',
-          code: 'DUBOUT002',
-          city: 'Al Barsha',
-          emirate: 'DUBAI'
-        },
-        productId: 'prod1',
-        product: {
-          id: 'prod1',
-          name: 'Oud Al Malaki',
-          sku: 'OUD001',
-          category: { id: 'cat1', name: 'Oud' },
-          brand: { id: 'brand1', name: 'Royal Essence' },
-          costPrice: 400,
-          sellingPrice: 600,
-          stockQuantity: 62
-        },
-        quantity: 62,
-        reservedQuantity: 0,
-        availableQuantity: 62,
-        minLevel: 8,
-        maxLevel: 80,
-        reorderPoint: 12,
-        averageCost: 415,
-        lastMovementDate: new Date('2024-09-16'),
-        lastCountDate: new Date('2024-09-01'),
-        status: 'IN_STOCK'
-      },
-      {
-        id: '4',
-        storeId: '2',
-        store: {
-          id: '2',
-          name: 'Mall of the Emirates',
-          code: 'DUBOUT002',
-          city: 'Al Barsha',
-          emirate: 'DUBAI'
-        },
-        productId: 'prod3',
-        product: {
-          id: 'prod3',
-          name: 'Arabian Nights',
-          sku: 'ARAB001',
-          category: { id: 'cat1', name: 'Oud' },
-          brand: { id: 'brand2', name: 'Desert Dreams' },
-          costPrice: 350,
-          sellingPrice: 550,
-          stockQuantity: 0
-        },
-        quantity: 0,
-        reservedQuantity: 0,
-        availableQuantity: 0,
-        minLevel: 5,
-        maxLevel: 50,
-        reorderPoint: 10,
-        averageCost: 365,
-        lastMovementDate: new Date('2024-09-12'),
-        lastCountDate: new Date('2024-09-01'),
-        status: 'OUT_OF_STOCK'
-      }
-    ];
-
-    // Apply filters
-    let filteredInventories = mockInventories;
+    // Build where clause for database query
+    const whereClause: any = {};
 
     // Filter by accessible stores
-    if (accessibleStores) {
-      filteredInventories = filteredInventories.filter(inv =>
-        accessibleStores.includes(inv.storeId)
-      );
+    if (!['OWNER', 'ADMIN'].includes(userRole)) {
+      const userStoreIds = await prisma.userStore.findMany({
+        where: { userId: session.user.id },
+        select: { storeId: true }
+      });
+      whereClause.storeId = { in: userStoreIds.map(us => us.storeId) };
     }
+
+    if (filters.storeId) {
+      whereClause.storeId = filters.storeId;
+    }
+
+    if (filters.productId) {
+      whereClause.productId = filters.productId;
+    }
+
+    // Fetch inventory from database
+    const inventories = await prisma.storeInventory.findMany({
+      where: whereClause,
+      include: {
+        store: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            city: true,
+            emirate: true
+          }
+        },
+        product: {
+          include: {
+            category: {
+              select: { id: true, name: true }
+            },
+            brand: {
+              select: { id: true, name: true }
+            }
+          }
+        }
+      },
+      orderBy: {
+        lastUpdated: 'desc'
+      }
+    });
+
+    // Transform and enrich data
+    let enrichedInventories = inventories.map(inv => {
+      const availableQuantity = inv.quantity - inv.reservedQty;
+      const minLevel = inv.product.minStock || 0;
+      const maxLevel = inv.product.maxStock || null;
+
+      // Determine stock status
+      let status = 'IN_STOCK';
+      if (inv.quantity === 0) {
+        status = 'OUT_OF_STOCK';
+      } else if (inv.quantity <= minLevel) {
+        status = 'LOW_STOCK';
+      } else if (maxLevel && inv.quantity >= maxLevel) {
+        status = 'OVERSTOCK';
+      }
+
+      return {
+        id: inv.id,
+        storeId: inv.storeId,
+        store: inv.store,
+        productId: inv.productId,
+        product: {
+          id: inv.product.id,
+          name: inv.product.name,
+          nameArabic: inv.product.nameArabic,
+          sku: inv.product.sku,
+          category: inv.product.category,
+          brand: inv.product.brand,
+          costPrice: Number(inv.product.costPrice || 0),
+          sellingPrice: Number(inv.product.unitPrice),
+          stockQuantity: inv.quantity
+        },
+        quantity: inv.quantity,
+        reservedQuantity: inv.reservedQty,
+        availableQuantity,
+        minLevel,
+        maxLevel,
+        reorderPoint: minLevel,
+        averageCost: Number(inv.product.costPrice || inv.product.unitPrice),
+        lastMovementDate: inv.lastUpdated,
+        lastCountDate: inv.lastUpdated,
+        status
+      };
+    });
+
+    // Apply additional filters
+    let filteredInventories = enrichedInventories;
 
     if (filters.search) {
       filteredInventories = filteredInventories.filter(inv =>
@@ -211,14 +163,6 @@ export async function GET(req: NextRequest) {
         inv.product.sku.toLowerCase().includes(filters.search!.toLowerCase()) ||
         inv.store.name.toLowerCase().includes(filters.search!.toLowerCase())
       );
-    }
-
-    if (filters.storeId) {
-      filteredInventories = filteredInventories.filter(inv => inv.storeId === filters.storeId);
-    }
-
-    if (filters.productId) {
-      filteredInventories = filteredInventories.filter(inv => inv.productId === filters.productId);
     }
 
     if (filters.categoryId) {
@@ -317,66 +261,214 @@ export async function POST(req: NextRequest) {
         const movementData = StockMovementSchema.parse(data);
 
         // Check store access
-        const userStores = session.user.stores || [];
-        if (!['OWNER', 'ADMIN'].includes(userRole) && !userStores.includes(movementData.storeId)) {
-          return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 });
+        if (!['OWNER', 'ADMIN'].includes(userRole)) {
+          const hasAccess = await prisma.userStore.findFirst({
+            where: {
+              userId: session.user.id,
+              storeId: movementData.storeId
+            }
+          });
+          if (!hasAccess) {
+            return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 });
+          }
         }
 
-        // TODO: Create stock movement record
-        // TODO: Update inventory quantity
-        // TODO: Create audit log
-        // TODO: Check if reorder is needed
-        // TODO: Send notifications if thresholds are crossed
+        // Get or create store inventory record
+        const inventory = await prisma.storeInventory.findUnique({
+          where: {
+            storeId_productId: {
+              storeId: movementData.storeId,
+              productId: movementData.productId
+            }
+          }
+        });
 
-        const movementResult = {
-          id: `movement_${Date.now()}`,
-          ...movementData,
-          userId: session.user.id,
-          createdAt: new Date()
-        };
+        if (!inventory && movementData.type === 'OUT') {
+          return NextResponse.json({ error: 'Product not found in store inventory' }, { status: 400 });
+        }
 
-        return NextResponse.json(movementResult, { status: 201 });
+        // Calculate new quantity based on movement type
+        const currentQty = inventory?.quantity || 0;
+        let newQty = currentQty;
+
+        switch (movementData.type) {
+          case 'IN':
+          case 'RETURN':
+            newQty = currentQty + movementData.quantity;
+            break;
+          case 'OUT':
+          case 'DAMAGE':
+            newQty = currentQty - movementData.quantity;
+            if (newQty < 0) {
+              return NextResponse.json({ error: 'Insufficient stock' }, { status: 400 });
+            }
+            break;
+          case 'ADJUSTMENT':
+          case 'COUNT':
+            newQty = movementData.quantity;
+            break;
+        }
+
+        // Update inventory in transaction
+        const result = await prisma.$transaction(async (tx) => {
+          // Update or create store inventory
+          const updatedInventory = await tx.storeInventory.upsert({
+            where: {
+              storeId_productId: {
+                storeId: movementData.storeId,
+                productId: movementData.productId
+              }
+            },
+            update: {
+              quantity: newQty,
+              lastUpdated: new Date()
+            },
+            create: {
+              storeId: movementData.storeId,
+              productId: movementData.productId,
+              quantity: newQty,
+              reservedQty: 0
+            }
+          });
+
+          // Create stock movement record
+          const movement = await tx.stockMovement.create({
+            data: {
+              storeId: movementData.storeId,
+              productId: movementData.productId,
+              type: movementData.type,
+              quantity: movementData.quantity,
+              referenceNo: movementData.reference || `MOV-${Date.now()}`,
+              reason: movementData.reason,
+              notes: movementData.notes,
+              createdById: session.user.id
+            }
+          });
+
+          return { inventory: updatedInventory, movement };
+        });
+
+        return NextResponse.json(result, { status: 201 });
 
       case 'bulk_update':
         const updates = z.array(StockUpdateSchema).parse(data);
 
         // Check store access for all updates
         const allStoreIds = [...new Set(updates.map(u => u.storeId))];
-        const accessibleStores = ['OWNER', 'ADMIN'].includes(userRole) ?
-          allStoreIds :
-          allStoreIds.filter(id => userStores.includes(id));
 
-        if (accessibleStores.length !== allStoreIds.length) {
-          return NextResponse.json({ error: 'Access denied to some stores' }, { status: 403 });
+        if (!['OWNER', 'ADMIN'].includes(userRole)) {
+          const userStoreAccess = await prisma.userStore.findMany({
+            where: {
+              userId: session.user.id,
+              storeId: { in: allStoreIds }
+            },
+            select: { storeId: true }
+          });
+          const accessibleStoreIds = userStoreAccess.map(us => us.storeId);
+
+          if (accessibleStoreIds.length !== allStoreIds.length) {
+            return NextResponse.json({ error: 'Access denied to some stores' }, { status: 403 });
+          }
         }
 
-        // TODO: Implement bulk update logic
-        const bulkResults = updates.map((update, index) => ({
-          index,
-          success: true,
-          message: 'Inventory updated successfully'
-        }));
+        // Bulk update inventory
+        const bulkResults = await Promise.all(
+          updates.map(async (update, index) => {
+            try {
+              await prisma.storeInventory.upsert({
+                where: {
+                  storeId_productId: {
+                    storeId: update.storeId,
+                    productId: update.productId
+                  }
+                },
+                update: {
+                  quantity: update.quantity,
+                  lastUpdated: new Date()
+                },
+                create: {
+                  storeId: update.storeId,
+                  productId: update.productId,
+                  quantity: update.quantity,
+                  reservedQty: 0
+                }
+              });
+
+              // Update product min/max stock if provided
+              if (update.minLevel !== undefined || update.maxLevel !== undefined) {
+                await prisma.product.update({
+                  where: { id: update.productId },
+                  data: {
+                    ...(update.minLevel !== undefined && { minStock: update.minLevel }),
+                    ...(update.maxLevel !== undefined && { maxStock: update.maxLevel })
+                  }
+                });
+              }
+
+              return {
+                index,
+                success: true,
+                message: 'Inventory updated successfully'
+              };
+            } catch (error) {
+              return {
+                index,
+                success: false,
+                message: error instanceof Error ? error.message : 'Update failed'
+              };
+            }
+          })
+        );
 
         return NextResponse.json({
-          message: `${updates.length} inventory records updated`,
+          message: `${bulkResults.filter(r => r.success).length}/${updates.length} inventory records updated`,
           results: bulkResults
         });
 
       case 'reorder_suggestions':
-        // TODO: Generate reorder suggestions based on stock levels
-        const suggestions = [
-          {
-            storeId: '1',
-            storeName: 'Dubai Mall Store',
-            productId: 'prod2',
-            productName: 'Rose Perfume',
-            currentStock: 8,
-            suggestedQuantity: 25,
-            priority: 'HIGH',
-            reason: 'Stock below reorder point',
-            estimatedCost: 6250
+        // Generate reorder suggestions based on stock levels
+        const lowStockItems = await prisma.storeInventory.findMany({
+          where: {
+            quantity: {
+              lte: prisma.raw(`(SELECT "minStock" FROM "products" WHERE id = "store_inventory"."productId")`)
+            }
+          },
+          include: {
+            store: {
+              select: {
+                id: true,
+                name: true
+              }
+            },
+            product: {
+              select: {
+                id: true,
+                name: true,
+                minStock: true,
+                maxStock: true,
+                costPrice: true
+              }
+            }
           }
-        ];
+        });
+
+        const suggestions = lowStockItems.map(item => {
+          const suggestedQty = (item.product.maxStock || item.product.minStock * 2) - item.quantity;
+          const estimatedCost = Number(item.product.costPrice || 0) * suggestedQty;
+
+          return {
+            storeId: item.storeId,
+            storeName: item.store.name,
+            productId: item.productId,
+            productName: item.product.name,
+            currentStock: item.quantity,
+            minStock: item.product.minStock,
+            suggestedQuantity: suggestedQty,
+            priority: item.quantity === 0 ? 'CRITICAL' : item.quantity < item.product.minStock / 2 ? 'HIGH' : 'MEDIUM',
+            reason: item.quantity === 0 ? 'Out of stock' : 'Stock below minimum level',
+            estimatedCost
+          };
+        });
 
         return NextResponse.json({ suggestions });
 
