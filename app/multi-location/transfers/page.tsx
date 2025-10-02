@@ -39,7 +39,8 @@ import {
   FileText,
   Barcode,
   Users,
-  DollarSign
+  DollarSign,
+  BarChart3
 } from 'lucide-react';
 
 const TransfersPage = () => {

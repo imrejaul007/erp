@@ -48,6 +48,7 @@ import {
   Beaker,
   FlaskConical,
   Crown,
+  FileText,
   Diamond,
   Layers,
   Package,
