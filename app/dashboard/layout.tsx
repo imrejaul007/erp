@@ -32,18 +32,15 @@ export default function DashboardLayout({
       <div
         className={cn(
           'transition-all duration-300 ease-in-out',
-          isOpen
-            ? isCollapsed
-              ? 'lg:ml-16'
-              : 'lg:ml-64'
-            : 'ml-0'
+          // Only add margin on desktop when sidebar is visible
+          isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
         )}
       >
         {/* Header */}
         <Header />
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-2 sm:p-4 md:p-6">
           <div className="mx-auto max-w-7xl">
             {children}
           </div>

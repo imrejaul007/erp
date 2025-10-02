@@ -364,7 +364,10 @@ export function Sidebar() {
 
       <div
         className={cn(
-          'fixed left-0 top-0 z-50 h-full bg-white border-r border-gray-200 shadow-lg transition-all duration-300 ease-in-out',
+          'fixed top-0 z-50 h-full bg-white border-r border-gray-200 shadow-lg transition-all duration-300 ease-in-out',
+          // Mobile: slide in/out from left
+          isOpen ? 'left-0' : '-left-64 lg:left-0',
+          // Desktop: always visible, just collapse/expand
           isCollapsed ? 'w-16' : 'w-64'
         )}
       >

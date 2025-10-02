@@ -237,15 +237,15 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Dashboard Content */}
-      <div className="p-6 space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
-          <h2 className="text-2xl font-bold mb-2">Welcome back! 👋</h2>
-          <p className="opacity-90">Here's what's happening with your business today</p>
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">Welcome back! 👋</h2>
+          <p className="text-sm sm:text-base opacity-90">Here's what's happening with your business today</p>
         </div>
 
         {/* KPI Cards Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
           {/* Today's Sales */}
           <Card
             className="cursor-pointer hover:bg-blue-50 transition-colors group"
