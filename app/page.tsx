@@ -18,18 +18,26 @@ import {
 
 export default function HomePage() {
   const { data: session, status } = useSession();
+  const [showContent, setShowContent] = React.useState(false);
+
+  // Show content after 2 seconds even if loading
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowContent(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Redirect authenticated users to dashboard
-  if (status === 'loading') {
+  if (session) {
+    redirect('/dashboard');
+  }
+
+  // Show loading only briefly
+  if (status === 'loading' && !showContent) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-oud-50 to-amber-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-oud-500"></div>
       </div>
     );
-  }
-
-  if (session) {
-    redirect('/dashboard');
   }
 
   const features = [
