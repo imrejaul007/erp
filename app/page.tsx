@@ -113,7 +113,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="luxury" asChild>
-              <Link href="/auth/signup">
+              <Link href="/auth/signup" className="flex items-center">
                 Start Your Free Trial
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
