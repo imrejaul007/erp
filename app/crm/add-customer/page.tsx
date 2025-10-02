@@ -191,7 +191,7 @@ export default function AddCustomerPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/crm/customers', {
+      const response = await fetch('/api/customers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -201,10 +201,11 @@ export default function AddCustomerPage() {
 
       if (response.ok) {
         const customer = await response.json();
-        router.push(`/crm/customers/${customer.id}`);
+        alert(`Customer "${customer.name}" created successfully!`);
+        router.push(`/crm`);
       } else {
         const error = await response.json();
-        setErrors({ submit: error.message || 'Failed to create customer' });
+        alert(`Error: ${error.error || 'Failed to create customer'}`);
       }
     } catch (error) {
       setErrors({ submit: 'Network error. Please try again.' });

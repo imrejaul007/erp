@@ -114,7 +114,7 @@ export default function CRMDashboard() {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch('/api/crm/customers');
+      const response = await fetch('/api/customers');
       if (response.ok) {
         const data = await response.json();
         setCustomers(data.customers || []);
