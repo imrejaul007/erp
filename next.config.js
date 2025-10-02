@@ -1,3 +1,4 @@
+// Force rebuild - cache bust v2
 const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
