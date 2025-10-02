@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   Plus,
   Save,
@@ -28,6 +29,7 @@ import {
   Info,
   Calculator,
   Barcode,
+  Hash,
   Tags,
   MapPin,
   Calendar,
@@ -366,6 +368,47 @@ export default function AddProductPage() {
     return `${category}-${size}${unit}-${random}`;
   };
 
+  const generateBarcode = (type: 'EAN13' | 'UPC' | 'CODE128' = 'EAN13') => {
+    if (type === 'EAN13') {
+      // Generate EAN-13 barcode (13 digits)
+      // Country code (first 3 digits) - 784 for UAE
+      const countryCode = '784';
+      // Manufacturer code (next 4-6 digits)
+      const manufacturerCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      // Product code (next 3-5 digits)
+      const productCode = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
+      // Calculate check digit
+      const digits = (countryCode + manufacturerCode + productCode).split('').map(Number);
+      let sum = 0;
+      for (let i = 0; i < digits.length; i++) {
+        sum += digits[i] * (i % 2 === 0 ? 1 : 3);
+      }
+      const checkDigit = (10 - (sum % 10)) % 10;
+
+      return countryCode + manufacturerCode + productCode + checkDigit;
+    } else if (type === 'UPC') {
+      // Generate UPC-A barcode (12 digits)
+      const manufacturerCode = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+      const productCode = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+
+      const digits = (manufacturerCode + productCode).split('').map(Number);
+      let sum = 0;
+      for (let i = 0; i < digits.length; i++) {
+        sum += digits[i] * (i % 2 === 0 ? 3 : 1);
+      }
+      const checkDigit = (10 - (sum % 10)) % 10;
+
+      return manufacturerCode + productCode + checkDigit;
+    } else {
+      // CODE128 - alphanumeric
+      const prefix = 'OUD';
+      const timestamp = Date.now().toString().slice(-8);
+      const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+      return `${prefix}${timestamp}${random}`;
+    }
+  };
+
   const calculatePricing = () => {
     const basePrice = formData.costPerUnit;
     const markup = formData.grade === 'PREMIUM' ? 2.5 :
@@ -500,6 +543,7 @@ export default function AddProductPage() {
           name: formData.name,
           nameArabic: formData.nameArabic,
           sku: formData.sku || `SKU-${Date.now()}`,
+          barcode: formData.barcode || null,
           categoryId: categoryId,
           brandId: brandId,
           description: formData.description,
@@ -1148,12 +1192,38 @@ export default function AddProductPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="barcode">Barcode</Label>
-                <Input
-                  id="barcode"
-                  value={formData.barcode}
-                  onChange={(e) => handleInputChange('barcode', e.target.value)}
-                  placeholder="Product barcode"
-                />
+                <div className="flex space-x-2">
+                  <Input
+                    id="barcode"
+                    value={formData.barcode}
+                    onChange={(e) => handleInputChange('barcode', e.target.value)}
+                    placeholder="Product barcode (manual or auto-generate)"
+                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <Calculator className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleInputChange('barcode', generateBarcode('EAN13'))}>
+                        <Barcode className="h-4 w-4 mr-2" />
+                        Generate EAN-13 (UAE)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleInputChange('barcode', generateBarcode('UPC'))}>
+                        <Barcode className="h-4 w-4 mr-2" />
+                        Generate UPC-A
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleInputChange('barcode', generateBarcode('CODE128'))}>
+                        <Hash className="h-4 w-4 mr-2" />
+                        Generate CODE128
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Click the calculator button to auto-generate a barcode
+                </p>
               </div>
             </div>
 
