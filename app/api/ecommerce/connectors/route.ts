@@ -409,6 +409,7 @@ class ShopifyConnector {
         results.updated++;
       } catch (error) {
         results.errors.push({
+          type: 'inventory_sync_error',
           itemId: update.sku,
           message: error instanceof Error ? error.message : 'Unknown error'
         });
