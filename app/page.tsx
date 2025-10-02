@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
@@ -18,10 +19,10 @@ import {
 
 export default function HomePage() {
   const { data: session, status } = useSession();
-  const [showContent, setShowContent] = React.useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   // Show content after 2 seconds even if loading
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 2000);
     return () => clearTimeout(timer);
   }, []);
