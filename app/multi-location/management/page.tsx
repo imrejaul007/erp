@@ -44,10 +44,12 @@ import {
   Search,
   Download,
   Upload,
-  Sync,
+  RefreshCw,
   Lock,
   Unlock
 } from 'lucide-react';
+
+const Sync = RefreshCw; // Alias for backward compatibility
 
 const MultiLocationManagement = () => {
   const [selectedLocation, setSelectedLocation] = useState('all');

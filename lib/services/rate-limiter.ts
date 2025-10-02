@@ -1,5 +1,4 @@
-import { Redis } from '@upstash/redis';
-
+// In-memory rate limiter (for development - use Redis in production)
 interface RateLimitConfig {
   requests: number;
   window: number; // in seconds
@@ -13,15 +12,12 @@ const RATE_LIMITS: Record<string, RateLimitConfig> = {
   default: { requests: 200, window: 3600 } // Default: 200 requests per hour
 };
 
-export class RateLimiter {
-  private redis: Redis;
+// In-memory store for rate limiting
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
+export class RateLimiter {
   constructor() {
-    // Initialize Redis connection for rate limiting
-    this.redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL || 'redis://localhost:6379',
-      token: process.env.UPSTASH_REDIS_REST_TOKEN || ''
-    });
+    // In-memory rate limiter (upgrade to Redis for production)
   }
 
   async checkLimit(
@@ -31,30 +27,28 @@ export class RateLimiter {
   ): Promise<boolean> {
     try {
       const config = customLimit || RATE_LIMITS[operation] || RATE_LIMITS.default;
-      const key = `rate_limit:${userId}:${operation}`;
-      const now = Math.floor(Date.now() / 1000);
-      const window = config.window;
-      const limit = config.requests;
+      const key = `${userId}:${operation}`;
+      const now = Date.now();
+      const resetTime = now + config.window * 1000;
 
-      // Use Redis sliding window log
-      const pipeline = this.redis.pipeline();
+      // Get or create rate limit entry
+      const entry = rateLimitStore.get(key);
 
-      // Remove old entries
-      pipeline.zremrangebyscore(key, 0, now - window);
+      // Reset if window has passed
+      if (!entry || now > entry.resetTime) {
+        rateLimitStore.set(key, { count: 1, resetTime });
+        return true;
+      }
 
-      // Count current entries
-      pipeline.zcard(key);
+      // Check if limit exceeded
+      if (entry.count >= config.requests) {
+        return false;
+      }
 
-      // Add current request
-      pipeline.zadd(key, now, `${now}-${Math.random()}`);
-
-      // Set expiration
-      pipeline.expire(key, window);
-
-      const results = await pipeline.exec();
-      const currentCount = results[1] as number;
-
-      return currentCount < limit;
+      // Increment count
+      entry.count++;
+      rateLimitStore.set(key, entry);
+      return true;
     } catch (error) {
       console.error('Rate limiter error:', error);
       // Fail open - allow request if rate limiter fails
@@ -68,18 +62,23 @@ export class RateLimiter {
   ): Promise<{ remaining: number; resetTime: number }> {
     try {
       const config = RATE_LIMITS[operation] || RATE_LIMITS.default;
-      const key = `rate_limit:${userId}:${operation}`;
-      const now = Math.floor(Date.now() / 1000);
-      const window = config.window;
-      const limit = config.requests;
+      const key = `${userId}:${operation}`;
+      const now = Date.now();
 
-      // Remove old entries and count current
-      await this.redis.zremrangebyscore(key, 0, now - window);
-      const currentCount = await this.redis.zcard(key);
+      const entry = rateLimitStore.get(key);
+
+      if (!entry || now > entry.resetTime) {
+        return {
+          remaining: config.requests,
+          resetTime: now + config.window * 1000,
+        };
+      }
+
+      const currentCount = entry.count;
 
       return {
-        remaining: Math.max(0, limit - currentCount),
-        resetTime: now + window
+        remaining: Math.max(0, config.requests - currentCount),
+        resetTime: entry.resetTime
       };
     } catch (error) {
       console.error('Rate limiter status error:', error);

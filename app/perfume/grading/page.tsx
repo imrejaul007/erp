@@ -22,7 +22,7 @@ import {
   Diamond,
   Zap,
   Eye,
-  Nose,
+  Flower2,
   Thermometer,
   Droplets,
   Clock,

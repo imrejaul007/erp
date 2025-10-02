@@ -295,7 +295,7 @@ function generateId(): string {
 }
 
 // Helper function to log VAT transaction changes
-export async function logVATChange(
+async function logVATChange(
   vatTransactionId: string,
   action: string,
   oldValue: any,

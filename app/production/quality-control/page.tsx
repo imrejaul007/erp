@@ -567,38 +567,53 @@ export default function QualityControlPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredQualityRecords.map((record) => (
-                      <TableRow key={record.id}>
-                        <TableCell className="font-medium">{record.id}</TableCell>
-                        <TableCell>{record.batchId}</TableCell>
-                        <TableCell>{record.product}</TableCell>
-                        <TableCell>{record.stage}</TableCell>
-                        <TableCell>{record.inspector}</TableCell>
+                      <TableRow
+                        key={record.id}
+                        className="cursor-pointer hover:bg-blue-50 transition-colors group"
+                        onClick={() => handleViewQualityRecord(record)}
+                      >
+                        <TableCell className="font-medium text-gray-900 group-hover:text-gray-900">{record.id}</TableCell>
+                        <TableCell className="text-gray-900 group-hover:text-gray-900">{record.batchId}</TableCell>
+                        <TableCell className="text-gray-900 group-hover:text-gray-900">{record.product}</TableCell>
+                        <TableCell className="text-gray-900 group-hover:text-gray-900">{record.stage}</TableCell>
+                        <TableCell className="text-gray-900 group-hover:text-gray-900">{record.inspector}</TableCell>
                         <TableCell>{getStatusBadge(record.status)}</TableCell>
                         <TableCell>{getGradeBadge(record.overallGrade)}</TableCell>
                         <TableCell>
                           {record.overallScore > 0 ? (
                             <div className="flex items-center gap-2">
                               <Progress value={record.overallScore * 10} className="w-16" />
-                              <span className="text-sm">{record.overallScore.toFixed(1)}</span>
+                              <span className="text-sm text-gray-900 group-hover:text-gray-900">{record.overallScore.toFixed(1)}</span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">Pending</span>
+                            <span className="text-gray-600 group-hover:text-gray-700">Pending</span>
                           )}
                         </TableCell>
-                        <TableCell>{record.testDate}</TableCell>
+                        <TableCell className="text-gray-900 group-hover:text-gray-900">{record.testDate}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleViewQualityRecord(record)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewQualityRecord(record);
+                              }}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <FileCheck className="h-4 w-4" />
                             </Button>
                           </div>

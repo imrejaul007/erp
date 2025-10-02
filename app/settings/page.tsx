@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,14 +38,18 @@ import {
   Edit,
   Plus,
   Save,
-  RefreshCw
+  RefreshCw,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 
 const SettingsPage = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('general');
+  const [saveStatus, setSaveStatus] = useState('');
 
-  // Sample settings data
-  const generalSettings = {
+  // Sample settings data with state management
+  const [generalSettings, setGeneralSettings] = useState({
     companyName: 'Oud Palace UAE',
     businessType: 'Perfume & Oud Retail',
     taxNumber: 'TRN-100123456789',
@@ -53,6 +59,33 @@ const SettingsPage = () => {
     secondaryLanguage: 'Arabic',
     vatRate: 5,
     fiscalYearStart: 'January'
+  });
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('generalSettings');
+    if (savedSettings) {
+      try {
+        setGeneralSettings(JSON.parse(savedSettings));
+      } catch (e) {
+        console.error('Failed to load settings:', e);
+      }
+    }
+  }, []);
+
+  const handleGeneralSettingChange = (field: string, value: any) => {
+    setGeneralSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveSettings = () => {
+    try {
+      localStorage.setItem('generalSettings', JSON.stringify(generalSettings));
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (e) {
+      console.error('Failed to save settings:', e);
+      setSaveStatus('error');
+    }
   };
 
   const systemSettings = {
@@ -183,9 +216,9 @@ const SettingsPage = () => {
             <Download className="h-4 w-4 mr-2" />
             Export Settings
           </Button>
-          <Button>
+          <Button onClick={handleSaveSettings}>
             <Save className="h-4 w-4 mr-2" />
-            Save Changes
+            {saveStatus === 'saved' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
           </Button>
         </div>
       </div>
@@ -230,23 +263,39 @@ const SettingsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">Company Name</label>
-                  <Input value={generalSettings.companyName} />
+                  <Input
+                    value={generalSettings.companyName}
+                    onChange={(e) => handleGeneralSettingChange('companyName', e.target.value)}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Business Type</label>
-                  <Input value={generalSettings.businessType} />
+                  <Input
+                    value={generalSettings.businessType}
+                    onChange={(e) => handleGeneralSettingChange('businessType', e.target.value)}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Tax Registration Number</label>
-                  <Input value={generalSettings.taxNumber} />
+                  <Input
+                    value={generalSettings.taxNumber}
+                    onChange={(e) => handleGeneralSettingChange('taxNumber', e.target.value)}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">VAT Rate (%)</label>
-                  <Input type="number" value={generalSettings.vatRate} />
+                  <Input
+                    type="number"
+                    value={generalSettings.vatRate}
+                    onChange={(e) => handleGeneralSettingChange('vatRate', Number(e.target.value))}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Primary Currency</label>
-                  <Select value={generalSettings.currency}>
+                  <Select
+                    value={generalSettings.currency}
+                    onValueChange={(value) => handleGeneralSettingChange('currency', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -259,7 +308,10 @@ const SettingsPage = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Timezone</label>
-                  <Select value={generalSettings.timezone}>
+                  <Select
+                    value={generalSettings.timezone}
+                    onValueChange={(value) => handleGeneralSettingChange('timezone', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -283,7 +335,10 @@ const SettingsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium">Primary Language</label>
-                  <Select value={generalSettings.language}>
+                  <Select
+                    value={generalSettings.language}
+                    onValueChange={(value) => handleGeneralSettingChange('language', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -295,7 +350,10 @@ const SettingsPage = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Secondary Language</label>
-                  <Select value={generalSettings.secondaryLanguage}>
+                  <Select
+                    value={generalSettings.secondaryLanguage}
+                    onValueChange={(value) => handleGeneralSettingChange('secondaryLanguage', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -306,6 +364,33 @@ const SettingsPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="cursor-pointer hover-dark transition-all"
+            onClick={() => router.push('/settings/theme')}
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5 text-blue-600" />
+                Theme Customization
+                <Sparkles className="h-4 w-4 text-yellow-500 ml-auto" />
+              </CardTitle>
+              <CardDescription>
+                Customize colors and appearance for each page and section
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Personalize your dashboard with custom themes, preset options, and dark mode
+                </div>
+                <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                  Configure Theme
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </CardContent>
           </Card>

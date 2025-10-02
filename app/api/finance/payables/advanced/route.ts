@@ -256,13 +256,17 @@ export async function PUT(request: NextRequest) {
     const action = body.action;
 
     if (action === 'batch_payment') {
-      return await processBatchPayment(body.data, session.user.id);
+      const result = await processBatchPayment(body.data, session.user.id);
+      return NextResponse.json(result);
     } else if (action === 'update_payment_terms') {
-      return await updatePaymentTerms(body.data, session.user.id);
+      const result = await updatePaymentTerms(body.data, session.user.id);
+      return NextResponse.json(result);
     } else if (action === 'approve_invoice') {
-      return await approveInvoice(body.invoiceId, session.user.id);
+      const result = await approveInvoice(body.invoiceId, session.user.id);
+      return NextResponse.json(result);
     } else if (action === 'optimize_payments') {
-      return await optimizePaymentSchedule(body.currency || 'AED');
+      const result = await optimizePaymentSchedule(body.currency || 'AED');
+      return NextResponse.json(result);
     }
 
     return NextResponse.json(

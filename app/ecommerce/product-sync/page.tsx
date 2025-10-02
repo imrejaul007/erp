@@ -17,7 +17,6 @@ import {
   RefreshCw,
   Upload,
   Download,
-  Sync,
   Globe,
   ShoppingCart,
   Instagram,
@@ -43,6 +42,8 @@ import {
   Target,
   Zap
 } from 'lucide-react';
+
+const Sync = RefreshCw; // Alias for backward compatibility
 
 const ProductSyncPage = () => {
   const [selectedChannel, setSelectedChannel] = useState('all');

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react';
 
 export default function FinancePage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPeriod, setFilterPeriod] = useState('monthly');
 
@@ -192,11 +194,11 @@ export default function FinancePage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => router.push('/finance/reports')}>
             <FileText className="h-4 w-4" />
             Generate Report
           </Button>
-          <Button className="gap-2 bg-amber-600 hover:bg-amber-700">
+          <Button className="gap-2 bg-amber-600 hover:bg-amber-700" onClick={() => router.push('/finance/add-transaction')}>
             <Plus className="h-4 w-4" />
             Add Transaction
           </Button>
@@ -251,6 +253,51 @@ export default function FinancePage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card className="cursor-pointer hover:shadow-md transition-all border-amber-100" onClick={() => router.push('/finance/add-transaction')}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-amber-100 p-3 rounded-lg">
+                    <Plus className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Add Transaction</h3>
+                    <p className="text-sm text-muted-foreground">Record income or expense</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-md transition-all border-amber-100" onClick={() => router.push('/finance/bank-accounts')}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-3 rounded-lg">
+                    <CreditCard className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Bank Accounts</h3>
+                    <p className="text-sm text-muted-foreground">Manage bank accounts</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:shadow-md transition-all border-amber-100" onClick={() => router.push('/finance/reports')}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-100 p-3 rounded-lg">
+                    <FileText className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Financial Reports</h3>
+                    <p className="text-sm text-muted-foreground">Generate reports</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="border-amber-100">
               <CardHeader>

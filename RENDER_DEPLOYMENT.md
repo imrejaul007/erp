@@ -146,13 +146,14 @@ If you prefer manual setup:
 
 | Item | Details |
 |------|---------|
-| **Database** | PostgreSQL with all tables |
+| **Database** | PostgreSQL with all tables including Sampling System |
 | **Admin User** | Email: admin@oudperfume.ae, Password: admin123 |
 | **Stores** | Main Store - Dubai, Main Warehouse |
 | **Products** | Luxury Oud Perfume, Rose Attar |
 | **Raw Materials** | Oud Oil, Rose Oil, Perfumer Alcohol |
 | **Roles** | Admin, Manager, Sales, Inventory |
 | **Branding** | Default company branding configured |
+| **Sampling Tables** | Sessions, Products, Tester Stock, Refills |
 
 ---
 
@@ -201,6 +202,40 @@ Since file upload isn't built-in yet, use:
 - **Customers:** `/crm/add-customer`
 - **Suppliers:** `/purchasing/vendor-management`
 - **Stores:** `/settings/stores`
+
+### 5. Set Up Sampling System
+
+The Sampling & Trial Management System is now fully integrated:
+
+**Access the module:**
+```
+https://your-app.onrender.com/sampling
+```
+
+**Initial Setup:**
+1. **Add Tester Stock:**
+   - Go to "Tester Stock" tab
+   - Click "Refill Stock" for each product
+   - Set source (Main Inventory or Purchase)
+   - Set minimum stock levels for alerts
+
+2. **Create First Session:**
+   - Click "New Session" button
+   - Add customer details (or mark anonymous)
+   - Search and add products to test
+   - Record quantities used
+   - Mark outcome (purchased/not purchased)
+   - If not purchased, select reason
+   - Save session
+
+3. **Features Ready to Use:**
+   - ✅ Session tracking with automatic tester deduction
+   - ✅ Customer conversion analytics
+   - ✅ Lost sale analysis with reasons
+   - ✅ Staff performance metrics
+   - ✅ ROI calculations
+   - ✅ Tester stock management
+   - ✅ Low stock alerts
 
 ---
 

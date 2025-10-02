@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ import {
 } from 'lucide-react';
 
 const PurchasingPage = () => {
+  const router = useRouter();
   const [selectedTimeRange, setSelectedTimeRange] = useState('thisMonth');
 
   // Sample data
@@ -158,15 +160,15 @@ const PurchasingPage = () => {
           <p className="text-gray-600">Manage suppliers, purchase orders, and vendor relationships</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => router.push('/purchasing/reports')}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button>
+          <Button onClick={() => router.push('/purchasing/create-order')}>
             <Plus className="h-4 w-4 mr-2" />
             New Purchase Order
           </Button>
@@ -305,10 +307,10 @@ const PurchasingPage = () => {
                   <TableCell>{order.expectedDelivery}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => alert(`View order ${order.id}`)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => router.push(`/purchasing/create-order?edit=${order.id}`)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                     </div>
@@ -365,10 +367,10 @@ const PurchasingPage = () => {
                     <div className="text-xs text-gray-500">On Time</div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => router.push('/purchasing/vendor-management')}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => router.push('/purchasing/invoices')}>
                       <FileText className="h-4 w-4" />
                     </Button>
                   </div>
@@ -381,7 +383,7 @@ const PurchasingPage = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/purchasing/vendor-management')}>
           <CardContent className="p-6 text-center">
             <Building className="h-12 w-12 mx-auto mb-4 text-blue-600" />
             <h3 className="font-medium mb-2">Vendor Management</h3>
@@ -389,7 +391,7 @@ const PurchasingPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/purchasing/import-tracking')}>
           <CardContent className="p-6 text-center">
             <Plane className="h-12 w-12 mx-auto mb-4 text-green-600" />
             <h3 className="font-medium mb-2">Import Tracking</h3>
@@ -397,7 +399,7 @@ const PurchasingPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/purchasing/reports')}>
           <CardContent className="p-6 text-center">
             <BarChart3 className="h-12 w-12 mx-auto mb-4 text-purple-600" />
             <h3 className="font-medium mb-2">Performance Reports</h3>

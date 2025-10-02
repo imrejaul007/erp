@@ -1,567 +1,636 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search, Filter, Calendar, ChefHat, Beaker, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { DatePicker } from '@/components/ui/date-picker';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-
-// Mock data for production batches
-const productionBatches = [
-  {
-    id: 'PB001',
-    product: 'Royal Oud Premium',
-    recipe: 'RCP-001',
-    quantity: 100,
-    unit: 'bottles',
-    status: 'In Progress',
-    progress: 75,
-    startDate: '2024-09-25',
-    expectedCompletion: '2024-10-02',
-    operator: 'Ahmed Al-Rashid',
-    priority: 'High',
-    qualityCheck: 'Pending',
-  },
-  {
-    id: 'PB002',
-    product: 'Amber Essence Deluxe',
-    recipe: 'RCP-002',
-    quantity: 50,
-    unit: 'bottles',
-    status: 'Completed',
-    progress: 100,
-    startDate: '2024-09-20',
-    expectedCompletion: '2024-09-28',
-    operator: 'Fatima Hassan',
-    priority: 'Medium',
-    qualityCheck: 'Passed',
-  },
-  {
-    id: 'PB003',
-    product: 'Sandalwood Collection',
-    recipe: 'RCP-003',
-    quantity: 75,
-    unit: 'bottles',
-    status: 'Planning',
-    progress: 0,
-    startDate: '2024-10-05',
-    expectedCompletion: '2024-10-12',
-    operator: 'Mohammed Saeed',
-    priority: 'Low',
-    qualityCheck: 'Not Started',
-  },
-];
-
-// Mock recipes data
-const recipes = [
-  {
-    id: 'RCP-001',
-    name: 'Royal Oud Premium',
-    category: 'Oud',
-    version: '1.2',
-    ingredients: [
-      { name: 'Oud Oil', quantity: 15, unit: 'ml' },
-      { name: 'Rose Water', quantity: 5, unit: 'ml' },
-      { name: 'Sandalwood Extract', quantity: 10, unit: 'ml' },
-      { name: 'Carrier Oil', quantity: 70, unit: 'ml' },
-    ],
-    instructions: [
-      'Heat carrier oil to 60°C',
-      'Add oud oil slowly while stirring',
-      'Incorporate rose water gradually',
-      'Add sandalwood extract',
-      'Cool to room temperature',
-      'Filter and bottle',
-    ],
-    yield: 100,
-    batchTime: '4 hours',
-    status: 'Active',
-  },
-  {
-    id: 'RCP-002',
-    name: 'Amber Essence Deluxe',
-    category: 'Amber',
-    version: '2.0',
-    ingredients: [
-      { name: 'Amber Resin', quantity: 20, unit: 'g' },
-      { name: 'Jojoba Oil', quantity: 80, unit: 'ml' },
-      { name: 'Vitamin E', quantity: 2, unit: 'ml' },
-    ],
-    yield: 50,
-    batchTime: '6 hours',
-    status: 'Active',
-  },
-];
-
-const getStatusBadge = (status: string) => {
-  const variants: { [key: string]: 'default' | 'secondary' | 'destructive' | 'outline' } = {
-    'Planning': 'outline',
-    'In Progress': 'default',
-    'Completed': 'secondary',
-    'On Hold': 'destructive',
-  };
-  return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
-};
-
-const getPriorityBadge = (priority: string) => {
-  const colors: { [key: string]: string } = {
-    'High': 'bg-red-500 text-white',
-    'Medium': 'bg-yellow-500 text-white',
-    'Low': 'bg-green-500 text-white',
-  };
-  return <Badge className={colors[priority] || 'bg-gray-500 text-white'}>{priority}</Badge>;
-};
-
-const getQualityBadge = (status: string) => {
-  const variants: { [key: string]: React.ReactNode } = {
-    'Passed': <Badge className="bg-green-500 text-white"><CheckCircle className="w-3 h-3 mr-1" />Passed</Badge>,
-    'Failed': <Badge className="bg-red-500 text-white"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>,
-    'Pending': <Badge className="bg-yellow-500 text-white"><AlertTriangle className="w-3 h-3 mr-1" />Pending</Badge>,
-    'Not Started': <Badge variant="outline">Not Started</Badge>,
-  };
-  return variants[status] || <Badge variant="outline">{status}</Badge>;
-};
+import {
+  Factory, Droplets, FlaskConical, Package, ClipboardCheck, GitBranch,
+  DollarSign, Weight, ArrowLeft, TrendingUp, Target,
+  CheckCircle2, Activity, Clock, Boxes
+} from 'lucide-react';
 
 export default function ProductionPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [isNewBatchDialogOpen, setIsNewBatchDialogOpen] = useState(false);
-  const [isNewRecipeDialogOpen, setIsNewRecipeDialogOpen] = useState(false);
+  const router = useRouter();
+  const [selectedTab, setSelectedTab] = useState('overview');
 
-  const filteredBatches = productionBatches.filter(batch => {
-    const matchesSearch = batch.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         batch.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || batch.status.toLowerCase() === filterStatus.toLowerCase();
-    return matchesSearch && matchesStatus;
-  });
+  const productionSummary = {
+    activeBatches: 28,
+    completedToday: 12,
+    rawMaterialStock: 2450, // kg
+    oilExtracted: 145, // ml this month
+    perfectsBlended: 850, // units
+    yieldRate: 94.5,
+    qcPassRate: 96.8,
+    productionCost: 125000
+  };
+
+  const productionModules = [
+    {
+      id: 'raw-material',
+      title: 'Raw Material Handling',
+      icon: Weight,
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-100',
+      path: '/production/raw-material',
+      status: 'active',
+      description: 'Raw oud wood intake, conversion, moisture adjustment & supplier batch tagging',
+      metrics: {
+        stock: '2,450 kg',
+        batches: 48,
+        suppliers: 12,
+        avgQuality: '8.5/10'
+      },
+      features: [
+        'Weight tracking (kg/tola/g with auto-conversion)',
+        'Moisture & dust loss adjustment (net weight)',
+        'Supplier batch tagging & PO linking',
+        'Initial segregation: size, density, resin quality',
+        'Aroma profile classification',
+        'Storage location mapping',
+        'Batch receiving workflow',
+        'Quality inspection on arrival'
+      ]
+    },
+    {
+      id: 'segregation',
+      title: 'Segregation Process',
+      icon: GitBranch,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100',
+      path: '/production/segregation',
+      status: 'active',
+      description: 'Grade sorting, quality-based segregation & multi-output batch tracking',
+      metrics: {
+        inProgress: 8,
+        completed: 145,
+        wastage: '3.2%',
+        outputSKUs: 156
+      },
+      features: [
+        'Grading by quality (Premium, A, B, C, Powder)',
+        'Sorting by size (chips, powder, dust)',
+        'Multi-output from single batch (automated SKU creation)',
+        'Wastage tracking & weight loss recording',
+        'Auto stock update after segregation',
+        'Visual segregation workflow',
+        'Before/after weight reconciliation',
+        'Grade-specific pricing suggestions'
+      ]
+    },
+    {
+      id: 'oil-extraction',
+      title: 'Oud Oil Extraction',
+      icon: Droplets,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
+      path: '/production/oil-extraction',
+      status: 'active',
+      description: 'Distillation tracking, yield recording & multi-output management',
+      metrics: {
+        activeBatches: 5,
+        monthlyYield: '145 ml',
+        avgYield: '1.2 ml/kg',
+        qcPass: '98%'
+      },
+      features: [
+        'Distillation process tracking (hydro/steam)',
+        'Batch tracking: raw → still → oil → residue',
+        'Yield recording (kg wood → ml oil)',
+        'Quality control (viscosity, aroma, purity %)',
+        'Multi-output: Oil + Hydrosol + Residue',
+        'Distillation time & temperature logs',
+        'Equipment assignment & maintenance',
+        'Cost per ml calculation'
+      ]
+    },
+    {
+      id: 'perfume-production',
+      title: 'Perfume & Attar Production',
+      icon: FlaskConical,
+      color: 'text-pink-600',
+      bgColor: 'bg-pink-100',
+      path: '/production/perfume-production',
+      status: 'active',
+      description: 'Recipe management, blending, aging, filling & packaging workflow',
+      metrics: {
+        recipes: 85,
+        batchesThisMonth: 42,
+        aging: 15,
+        bottled: 850
+      },
+      features: [
+        'Recipe & BOM (Bill of Materials) management',
+        'Batch tracking (production lot → bottles)',
+        'Blending workflow with ingredient tracking',
+        'Aging/maturation cycle tracking (days/weeks)',
+        'Filling & packaging automation',
+        'Yield calculation (raw ml → packaged units)',
+        'Auto cost-per-unit calculation',
+        'Multi-size bottling from single batch'
+      ]
+    },
+    {
+      id: 'quality-control',
+      title: 'Quality Control',
+      icon: ClipboardCheck,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
+      path: '/production/quality-control',
+      status: 'active',
+      description: 'Multi-stage QC, lab tests, aroma profiling & batch approval',
+      metrics: {
+        testsToday: 28,
+        passRate: '96.8%',
+        pending: 12,
+        rejected: 3
+      },
+      features: [
+        'Multi-stage QC: Raw → Extract → Blend → Bottling',
+        'Lab test results (purity %, alcohol %, IFRA)',
+        'Aroma profiling with fragrance notes',
+        'Batch approval/rejection workflow',
+        'QC certificates (digital storage)',
+        'Deviation tracking & corrective actions',
+        'Tester sample management',
+        'Compliance checklist (UAE regulations)'
+      ]
+    },
+    {
+      id: 'batch-management',
+      title: 'Batch Management',
+      icon: Boxes,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-100',
+      path: '/production/batch-management',
+      status: 'active',
+      description: 'Lot numbers, expiry tracking, production scheduling & traceability',
+      metrics: {
+        active: 28,
+        scheduled: 18,
+        completed: 145,
+        expired: 0
+      },
+      features: [
+        'Lot numbers & batch codes generation',
+        'Expiry date tracking (alcohol-based perfumes)',
+        'Production calendar & scheduling',
+        'Full traceability (raw → production → sales)',
+        'Rework & adjustment tracking',
+        'Multi-output batch management',
+        'Batch genealogy (parent-child relationships)',
+        'Integration with inventory & sales'
+      ]
+    },
+    {
+      id: 'packaging',
+      title: 'Packaging & Segregation',
+      icon: Package,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
+      path: '/production/packaging',
+      status: 'active',
+      description: 'Package type segregation, SKU creation & bundle management',
+      metrics: {
+        regular: 456,
+        luxury: 128,
+        testers: 85,
+        samples: 245
+      },
+      features: [
+        'Packaging segregation (Regular, Luxury, Tester, Sample)',
+        'Auto SKU creation from same batch',
+        'Pricing tiers (retail, wholesale, export)',
+        'Bundle/Combo creation (Gift Sets)',
+        'Packaging material tracking',
+        'Barcode/QR label generation',
+        'Box & carton packing',
+        'Packaging cost allocation'
+      ]
+    },
+    {
+      id: 'costing-reports',
+      title: 'Costing & Yield Reports',
+      icon: DollarSign,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-100',
+      path: '/production/costing-reports',
+      status: 'active',
+      description: 'Cost breakdown, yield analysis & profitability tracking',
+      metrics: {
+        avgCost: 'AED 125/unit',
+        yield: '94.5%',
+        margin: '42.5%',
+        reports: 28
+      },
+      features: [
+        'Cost per batch & per unit breakdown',
+        'Material, packaging, labor, overhead allocation',
+        'Yield % tracking (input vs output)',
+        'Wastage cost analysis',
+        'Profitability per recipe/product line',
+        'Supplier comparison (yield, cost, quality)',
+        'Production efficiency metrics',
+        'AI-based yield forecasting'
+      ]
+    }
+  ];
+
+  const activeBatches = [
+    {
+      batchNo: 'OE-2024-0285',
+      type: 'Oil Extraction',
+      product: 'Premium Oud Oil',
+      stage: 'Distillation',
+      progress: 65,
+      startDate: '2024-10-01',
+      estimatedCompletion: '2024-10-05',
+      status: 'on-track'
+    },
+    {
+      batchNo: 'PP-2024-0412',
+      type: 'Perfume Production',
+      product: 'Royal Oud Blend',
+      stage: 'Aging',
+      progress: 80,
+      startDate: '2024-09-25',
+      estimatedCompletion: '2024-10-03',
+      status: 'on-track'
+    },
+    {
+      batchNo: 'SG-2024-0198',
+      type: 'Segregation',
+      product: 'Cambodian Oud Batch',
+      stage: 'Grading',
+      progress: 45,
+      startDate: '2024-10-02',
+      estimatedCompletion: '2024-10-02',
+      status: 'on-track'
+    },
+    {
+      batchNo: 'PP-2024-0405',
+      type: 'Perfume Production',
+      product: 'Amber Rose Attar',
+      stage: 'Blending',
+      progress: 30,
+      startDate: '2024-10-02',
+      estimatedCompletion: '2024-10-04',
+      status: 'delayed'
+    },
+    {
+      batchNo: 'OE-2024-0280',
+      type: 'Oil Extraction',
+      product: 'Hindi Oud Oil',
+      stage: 'Quality Check',
+      progress: 95,
+      startDate: '2024-09-28',
+      estimatedCompletion: '2024-10-02',
+      status: 'on-track'
+    }
+  ];
+
+  const todayProduction = [
+    {
+      product: 'Royal Oud Premium 50ml',
+      batches: 3,
+      quantity: 145,
+      value: 72500,
+      status: 'completed'
+    },
+    {
+      product: 'Oud Oil Extract 12ml',
+      batches: 2,
+      quantity: 48,
+      value: 28800,
+      status: 'completed'
+    },
+    {
+      product: 'Amber Rose Attar 100ml',
+      batches: 2,
+      quantity: 85,
+      value: 21250,
+      status: 'in-progress'
+    },
+    {
+      product: 'Premium Oud Chips 25g',
+      batches: 1,
+      quantity: 250,
+      value: 12500,
+      status: 'completed'
+    }
+  ];
+
+  const benefits = [
+    {
+      icon: Target,
+      title: 'Full Traceability',
+      description: 'Track every gram from raw oud to finished perfume bottle'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Maximize Yield',
+      description: 'Monitor and optimize extraction & production yields'
+    },
+    {
+      icon: DollarSign,
+      title: 'Accurate Costing',
+      description: 'Real-time cost tracking for materials, labor & overheads'
+    },
+    {
+      icon: Activity,
+      title: 'Quality Control',
+      description: 'Multi-stage QC ensures premium product quality'
+    }
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <ChefHat className="h-8 w-8 text-oud-600" />
-            Production Management
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage recipes, production batches, and quality control
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Production & Segregation</h1>
+            <p className="text-muted-foreground">
+              Complete production management from raw oud to finished perfumes
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Dialog open={isNewRecipeDialogOpen} onOpenChange={setIsNewRecipeDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Beaker className="h-4 w-4" />
-                New Recipe
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create New Recipe</DialogTitle>
-                <DialogDescription>
-                  Add a new recipe for production batches
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="recipe-name">Recipe Name</Label>
-                    <Input id="recipe-name" placeholder="Enter recipe name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="recipe-category">Category</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="oud">Oud</SelectItem>
-                        <SelectItem value="amber">Amber</SelectItem>
-                        <SelectItem value="rose">Rose</SelectItem>
-                        <SelectItem value="musk">Musk</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="recipe-description">Description</Label>
-                  <Textarea id="recipe-description" placeholder="Recipe description and notes" />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsNewRecipeDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => setIsNewRecipeDialogOpen(false)}>
-                    Create Recipe
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={isNewBatchDialogOpen} onOpenChange={setIsNewBatchDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 bg-oud-600 hover:bg-oud-700">
-                <Plus className="h-4 w-4" />
-                New Production Batch
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create New Production Batch</DialogTitle>
-                <DialogDescription>
-                  Schedule a new production batch using existing recipes
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="batch-recipe">Select Recipe</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose recipe" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {recipes.map((recipe) => (
-                          <SelectItem key={recipe.id} value={recipe.id}>
-                            {recipe.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="batch-quantity">Quantity</Label>
-                    <Input id="batch-quantity" type="number" placeholder="100" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Start Date</Label>
-                    <DatePicker
-                      date={selectedDate}
-                      setDate={setSelectedDate}
-                      placeholder="Select start date"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="batch-priority">Priority</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="batch-operator">Assigned Operator</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select operator" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ahmed">Ahmed Al-Rashid</SelectItem>
-                      <SelectItem value="fatima">Fatima Hassan</SelectItem>
-                      <SelectItem value="mohammed">Mohammed Saeed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsNewBatchDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => setIsNewBatchDialogOpen(false)}>
-                    Create Batch
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Badge variant="outline" className="text-green-600 border-green-600">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          {productionSummary.activeBatches} Active Batches
+        </Badge>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Batches</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Active Batches</CardDescription>
+            <CardTitle className="text-3xl">{productionSummary.activeBatches}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">
-              Currently in production
+            <p className="text-xs text-green-600">
+              {productionSummary.completedToday} completed today
             </p>
           </CardContent>
         </Card>
-
-        <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Today</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Raw Material Stock</CardDescription>
+            <CardTitle className="text-3xl">{productionSummary.rawMaterialStock.toLocaleString()} kg</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1</div>
             <p className="text-xs text-muted-foreground">
-              Batches finished today
+              Across all suppliers & grades
             </p>
           </CardContent>
         </Card>
-
-        <Card className="border-l-4 border-l-yellow-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quality Pending</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Yield Rate</CardDescription>
+            <CardTitle className="text-3xl">{productionSummary.yieldRate}%</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting quality check
+            <Progress value={productionSummary.yieldRate} className="mb-2" />
+            <p className="text-xs text-green-600">
+              QC Pass: {productionSummary.qcPassRate}%
             </p>
           </CardContent>
         </Card>
-
-        <Card className="border-l-4 border-l-oud-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Recipes</CardTitle>
-            <Beaker className="h-4 w-4 text-muted-foreground" />
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Production Cost (Month)</CardDescription>
+            <CardTitle className="text-3xl">AED {(productionSummary.productionCost / 1000).toFixed(0)}K</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recipes.length}</div>
             <p className="text-xs text-muted-foreground">
-              Available for production
+              {productionSummary.perfectsBlended} units produced
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content */}
-      <Tabs defaultValue="batches" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="batches">Production Batches</TabsTrigger>
-          <TabsTrigger value="recipes">Recipe Management</TabsTrigger>
-          <TabsTrigger value="quality">Quality Control</TabsTrigger>
+      {/* Benefits */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Why Production & Segregation Management?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {benefits.map((benefit) => (
+              <div key={benefit.title} className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <benefit.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm mb-1">{benefit.title}</h3>
+                  <p className="text-xs text-muted-foreground">{benefit.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs */}
+      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="active-batches">Active Batches</TabsTrigger>
+          <TabsTrigger value="today">Today's Production</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="batches" className="space-y-4">
-          {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Production Batches</CardTitle>
-              <CardDescription>
-                Monitor and manage all production batches
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search batches..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
+        <TabsContent value="overview" className="space-y-4">
+          {/* Production Modules Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {productionModules.map((module) => (
+              <Card
+                key={module.id}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => router.push(module.path)}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className={`p-2 rounded-lg ${module.bgColor}`}>
+                      <module.icon className={`h-6 w-6 ${module.color}`} />
+                    </div>
+                    <Badge variant="outline" className="text-green-600 border-green-600">
+                      {module.status}
+                    </Badge>
                   </div>
-                </div>
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-[180px]">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="planning">Planning</SelectItem>
-                    <SelectItem value="in progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Batches Table */}
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Batch ID</TableHead>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Progress</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Operator</TableHead>
-                      <TableHead>Quality</TableHead>
-                      <TableHead>Due Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredBatches.map((batch) => (
-                      <TableRow key={batch.id}>
-                        <TableCell className="font-medium">{batch.id}</TableCell>
-                        <TableCell>{batch.product}</TableCell>
-                        <TableCell>{batch.quantity} {batch.unit}</TableCell>
-                        <TableCell>{getStatusBadge(batch.status)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Progress value={batch.progress} className="w-16" />
-                            <span className="text-sm text-muted-foreground">
-                              {batch.progress}%
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{getPriorityBadge(batch.priority)}</TableCell>
-                        <TableCell>{batch.operator}</TableCell>
-                        <TableCell>{getQualityBadge(batch.qualityCheck)}</TableCell>
-                        <TableCell>{batch.expectedCompletion}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                  <CardTitle className="mt-4">{module.title}</CardTitle>
+                  <CardDescription>{module.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(module.metrics).map(([key, value]) => (
+                        <div key={key}>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {key.replace(/([A-Z])/g, ' $1')}
+                          </p>
+                          <p className="text-sm font-semibold">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(module.path);
+                      }}
+                    >
+                      Manage
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
 
-        <TabsContent value="recipes" className="space-y-4">
+        <TabsContent value="active-batches" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recipe Library</CardTitle>
-              <CardDescription>
-                Manage production recipes and formulations
-              </CardDescription>
+              <CardTitle>Active Production Batches</CardTitle>
+              <CardDescription>Currently running batches across all production stages</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
-                {recipes.map((recipe) => (
-                  <Card key={recipe.id} className="p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">{recipe.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {recipe.id} • Version {recipe.version} • {recipe.category}
+              <div className="space-y-4">
+                {activeBatches.map((batch) => (
+                  <div key={batch.batchNo} className="space-y-2 p-4 border rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{batch.batchNo}</h3>
+                          <Badge variant="outline">{batch.type}</Badge>
+                          <Badge
+                            variant={batch.status === 'on-track' ? 'default' : 'secondary'}
+                            className={batch.status === 'on-track' ? 'bg-green-600' : 'bg-amber-600'}
+                          >
+                            {batch.status === 'on-track' ? (
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                            ) : (
+                              <Clock className="h-3 w-3 mr-1" />
+                            )}
+                            {batch.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm font-medium">{batch.product}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Stage: {batch.stage} • Started: {batch.startDate} • ETA: {batch.estimatedCompletion}
                         </p>
                       </div>
-                      <Badge variant={recipe.status === 'Active' ? 'default' : 'secondary'}>
-                        {recipe.status}
-                      </Badge>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-medium mb-2">Ingredients</h4>
-                        <div className="space-y-1 text-sm">
-                          {recipe.ingredients.map((ingredient, index) => (
-                            <div key={index} className="flex justify-between">
-                              <span>{ingredient.name}</span>
-                              <span className="text-muted-foreground">
-                                {ingredient.quantity} {ingredient.unit}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-primary">{batch.progress}%</p>
                       </div>
-
-                      {recipe.instructions && (
-                        <div>
-                          <h4 className="font-medium mb-2">Instructions</h4>
-                          <ol className="space-y-1 text-sm list-decimal list-inside text-muted-foreground">
-                            {recipe.instructions.map((step, index) => (
-                              <li key={index}>{step}</li>
-                            ))}
-                          </ol>
-                        </div>
-                      )}
                     </div>
-
-                    <Separator className="my-4" />
-
-                    <div className="flex justify-between items-center text-sm text-muted-foreground">
-                      <span>Yield: {recipe.yield} units</span>
-                      <span>Batch Time: {recipe.batchTime}</span>
-                    </div>
-                  </Card>
+                    <Progress value={batch.progress} />
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="quality" className="space-y-4">
+        <TabsContent value="today" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Quality Control Dashboard</CardTitle>
-              <CardDescription>
-                Monitor quality checks and testing results
-              </CardDescription>
+              <CardTitle>Today's Production Summary</CardTitle>
+              <CardDescription>Completed and in-progress production today</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
-                {productionBatches
-                  .filter(batch => batch.qualityCheck !== 'Not Started')
-                  .map((batch) => (
-                    <Card key={batch.id} className="p-4">
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold">{batch.product}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Batch {batch.id} • {batch.quantity} {batch.unit}
-                          </p>
-                        </div>
-                        {getQualityBadge(batch.qualityCheck)}
+              <div className="space-y-3">
+                {todayProduction.map((item) => (
+                  <div key={item.product} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{item.product}</h3>
+                        <Badge
+                          variant={item.status === 'completed' ? 'default' : 'secondary'}
+                          className={item.status === 'completed' ? 'bg-green-600' : 'bg-blue-600'}
+                        >
+                          {item.status}
+                        </Badge>
                       </div>
-
-                      <div className="grid md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">Production Date:</span>
-                          <p className="text-muted-foreground">{batch.startDate}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Operator:</span>
-                          <p className="text-muted-foreground">{batch.operator}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Recipe:</span>
-                          <p className="text-muted-foreground">{batch.recipe}</p>
-                        </div>
-                      </div>
-
-                      {batch.qualityCheck === 'Pending' && (
-                        <div className="mt-4 flex gap-2">
-                          <Button size="sm" variant="outline" className="text-green-600 border-green-600">
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600 border-red-600">
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                      )}
-                    </Card>
-                  ))}
+                      <p className="text-sm text-muted-foreground">
+                        {item.batches} batches • {item.quantity} units
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-green-600">AED {item.value.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">Est. value</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Getting Started */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Getting Started with Production Management</CardTitle>
+          <CardDescription>Set up your end-to-end production workflow</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                1
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1">Configure Raw Materials</h3>
+                <p className="text-sm text-muted-foreground">
+                  Set up oud types, suppliers, and quality grades
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                2
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1">Create Recipes & BOMs</h3>
+                <p className="text-sm text-muted-foreground">
+                  Define perfume recipes and production formulas
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                3
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1">Set Up QC Checkpoints</h3>
+                <p className="text-sm text-muted-foreground">
+                  Configure quality control stages and tests
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                4
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1">Start Production Batch</h3>
+                <p className="text-sm text-muted-foreground">
+                  Launch your first production batch and track progress
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

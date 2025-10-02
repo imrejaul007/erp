@@ -358,7 +358,7 @@ class ShopifyConnector {
     const results = {
       created: 0,
       updated: 0,
-      errors: []
+      errors: [] as Array<{type: string, message: string, itemId?: string, details?: any}>
     };
 
     for (const product of products) {
@@ -370,7 +370,7 @@ class ShopifyConnector {
           vendor: product.brand,
           product_type: product.category,
           variants: [{
-            sku: product.sku,
+            itemId: product.sku,
             price: (product.retailPrice * (connector.transformations.priceMultiplier || 1)).toFixed(2),
             inventory_quantity: product.stock?.quantity || 0,
             weight: product.specifications?.weight || 0,
@@ -385,8 +385,8 @@ class ShopifyConnector {
 
       } catch (error) {
         results.errors.push({
-          sku: product.sku,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          itemId: product.sku,
+          message: error instanceof Error ? error.message : 'Unknown error'
         });
       }
     }
@@ -398,7 +398,7 @@ class ShopifyConnector {
     // Mock Shopify inventory sync
     const results = {
       updated: 0,
-      errors: []
+      errors: [] as Array<{type: string, message: string, itemId?: string, details?: any}>
     };
 
     for (const update of inventoryUpdates) {
@@ -408,8 +408,8 @@ class ShopifyConnector {
         results.updated++;
       } catch (error) {
         results.errors.push({
-          sku: update.sku,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          itemId: update.sku,
+          message: error instanceof Error ? error.message : 'Unknown error'
         });
       }
     }
@@ -430,7 +430,7 @@ class ShopifyConnector {
         fulfillment_status: 'pending',
         line_items: [
           {
-            sku: 'OUD-ROYAL-001',
+            itemId: 'OUD-ROYAL-001',
             quantity: 1,
             price: '650.00'
           }
@@ -452,7 +452,7 @@ class WooCommerceConnector {
     const results = {
       created: 0,
       updated: 0,
-      errors: []
+      errors: [] as Array<{type: string, message: string, itemId?: string, details?: any}>
     };
 
     for (const product of products) {
@@ -460,7 +460,7 @@ class WooCommerceConnector {
         const wooProduct = {
           name: product.name,
           description: product.description,
-          sku: product.sku,
+          itemId: product.sku,
           regular_price: (product.wholesalePrice * (connector.transformations.priceMultiplier || 1)).toFixed(2),
           stock_quantity: product.stock?.quantity || 0,
           weight: product.specifications?.weight || 0,
@@ -473,8 +473,8 @@ class WooCommerceConnector {
 
       } catch (error) {
         results.errors.push({
-          sku: product.sku,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          itemId: product.sku,
+          message: error instanceof Error ? error.message : 'Unknown error'
         });
       }
     }
@@ -510,7 +510,7 @@ async function performSync(connectorId: string, operation: 'export' | 'import' |
       customersProcessed: 0,
       ordersProcessed: 0,
       inventoryUpdates: 0,
-      errors: []
+      errors: [] as Array<{type: string, message: string, itemId?: string, details?: any}>
     },
     logs: [{
       timestamp: new Date().toISOString(),
@@ -526,7 +526,7 @@ async function performSync(connectorId: string, operation: 'export' | 'import' |
       const mockProducts = [
         {
           name: 'Royal Oud Collection',
-          sku: 'OUD-ROYAL-001',
+          itemId: 'OUD-ROYAL-001',
           description: 'Premium oud fragrance',
           category: 'Premium Oud',
           brand: 'Royal Heritage',
@@ -648,9 +648,9 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Get connectors error:', error);
+    console.error('Get connectors message:', error);
     return NextResponse.json(
-      { error: 'Failed to retrieve connectors' },
+      { message: 'Failed to retrieve connectors' },
       { status: 500 }
     );
   }
@@ -687,7 +687,7 @@ export async function POST(request: NextRequest) {
 
         if (!connector) {
           return NextResponse.json(
-            { error: 'Connector not found' },
+            { message: 'Connector not found' },
             { status: 404 }
           );
         }
@@ -720,15 +720,15 @@ export async function POST(request: NextRequest) {
 
       default:
         return NextResponse.json(
-          { error: 'Invalid action' },
+          { message: 'Invalid action' },
           { status: 400 }
         );
     }
 
   } catch (error) {
-    console.error('Connector operation error:', error);
+    console.error('Connector operation message:', error);
     return NextResponse.json(
-      { error: 'Failed to process request' },
+      { message: 'Failed to process request' },
       { status: 500 }
     );
   }
@@ -742,7 +742,7 @@ export async function PUT(request: NextRequest) {
     const connectorIndex = connectors.findIndex(c => c.id === connectorId);
     if (connectorIndex === -1) {
       return NextResponse.json(
-        { error: 'Connector not found' },
+        { message: 'Connector not found' },
         { status: 404 }
       );
     }
@@ -761,9 +761,9 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Update connector error:', error);
+    console.error('Update connector message:', error);
     return NextResponse.json(
-      { error: 'Failed to update connector' },
+      { message: 'Failed to update connector' },
       { status: 500 }
     );
   }
@@ -777,7 +777,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!connectorId) {
       return NextResponse.json(
-        { error: 'Connector ID is required' },
+        { message: 'Connector ID is required' },
         { status: 400 }
       );
     }
@@ -785,7 +785,7 @@ export async function DELETE(request: NextRequest) {
     const connectorIndex = connectors.findIndex(c => c.id === connectorId);
     if (connectorIndex === -1) {
       return NextResponse.json(
-        { error: 'Connector not found' },
+        { message: 'Connector not found' },
         { status: 404 }
       );
     }
@@ -799,9 +799,9 @@ export async function DELETE(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Delete connector error:', error);
+    console.error('Delete connector message:', error);
     return NextResponse.json(
-      { error: 'Failed to delete connector' },
+      { message: 'Failed to delete connector' },
       { status: 500 }
     );
   }

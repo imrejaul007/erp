@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,7 @@ import {
 } from 'lucide-react';
 
 const MultiLocationPage = () => {
+  const router = useRouter();
   const [selectedTimeRange, setSelectedTimeRange] = useState('thisMonth');
 
   // Sample data for locations overview
@@ -215,11 +217,11 @@ const MultiLocationPage = () => {
           <p className="text-gray-600">Monitor and manage all store locations from a centralized dashboard</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => router.push('/multi-location/settings')}>
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </Button>
-          <Button>
+          <Button onClick={() => router.push('/multi-location/add-location')}>
             <Plus className="h-4 w-4 mr-2" />
             Add Location
           </Button>
@@ -305,10 +307,10 @@ const MultiLocationPage = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => router.push(`/multi-location/view/${location.id}`)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => router.push(`/multi-location/edit/${location.id}`)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                   </div>
@@ -351,7 +353,7 @@ const MultiLocationPage = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/multi-location/transfers')}>
           <CardContent className="p-6 text-center">
             <Truck className="h-12 w-12 mx-auto mb-4 text-blue-600" />
             <h3 className="font-medium mb-2">Inter-Store Transfers</h3>
@@ -359,7 +361,7 @@ const MultiLocationPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/multi-location/staff')}>
           <CardContent className="p-6 text-center">
             <Users className="h-12 w-12 mx-auto mb-4 text-green-600" />
             <h3 className="font-medium mb-2">Staff Management</h3>
@@ -367,7 +369,7 @@ const MultiLocationPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/multi-location/analytics')}>
           <CardContent className="p-6 text-center">
             <BarChart3 className="h-12 w-12 mx-auto mb-4 text-purple-600" />
             <h3 className="font-medium mb-2">Performance Analytics</h3>

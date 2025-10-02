@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -86,6 +87,7 @@ const SEGMENT_COLORS = {
 };
 
 export default function CRMDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState<CRMStats | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -173,11 +175,15 @@ export default function CRMDashboard() {
           <p className="text-gray-600 mt-1">Manage customers, loyalty, and communications</p>
         </div>
         <div className="flex gap-2">
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button variant="outline" onClick={() => router.push('/crm/comprehensive')}>
+            <Users className="w-4 h-4 mr-2" />
+            View All Customers
+          </Button>
+          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/crm/add-customer')}>
             <Users className="w-4 h-4 mr-2" />
             Add Customer
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => router.push('/crm/campaigns')}>
             <MessageSquare className="w-4 h-4 mr-2" />
             Send Campaign
           </Button>
@@ -477,15 +483,15 @@ export default function CRMDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <Button className="h-20 flex-col">
+                <Button className="h-20 flex-col" onClick={() => router.push('/crm/campaigns?type=email')}>
                   <Mail className="w-6 h-6 mb-2" />
                   Email Campaign
                 </Button>
-                <Button className="h-20 flex-col" variant="outline">
+                <Button className="h-20 flex-col" variant="outline" onClick={() => router.push('/crm/campaigns?type=whatsapp')}>
                   <MessageSquare className="w-6 h-6 mb-2" />
                   WhatsApp Broadcast
                 </Button>
-                <Button className="h-20 flex-col" variant="outline">
+                <Button className="h-20 flex-col" variant="outline" onClick={() => router.push('/crm/campaigns?type=sms')}>
                   <Phone className="w-6 h-6 mb-2" />
                   SMS Campaign
                 </Button>

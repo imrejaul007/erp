@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -724,6 +725,7 @@ const importRegulations = {
 };
 
 export default function PurchasingVendorManagementPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedVendor, setSelectedVendor] = useState<any>(null);
   const [selectedPO, setSelectedPO] = useState<any>(null);
@@ -846,13 +848,13 @@ export default function PurchasingVendorManagementPage() {
             <span className="text-xs text-gray-500">{vendor.addresses[0].country}</span>
           </div>
           <div className="flex space-x-1">
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); setSelectedVendor(vendor); }}>
               <Eye className="h-3 w-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); alert('Edit vendor: ' + vendor.name); }}>
               <Edit className="h-3 w-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); router.push('/purchasing/create-order?vendor=' + vendor.id); }}>
               <ShoppingCart className="h-3 w-3" />
             </Button>
           </div>
@@ -918,10 +920,10 @@ export default function PurchasingVendorManagementPage() {
         <div className="flex justify-between items-center mt-3 pt-2 border-t">
           <span className="text-xs text-gray-500">Last update: {po.shipping?.lastUpdate || po.orderDate}</span>
           <div className="flex space-x-1">
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); setSelectedPO(po); }}>
               <Eye className="h-3 w-3" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); router.push('/purchasing/create-order?edit=' + po.id); }}>
               <Edit className="h-3 w-3" />
             </Button>
           </div>
@@ -946,11 +948,11 @@ export default function PurchasingVendorManagementPage() {
             </Badge>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/purchasing/reports')}>
               <Download className="h-4 w-4 mr-1" />
               Export
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/purchasing/reports')}>
               <BarChart3 className="h-4 w-4 mr-1" />
               Analytics
             </Button>
@@ -1940,11 +1942,11 @@ export default function PurchasingVendorManagementPage() {
               <Button variant="outline" onClick={() => setSelectedVendor(null)}>
                 Close
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => alert('Edit vendor: ' + selectedVendor.name)}>
                 <Edit className="h-4 w-4 mr-1" />
                 Edit Vendor
               </Button>
-              <Button>
+              <Button onClick={() => router.push('/purchasing/create-order?vendor=' + selectedVendor.id)}>
                 <ShoppingCart className="h-4 w-4 mr-1" />
                 Create Purchase Order
               </Button>
@@ -2246,11 +2248,11 @@ export default function PurchasingVendorManagementPage() {
               <Button variant="outline" onClick={() => setSelectedPO(null)}>
                 Close
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => router.push('/purchasing/create-order?edit=' + selectedPO.id)}>
                 <Edit className="h-4 w-4 mr-1" />
                 Edit Order
               </Button>
-              <Button>
+              <Button onClick={() => alert('Update status for PO: ' + selectedPO.id)}>
                 <RefreshCw className="h-4 w-4 mr-1" />
                 Update Status
               </Button>

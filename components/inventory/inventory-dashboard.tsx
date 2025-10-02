@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -197,6 +198,7 @@ interface InventoryMetrics {
 }
 
 export default function InventoryDashboard() {
+  const router = useRouter()
   const [locations, setLocations] = useState<Location[]>([])
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([])
@@ -630,44 +632,30 @@ export default function InventoryDashboard() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Inventory Management</h2>
-          <p className="text-muted-foreground">Manage luxury perfume and oud inventory across all locations</p>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Inventory Management</h2>
+          <p className="text-gray-600">Manage luxury perfume and oud inventory across all locations</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export
+          <Button variant="outline" onClick={() => router.push('/inventory/barcode')}>
+            <Package className="mr-2 h-4 w-4" />
+            Barcode
           </Button>
-          <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <ArrowUpDown className="mr-2 h-4 w-4" />
-                Transfer Stock
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Transfer Stock Between Locations</DialogTitle>
-                <DialogDescription>Move inventory items between stores, warehouses, and facilities</DialogDescription>
-              </DialogHeader>
-              <StockTransferForm onClose={() => setIsTransferDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-          <Dialog open={isAddItemDialogOpen} onOpenChange={setIsAddItemDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Add New Inventory Item</DialogTitle>
-                <DialogDescription>Create a new inventory item with pricing and stock details</DialogDescription>
-              </DialogHeader>
-              <AddInventoryItemForm onClose={() => setIsAddItemDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <Button variant="outline" onClick={() => router.push('/inventory/analytics')}>
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Analytics
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/inventory/expiry')}>
+            <Clock className="mr-2 h-4 w-4" />
+            Expiry
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/inventory/transfers')}>
+            <ArrowUpDown className="mr-2 h-4 w-4" />
+            Transfers
+          </Button>
+          <Button onClick={() => router.push('/inventory/add-products')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Item
+          </Button>
         </div>
       </div>
 
@@ -678,10 +666,10 @@ export default function InventoryDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Items</p>
-                  <p className="text-2xl font-bold">{metrics.totalItems.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-700">Total Items</p>
+                  <p className="text-2xl font-bold text-gray-900">{metrics.totalItems.toLocaleString()}</p>
                 </div>
-                <Package className="h-8 w-8 text-blue-500" />
+                <Package className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -690,10 +678,10 @@ export default function InventoryDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Value</p>
-                  <p className="text-2xl font-bold">{formatCurrency(metrics.totalValue)}</p>
+                  <p className="text-sm font-medium text-gray-700">Total Value</p>
+                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(metrics.totalValue)}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-500" />
+                <DollarSign className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -702,10 +690,10 @@ export default function InventoryDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Low Stock</p>
+                  <p className="text-sm font-medium text-gray-700">Low Stock</p>
                   <p className="text-2xl font-bold text-yellow-600">{metrics.lowStockItems}</p>
                 </div>
-                <AlertTriangle className="h-8 w-8 text-yellow-500" />
+                <AlertTriangle className="h-8 w-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
@@ -714,10 +702,10 @@ export default function InventoryDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Out of Stock</p>
+                  <p className="text-sm font-medium text-gray-700">Out of Stock</p>
                   <p className="text-2xl font-bold text-red-600">{metrics.zeroStockItems}</p>
                 </div>
-                <XCircle className="h-8 w-8 text-red-500" />
+                <XCircle className="h-8 w-8 text-red-600" />
               </div>
             </CardContent>
           </Card>
@@ -726,10 +714,10 @@ export default function InventoryDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Locations</p>
-                  <p className="text-2xl font-bold">{metrics.totalLocations}</p>
+                  <p className="text-sm font-medium text-gray-700">Locations</p>
+                  <p className="text-2xl font-bold text-gray-900">{metrics.totalLocations}</p>
                 </div>
-                <MapPin className="h-8 w-8 text-purple-500" />
+                <MapPin className="h-8 w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
@@ -738,10 +726,10 @@ export default function InventoryDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Turnover Rate</p>
-                  <p className="text-2xl font-bold">{metrics.avgStockTurnover}x</p>
+                  <p className="text-sm font-medium text-gray-700">Turnover Rate</p>
+                  <p className="text-2xl font-bold text-gray-900">{metrics.avgStockTurnover}x</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-orange-500" />
+                <TrendingUp className="h-8 w-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
@@ -751,7 +739,7 @@ export default function InventoryDashboard() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-center">
         <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
+          <Search className="h-4 w-4 text-gray-600" />
           <Input
             placeholder="Search items..."
             value={searchQuery}
@@ -775,7 +763,12 @@ export default function InventoryDashboard() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+        <Select value={selectedCategory} onValueChange={(val) => {
+          if (val === 'raw_material') router.push('/inventory/raw-materials')
+          else if (val === 'semi_finished') router.push('/inventory/semi-finished')
+          else if (val === 'finished_product') router.push('/inventory/finished-goods')
+          else setSelectedCategory(val)
+        }}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>
@@ -788,7 +781,7 @@ export default function InventoryDashboard() {
             <SelectItem value="accessories">Accessories</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={() => router.push('/inventory/comprehensive')}>
           <Filter className="mr-2 h-4 w-4" />
           More Filters
         </Button>
@@ -807,8 +800,8 @@ export default function InventoryDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
                   Inventory by Category
                 </CardTitle>
               </CardHeader>
@@ -818,13 +811,13 @@ export default function InventoryDashboard() {
                     {metrics.topCategories.map((category) => (
                       <div key={category.category} className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-gray-900">
                             {getCategoryIcon(category.category)}
                             <span className="capitalize">{category.category.replace('_', ' ')}</span>
                           </div>
                           <div className="text-right">
-                            <div>{category.count} items</div>
-                            <div className="text-muted-foreground">{formatCurrency(category.value)}</div>
+                            <div className="text-gray-900">{category.count} items</div>
+                            <div className="text-gray-600">{formatCurrency(category.value)}</div>
                           </div>
                         </div>
                         <Progress
@@ -840,8 +833,8 @@ export default function InventoryDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
                   Active Alerts
                 </CardTitle>
               </CardHeader>
@@ -851,19 +844,19 @@ export default function InventoryDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center p-4 bg-red-50 rounded-lg">
                         <div className="text-2xl font-bold text-red-600">{metrics.alertsSummary.critical}</div>
-                        <div className="text-sm text-red-700">Critical</div>
+                        <div className="text-sm font-medium text-red-700">Critical</div>
                       </div>
                       <div className="text-center p-4 bg-yellow-50 rounded-lg">
                         <div className="text-2xl font-bold text-yellow-600">{metrics.alertsSummary.high}</div>
-                        <div className="text-sm text-yellow-700">High</div>
+                        <div className="text-sm font-medium text-yellow-700">High</div>
                       </div>
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-2xl font-bold text-blue-600">{metrics.alertsSummary.medium}</div>
-                        <div className="text-sm text-blue-700">Medium</div>
+                        <div className="text-sm font-medium text-blue-700">Medium</div>
                       </div>
                       <div className="text-center p-4 bg-gray-50 rounded-lg">
                         <div className="text-2xl font-bold text-gray-600">{metrics.alertsSummary.low}</div>
-                        <div className="text-sm text-gray-700">Low</div>
+                        <div className="text-sm font-medium text-gray-700">Low</div>
                       </div>
                     </div>
                   </div>
@@ -874,8 +867,8 @@ export default function InventoryDashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-gray-900">
+                <Clock className="h-5 w-5 text-blue-600" />
                 Recent Stock Movements
               </CardTitle>
             </CardHeader>
@@ -883,13 +876,13 @@ export default function InventoryDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Value</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Reference</TableHead>
+                    <TableHead className="text-gray-900">Item</TableHead>
+                    <TableHead className="text-gray-900">Type</TableHead>
+                    <TableHead className="text-gray-900">Quantity</TableHead>
+                    <TableHead className="text-gray-900">Location</TableHead>
+                    <TableHead className="text-gray-900">Value</TableHead>
+                    <TableHead className="text-gray-900">Date</TableHead>
+                    <TableHead className="text-gray-900">Reference</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -901,8 +894,8 @@ export default function InventoryDashboard() {
                       <TableRow key={movement.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{movement.itemName}</p>
-                            <p className="text-sm text-muted-foreground">ID: {movement.itemId}</p>
+                            <p className="font-medium text-gray-900">{movement.itemName}</p>
+                            <p className="text-sm text-gray-600">ID: {movement.itemId}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -915,16 +908,16 @@ export default function InventoryDashboard() {
                             {movement.type.replace('_', ' ')}
                           </Badge>
                         </TableCell>
-                        <TableCell>{formatWeight(movement.quantity, movement.unit)}</TableCell>
+                        <TableCell className="text-gray-900">{formatWeight(movement.quantity, movement.unit)}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
                             {location && getLocationIcon(location.type)}
-                            <span className="text-sm">{location?.name || 'Unknown'}</span>
+                            <span className="text-sm text-gray-900">{location?.name || 'Unknown'}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{formatCurrency(movement.totalValue)}</TableCell>
-                        <TableCell>{movement.createdAt.toLocaleDateString()}</TableCell>
-                        <TableCell>{movement.reference}</TableCell>
+                        <TableCell className="text-gray-900">{formatCurrency(movement.totalValue)}</TableCell>
+                        <TableCell className="text-gray-900">{movement.createdAt.toLocaleDateString()}</TableCell>
+                        <TableCell className="text-gray-900">{movement.reference}</TableCell>
                       </TableRow>
                     )
                   })}
@@ -940,13 +933,13 @@ export default function InventoryDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Item Details</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Stock Level</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Unit Price</TableHead>
-                    <TableHead>Total Value</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="text-gray-900">Item Details</TableHead>
+                    <TableHead className="text-gray-900">Category</TableHead>
+                    <TableHead className="text-gray-900">Stock Level</TableHead>
+                    <TableHead className="text-gray-900">Status</TableHead>
+                    <TableHead className="text-gray-900">Unit Price</TableHead>
+                    <TableHead className="text-gray-900">Total Value</TableHead>
+                    <TableHead className="text-gray-900">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -959,18 +952,18 @@ export default function InventoryDashboard() {
                         <TableCell>
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <p className="font-medium">{item.name}</p>
+                              <p className="font-medium text-gray-900">{item.name}</p>
                               {item.specifications.quality === 'premium' && (
-                                <Crown className="h-4 w-4 text-yellow-500" />
+                                <Crown className="h-4 w-4 text-yellow-600" />
                               )}
                             </div>
                             {item.nameArabic && (
-                              <p className="text-sm text-muted-foreground">{item.nameArabic}</p>
+                              <p className="text-sm text-gray-600">{item.nameArabic}</p>
                             )}
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">{item.sku}</Badge>
+                              <Badge variant="outline" className="text-xs text-gray-900">{item.sku}</Badge>
                               {item.batchNumber && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className="text-xs text-gray-900">
                                   Batch: {item.batchNumber}
                                 </Badge>
                               )}
@@ -978,18 +971,18 @@ export default function InventoryDashboard() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-gray-900">
                             {getCategoryIcon(item.category)}
                             <span className="capitalize">{item.category.replace('_', ' ')}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">
+                            <p className="font-medium text-gray-900">
                               {formatWeight(stockLevel, item.units.primary)}
                             </p>
                             {selectedLocation === 'all' && (
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-gray-600">
                                 Across {item.stock.length} locations
                               </p>
                             )}
@@ -1002,19 +995,19 @@ export default function InventoryDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            <p className="font-medium">{formatCurrency(item.pricing.retail)}</p>
+                            <p className="font-medium text-gray-900">{formatCurrency(item.pricing.retail)}</p>
                             <div className="flex gap-1">
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs text-gray-900">
                                 W: {formatCurrency(item.pricing.wholesale)}
                               </Badge>
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs text-gray-900">
                                 VIP: {formatCurrency(item.pricing.vip)}
                               </Badge>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <p className="font-medium">{formatCurrency(item.totalValue)}</p>
+                          <p className="font-medium text-gray-900">{formatCurrency(item.totalValue)}</p>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
@@ -1025,10 +1018,10 @@ export default function InventoryDashboard() {
                             >
                               <Eye className="h-3 w-3" />
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => router.push('/inventory/add-products?edit=' + item.id)}>
                               <Edit className="h-3 w-3" />
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => router.push('/inventory/adjustments?item=' + item.id)}>
                               <ArrowUpDown className="h-3 w-3" />
                             </Button>
                           </div>
@@ -1050,18 +1043,18 @@ export default function InventoryDashboard() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {getLocationIcon(location.type)}
-                      <CardTitle className="text-lg">{location.name}</CardTitle>
+                      <CardTitle className="text-lg text-gray-900">{location.name}</CardTitle>
                     </div>
                     <Badge className={location.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                       {location.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
-                  <CardDescription>{location.address}, {location.city}</CardDescription>
+                  <CardDescription className="text-gray-600">{location.address}, {location.city}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <div className="flex justify-between text-sm mb-1">
+                      <div className="flex justify-between text-sm mb-1 text-gray-900">
                         <span>Capacity Utilization</span>
                         <span>{location.currentUtilization}%</span>
                       </div>
@@ -1070,28 +1063,28 @@ export default function InventoryDashboard() {
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Manager</p>
-                        <p className="font-medium">{location.manager}</p>
+                        <p className="text-gray-600">Manager</p>
+                        <p className="font-medium text-gray-900">{location.manager}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Type</p>
-                        <p className="font-medium capitalize">{location.type.replace('_', ' ')}</p>
+                        <p className="text-gray-600">Type</p>
+                        <p className="font-medium capitalize text-gray-900">{location.type.replace('_', ' ')}</p>
                       </div>
                     </div>
 
                     <div className="text-sm">
-                      <p className="text-muted-foreground">Operating Hours</p>
-                      <p className="font-medium">
+                      <p className="text-gray-600">Operating Hours</p>
+                      <p className="font-medium text-gray-900">
                         {location.operatingHours.open} - {location.operatingHours.close}
                       </p>
                     </div>
 
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => router.push('/inventory/comprehensive?location=' + location.id)}>
                         <Eye className="mr-1 h-3 w-3" />
                         View Stock
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => alert('Edit location: ' + location.name)}>
                         <Edit className="mr-1 h-3 w-3" />
                         Edit
                       </Button>
@@ -1106,22 +1099,22 @@ export default function InventoryDashboard() {
         <TabsContent value="movements" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Stock Movement History</CardTitle>
-              <CardDescription>Track all inventory movements across locations</CardDescription>
+              <CardTitle className="text-gray-900">Stock Movement History</CardTitle>
+              <CardDescription className="text-gray-600">Track all inventory movements across locations</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Movement Type</TableHead>
-                    <TableHead>From/To</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Value</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="text-gray-900">Date & Time</TableHead>
+                    <TableHead className="text-gray-900">Item</TableHead>
+                    <TableHead className="text-gray-900">Movement Type</TableHead>
+                    <TableHead className="text-gray-900">From/To</TableHead>
+                    <TableHead className="text-gray-900">Quantity</TableHead>
+                    <TableHead className="text-gray-900">Value</TableHead>
+                    <TableHead className="text-gray-900">Reference</TableHead>
+                    <TableHead className="text-gray-900">Created By</TableHead>
+                    <TableHead className="text-gray-900">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1135,18 +1128,18 @@ export default function InventoryDashboard() {
                       <TableRow key={movement.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">
+                            <p className="font-medium text-gray-900">
                               {movement.createdAt.toLocaleDateString()}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-gray-600">
                               {movement.createdAt.toLocaleTimeString()}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{movement.itemName}</p>
-                            <p className="text-sm text-muted-foreground">ID: {movement.itemId}</p>
+                            <p className="font-medium text-gray-900">{movement.itemName}</p>
+                            <p className="text-sm text-gray-600">ID: {movement.itemId}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -1165,38 +1158,38 @@ export default function InventoryDashboard() {
                           <div className="space-y-1">
                             {fromLocation && (
                               <div className="flex items-center gap-1 text-sm">
-                                <span className="text-muted-foreground">From:</span>
+                                <span className="text-gray-600">From:</span>
                                 {getLocationIcon(fromLocation.type)}
-                                <span>{fromLocation.name}</span>
+                                <span className="text-gray-900">{fromLocation.name}</span>
                               </div>
                             )}
                             {toLocation && (
                               <div className="flex items-center gap-1 text-sm">
-                                <span className="text-muted-foreground">To:</span>
+                                <span className="text-gray-600">To:</span>
                                 {getLocationIcon(toLocation.type)}
-                                <span>{toLocation.name}</span>
+                                <span className="text-gray-900">{toLocation.name}</span>
                               </div>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <p className="font-medium">
+                          <p className="font-medium text-gray-900">
                             {formatWeight(movement.quantity, movement.unit)}
                           </p>
                         </TableCell>
                         <TableCell>
-                          <p className="font-medium">{formatCurrency(movement.totalValue)}</p>
+                          <p className="font-medium text-gray-900">{formatCurrency(movement.totalValue)}</p>
                         </TableCell>
                         <TableCell>
-                          <p className="font-medium">{movement.reference}</p>
+                          <p className="font-medium text-gray-900">{movement.reference}</p>
                           {movement.batchNumber && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-gray-600">
                               Batch: {movement.batchNumber}
                             </p>
                           )}
                         </TableCell>
                         <TableCell>
-                          <p className="text-sm">{movement.createdBy}</p>
+                          <p className="text-sm text-gray-900">{movement.createdBy}</p>
                         </TableCell>
                         <TableCell>
                           <Badge className={
@@ -1219,7 +1212,7 @@ export default function InventoryDashboard() {
             <Card className="border-red-200 bg-red-50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-red-500" />
+                  <XCircle className="h-5 w-5 text-red-600" />
                   <div>
                     <p className="font-medium text-red-800">Out of Stock</p>
                     <p className="text-2xl font-bold text-red-600">{metrics?.zeroStockItems}</p>
@@ -1231,7 +1224,7 @@ export default function InventoryDashboard() {
             <Card className="border-yellow-200 bg-yellow-50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
                   <div>
                     <p className="font-medium text-yellow-800">Low Stock</p>
                     <p className="text-2xl font-bold text-yellow-600">{metrics?.lowStockItems}</p>
@@ -1243,7 +1236,7 @@ export default function InventoryDashboard() {
             <Card className="border-orange-200 bg-orange-50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-orange-500" />
+                  <Clock className="h-5 w-5 text-orange-600" />
                   <div>
                     <p className="font-medium text-orange-800">Expiring Soon</p>
                     <p className="text-2xl font-bold text-orange-600">{metrics?.expiringItems}</p>
@@ -1255,7 +1248,7 @@ export default function InventoryDashboard() {
             <Card className="border-blue-200 bg-blue-50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-blue-500" />
+                  <Package className="h-5 w-5 text-blue-600" />
                   <div>
                     <p className="font-medium text-blue-800">Overstock</p>
                     <p className="text-2xl font-bold text-blue-600">7</p>
@@ -1267,8 +1260,8 @@ export default function InventoryDashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Active Alerts</CardTitle>
-              <CardDescription>Inventory alerts requiring attention</CardDescription>
+              <CardTitle className="text-gray-900">Active Alerts</CardTitle>
+              <CardDescription className="text-gray-600">Inventory alerts requiring attention</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -1276,18 +1269,18 @@ export default function InventoryDashboard() {
                   .filter(item => item.alerts.length > 0)
                   .flatMap(item => item.alerts.map(alert => ({ ...alert, item })))
                   .map((alertWithItem) => (
-                    <div key={alertWithItem.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={alertWithItem.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
                       <div className="flex items-center gap-3">
                         <div className={`w-3 h-3 rounded-full ${
-                          alertWithItem.severity === 'critical' ? 'bg-red-500' :
-                          alertWithItem.severity === 'high' ? 'bg-orange-500' :
-                          alertWithItem.severity === 'medium' ? 'bg-yellow-500' :
-                          'bg-blue-500'
+                          alertWithItem.severity === 'critical' ? 'bg-red-600' :
+                          alertWithItem.severity === 'high' ? 'bg-orange-600' :
+                          alertWithItem.severity === 'medium' ? 'bg-yellow-600' :
+                          'bg-blue-600'
                         }`} />
                         <div>
-                          <p className="font-medium">{alertWithItem.item.name}</p>
-                          <p className="text-sm text-muted-foreground">{alertWithItem.message}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-medium text-gray-900">{alertWithItem.item.name}</p>
+                          <p className="text-sm text-gray-900">{alertWithItem.message}</p>
+                          <p className="text-xs text-gray-600">
                             {alertWithItem.createdAt.toLocaleDateString()} •
                             {alertWithItem.locationId &&
                               ` ${locations.find(l => l.id === alertWithItem.locationId)?.name}`
@@ -1296,10 +1289,10 @@ export default function InventoryDashboard() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => setSelectedItem(alertWithItem.item)}>
                           <Eye className="h-3 w-3" />
                         </Button>
-                        <Button size="sm">
+                        <Button size="sm" onClick={() => alert('Resolving alert: ' + alertWithItem.id)}>
                           Resolve
                         </Button>
                       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -176,6 +177,7 @@ const promotions = [
 ];
 
 export default function POSPage() {
+  const router = useRouter();
   const [cart, setCart] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -362,12 +364,21 @@ export default function POSPage() {
 
   // Handle barcode scan
   const handleBarcodeScan = () => {
+    if (!barcodeInput.trim()) {
+      return;
+    }
+
     const product = products.find(p => p.barcode === barcodeInput);
     if (product) {
       addToCart(product);
       setBarcodeInput('');
+      // Show success feedback
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvPahDIHGmi78OKVQQM=');
+      audio.play().catch(() => {}); // Beep sound on scan
     } else {
-      alert('Product not found');
+      // Show error feedback
+      const errorAudio = new Audio('data:audio/wav;base64,UklGRhIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YU4AAAA=');
+      errorAudio.play().catch(() => {});
     }
   };
 
@@ -390,15 +401,15 @@ export default function POSPage() {
             </Badge>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/pos/shift-report')}>
               <Clock className="h-4 w-4 mr-1" />
               Shift Report
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/pos/settings')}>
               <Settings className="h-4 w-4 mr-1" />
               Settings
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/pos/lock')}>
               <Key className="h-4 w-4 mr-1" />
               Lock Register
             </Button>
@@ -424,14 +435,14 @@ export default function POSPage() {
               <div className="relative flex-1">
                 <Scan className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Scan or enter barcode"
+                  placeholder="Scan or enter barcode (Try: 8901234567890)"
                   value={barcodeInput}
                   onChange={(e) => setBarcodeInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleBarcodeScan()}
                   className="pl-10"
                 />
               </div>
-              <Button onClick={handleBarcodeScan}>
+              <Button onClick={handleBarcodeScan} className="bg-amber-600 hover:bg-amber-700">
                 <Scan className="h-4 w-4" />
               </Button>
             </div>

@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/database/prisma';
 import { UserRole } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -25,7 +26,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Simple demo authentication - in production, this would use proper password hashing
+          // Find user by email or phone
           const user = await prisma.user.findFirst({
             where: {
               OR: [
@@ -35,17 +36,29 @@ export const authOptions: NextAuthOptions = {
             }
           });
 
-          if (user && user.isActive) {
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              image: user.image,
-              role: user.role,
-            };
+          // Verify user exists, is active, and has a password
+          if (!user || !user.isActive || !user.password) {
+            return null;
           }
 
-          return null;
+          // Verify password using bcrypt
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          // Return user data (password excluded)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+          };
         } catch (error) {
           console.error('Authentication error:', error);
           return null;

@@ -80,6 +80,7 @@ model User {
   createdMovements   StockMovement[]      @relation("CreatedBy")
   supervisedBatches  ProductionBatch[]    @relation("SupervisedBy")
   operatedStages     ProcessingStage[]    @relation("OperatedBy")
+  assignedComplaints CustomerComplaint[]  @relation("AssignedComplaints")
 
   @@map("users")
 }
@@ -119,9 +120,14 @@ model Customer {
   createdById     String
 
   // Relations
-  createdBy User      @relation("CreatedBy", fields: [createdById], references: [id])
-  orders    Order[]
-  payments  Payment[]
+  createdBy           User                      @relation("CreatedBy", fields: [createdById], references: [id])
+  orders              Order[]
+  payments            Payment[]
+  segments            CustomerSegmentMember[]
+  complaints          CustomerComplaint[]
+  loyaltyTransactions LoyaltyPointsTransaction[]
+  vipEvents           VIPEventAttendee[]
+  campaignResponses   CampaignResponse[]
 
   @@map("customers")
 }
@@ -200,6 +206,8 @@ model Product {
   updatedAt     DateTime    @updatedAt
   createdById   String
 
+  isVIPExclusive Boolean     @default(false)
+
   // Relations
   category       Category           @relation(fields: [categoryId], references: [id])
   brand          Brand?             @relation(fields: [brandId], references: [id])
@@ -207,8 +215,6 @@ model Product {
   createdBy      User               @relation("CreatedBy", fields: [createdById], references: [id])
   orderItems     OrderItem[]
   stockMovements StockMovement[]
-  recipes        Recipe[]
-  recipeItems    RecipeItem[]
   productionBatches ProductionBatch[]
   storeInventory StoreInventory[]
 
@@ -315,11 +321,14 @@ model Order {
   createdById  String
 
   // Relations
-  customer  Customer?   @relation(fields: [customerId], references: [id])
-  store     Store       @relation(fields: [storeId], references: [id])
-  createdBy User        @relation("CreatedBy", fields: [createdById], references: [id])
-  items     OrderItem[]
-  payments  Payment[]
+  customer            Customer?                @relation(fields: [customerId], references: [id])
+  store               Store                    @relation(fields: [storeId], references: [id])
+  createdBy           User                     @relation("CreatedBy", fields: [createdById], references: [id])
+  items               OrderItem[]
+  payments            Payment[]
+  complaints          CustomerComplaint[]
+  loyaltyTransactions LoyaltyPointsTransaction[]
+  giftCardTransactions GiftCardTransaction[]
 
   @@map("orders")
 }
@@ -780,4 +789,623 @@ enum StockMovementType {
   OUT
   ADJUSTMENT
   TRANSFER
+}
+
+// CRM & Marketing Models
+model MarketingCampaign {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?        @db.Text
+  type          CampaignType
+  targetSegment String?
+  startDate     DateTime
+  endDate       DateTime
+  budget        Decimal?       @db.Decimal(15, 2)
+  status        CampaignStatus @default(DRAFT)
+  createdBy     String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Relations
+  segment   CustomerSegment?     @relation(fields: [targetSegment], references: [id])
+  messages  CampaignMessage[]
+  responses CampaignResponse[]
+
+  @@map("marketing_campaigns")
+}
+
+model CampaignMessage {
+  id         String   @id @default(cuid())
+  campaignId String
+  subject    String
+  body       String   @db.Text
+  sentAt     DateTime @default(now())
+
+  // Relations
+  campaign MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_messages")
+}
+
+model CampaignResponse {
+  id         String   @id @default(cuid())
+  campaignId String
+  customerId String
+  responseType String  // OPENED, CLICKED, CONVERTED
+  createdAt  DateTime @default(now())
+
+  // Relations
+  campaign MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  customer Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_responses")
+}
+
+model CustomerSegment {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  type        SegmentType
+  criteria    Json?
+  isActive    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  campaigns MarketingCampaign[]
+  customers CustomerSegmentMember[]
+
+  @@map("customer_segments")
+}
+
+model CustomerSegmentMember {
+  id         String   @id @default(cuid())
+  segmentId  String
+  customerId String
+  addedAt    DateTime @default(now())
+
+  // Relations
+  segment  CustomerSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  customer Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([segmentId, customerId])
+  @@map("customer_segment_members")
+}
+
+model CustomerComplaint {
+  id          String           @id @default(cuid())
+  customerId  String
+  orderId     String?
+  subject     String
+  description String           @db.Text
+  priority    ComplaintPriority @default(MEDIUM)
+  category    ComplaintCategory @default(OTHER)
+  status      ComplaintStatus   @default(OPEN)
+  assignedTo  String?
+  resolution  String?          @db.Text
+  createdBy   String
+  createdAt   DateTime         @default(now())
+  resolvedAt  DateTime?
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  customer   Customer @relation(fields: [customerId], references: [id])
+  order      Order?   @relation(fields: [orderId], references: [id])
+  assignedUser User?  @relation("AssignedComplaints", fields: [assignedTo], references: [id])
+
+  @@map("customer_complaints")
+}
+
+// Loyalty & VIP Models
+model LoyaltyPointsTransaction {
+  id          String              @id @default(cuid())
+  customerId  String
+  points      Int
+  type        LoyaltyTransactionType
+  orderId     String?
+  description String?
+  expiryDate  DateTime?
+  createdBy   String
+  createdAt   DateTime            @default(now())
+
+  // Relations
+  customer Customer @relation(fields: [customerId], references: [id])
+  order    Order?   @relation(fields: [orderId], references: [id])
+
+  @@map("loyalty_points_transactions")
+}
+
+model VIPEvent {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?  @db.Text
+  eventDate     DateTime
+  location      String?
+  maxAttendees  Int?
+  isExclusive   Boolean  @default(true)
+  minimumTier   String?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  attendees VIPEventAttendee[]
+
+  @@map("vip_events")
+}
+
+model VIPEventAttendee {
+  id         String   @id @default(cuid())
+  eventId    String
+  customerId String
+  registeredAt DateTime @default(now())
+  attended   Boolean  @default(false)
+
+  // Relations
+  event    VIPEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([eventId, customerId])
+  @@map("vip_event_attendees")
+}
+
+// Finance & Accounting Models
+model VATReturn {
+  id             String         @id @default(cuid())
+  periodStart    DateTime
+  periodEnd      DateTime
+  totalSales     Decimal        @db.Decimal(15, 2)
+  totalPurchases Decimal        @db.Decimal(15, 2)
+  outputVAT      Decimal        @db.Decimal(15, 2)
+  inputVAT       Decimal        @db.Decimal(15, 2)
+  netVAT         Decimal        @db.Decimal(15, 2)
+  status         VATReturnStatus @default(DRAFT)
+  submittedAt    DateTime?
+  paidAt         DateTime?
+  createdBy      String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@map("vat_returns")
+}
+
+model BankAccount {
+  id            String   @id @default(cuid())
+  accountName   String
+  accountNumber String   @unique
+  bankName      String
+  branch        String?
+  currency      String   @default("AED")
+  balance       Decimal  @db.Decimal(15, 2) @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  transactions     BankTransaction[]
+  reconciliations  BankReconciliation[]
+
+  @@map("bank_accounts")
+}
+
+model BankTransaction {
+  id               String    @id @default(cuid())
+  bankAccountId    String
+  transactionDate  DateTime
+  description      String
+  reference        String?
+  amount           Decimal   @db.Decimal(15, 2)
+  type             TransactionType
+  balance          Decimal?  @db.Decimal(15, 2)
+  isReconciled     Boolean   @default(false)
+  reconciliationId String?
+  createdAt        DateTime  @default(now())
+
+  // Relations
+  bankAccount    BankAccount         @relation(fields: [bankAccountId], references: [id])
+  reconciliation BankReconciliation? @relation(fields: [reconciliationId], references: [id])
+
+  @@map("bank_transactions")
+}
+
+model BankReconciliation {
+  id               String              @id @default(cuid())
+  bankAccountId    String
+  statementDate    DateTime
+  statementBalance Decimal             @db.Decimal(15, 2)
+  bookBalance      Decimal             @db.Decimal(15, 2)
+  difference       Decimal             @db.Decimal(15, 2)
+  status           ReconciliationStatus @default(PENDING)
+  createdBy        String
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  // Relations
+  bankAccount  BankAccount       @relation(fields: [bankAccountId], references: [id])
+  transactions BankTransaction[]
+
+  @@map("bank_reconciliations")
+}
+
+// HR & Payroll Models
+model Employee {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  employeeCode   String   @unique
+  department     String?
+  position       String?
+  hireDate       DateTime
+  basicSalary    Decimal  @db.Decimal(10, 2)
+  allowances     Decimal? @db.Decimal(10, 2)
+  deductions     Decimal? @db.Decimal(10, 2)
+  commissionRate Decimal? @db.Decimal(5, 2)
+  hourlyRate     Decimal? @db.Decimal(10, 2)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  payrolls    Payroll[]
+  attendances Attendance[]
+  leaves      Leave[]
+
+  @@map("employees")
+}
+
+model Payroll {
+  id          String        @id @default(cuid())
+  employeeId  String
+  periodStart DateTime
+  periodEnd   DateTime
+  basicSalary Decimal       @db.Decimal(10, 2)
+  allowances  Decimal       @db.Decimal(10, 2) @default(0)
+  deductions  Decimal       @db.Decimal(10, 2) @default(0)
+  commission  Decimal       @db.Decimal(10, 2) @default(0)
+  overtime    Decimal       @db.Decimal(10, 2) @default(0)
+  grossSalary Decimal       @db.Decimal(10, 2)
+  netSalary   Decimal       @db.Decimal(10, 2)
+  status      PayrollStatus @default(PENDING)
+  paidAt      DateTime?
+  createdBy   String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("payroll")
+}
+
+model Attendance {
+  id            String    @id @default(cuid())
+  employeeId    String
+  date          DateTime  @db.Date
+  checkIn       DateTime?
+  checkOut      DateTime?
+  hoursWorked   Decimal?  @db.Decimal(4, 2)
+  overtimeHours Decimal?  @db.Decimal(4, 2)
+  status        AttendanceStatus @default(PRESENT)
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, date])
+  @@map("attendance")
+}
+
+model Leave {
+  id          String      @id @default(cuid())
+  employeeId  String
+  leaveType   LeaveType
+  startDate   DateTime    @db.Date
+  endDate     DateTime    @db.Date
+  days        Int
+  reason      String?     @db.Text
+  status      LeaveStatus @default(PENDING)
+  approvedBy  String?
+  approvedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("leaves")
+}
+
+// Sales & Promotions Models
+model GiftCard {
+  id           String          @id @default(cuid())
+  code         String          @unique
+  initialValue Decimal         @db.Decimal(10, 2)
+  balance      Decimal         @db.Decimal(10, 2)
+  currency     String          @default("AED")
+  issuedTo     String?
+  issuedDate   DateTime        @default(now())
+  expiryDate   DateTime?
+  status       GiftCardStatus  @default(ACTIVE)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  // Relations
+  transactions GiftCardTransaction[]
+
+  @@map("gift_cards")
+}
+
+model GiftCardTransaction {
+  id          String   @id @default(cuid())
+  giftCardId  String
+  orderId     String?
+  amount      Decimal  @db.Decimal(10, 2)
+  type        TransactionType
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id])
+  order    Order?   @relation(fields: [orderId], references: [id])
+
+  @@map("gift_card_transactions")
+}
+
+model Discount {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  name          String
+  description   String?       @db.Text
+  type          DiscountType
+  value         Decimal       @db.Decimal(10, 2)
+  minPurchase   Decimal?      @db.Decimal(10, 2)
+  maxDiscount   Decimal?      @db.Decimal(10, 2)
+  startDate     DateTime
+  endDate       DateTime
+  usageLimit    Int?
+  usageCount    Int           @default(0)
+  isActive      Boolean       @default(true)
+  applicableTo  Json?         // Product IDs, categories, etc.
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("discounts")
+}
+
+model Promotion {
+  id          String         @id @default(cuid())
+  name        String
+  description String?        @db.Text
+  type        PromotionType
+  conditions  Json           // Buy X Get Y, Spend amount get discount, etc.
+  rewards     Json           // What customer gets
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean        @default(true)
+  priority    Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("promotions")
+}
+
+// Additional Enums
+enum CampaignType {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH_NOTIFICATION
+  MULTI_CHANNEL
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum SegmentType {
+  VIP
+  REGULAR
+  CORPORATE
+  RETAIL
+  WHOLESALE
+  CUSTOM
+}
+
+enum ComplaintPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ComplaintCategory {
+  PRODUCT_QUALITY
+  DELIVERY
+  SERVICE
+  PRICING
+  OTHER
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum LoyaltyTransactionType {
+  EARNED
+  REDEEMED
+  EXPIRED
+  ADJUSTED
+}
+
+enum VATReturnStatus {
+  DRAFT
+  SUBMITTED
+  PAID
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
+
+enum ReconciliationStatus {
+  PENDING
+  RECONCILED
+  DISCREPANCY
+}
+
+enum PayrollStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  LEAVE
+}
+
+enum LeaveType {
+  ANNUAL
+  SICK
+  EMERGENCY
+  UNPAID
+  MATERNITY
+  PATERNITY
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  CANCELLED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
+}
+
+enum PromotionType {
+  BUY_X_GET_Y
+  SPEND_GET_DISCOUNT
+  BUNDLE_DEAL
+  FLASH_SALE
+}
+
+// Sampling & Trial Management Models
+model SamplingSession {
+  id                String           @id @default(cuid())
+  sessionNumber     String           @unique
+  customerId        String?
+  customerName      String?
+  customerPhone     String?
+  customerEmail     String?
+  customerType      String?          // walk-in, returning, vip
+  isAnonymous       Boolean          @default(false)
+  storeId           String
+  staffId           String
+  outcome           SamplingOutcome
+  saleAmount        Decimal?         @db.Decimal(10, 2)
+  notPurchaseReason String?
+  notes             String?          @db.Text
+  totalTesterCost   Decimal          @db.Decimal(10, 2)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relations
+  customer       Customer?           @relation(fields: [customerId], references: [id])
+  store          Store               @relation(fields: [storeId], references: [id])
+  staff          User                @relation("SamplingStaff", fields: [staffId], references: [id])
+  testedProducts SamplingProduct[]
+
+  @@map("sampling_sessions")
+}
+
+model SamplingProduct {
+  id            String   @id @default(cuid())
+  sessionId     String
+  productId     String
+  productName   String
+  productCode   String
+  productType   String   // perfume, oud, attar
+  quantityUsed  Decimal  @db.Decimal(10, 3)
+  unit          String
+  costPerUnit   Decimal  @db.Decimal(10, 2)
+  totalCost     Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+
+  // Relations
+  session SamplingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [productId], references: [id])
+
+  @@map("sampling_products")
+}
+
+model TesterStock {
+  id               String   @id @default(cuid())
+  productId        String   @unique
+  currentStock     Decimal  @db.Decimal(10, 3)
+  minLevel         Decimal  @db.Decimal(10, 3)
+  unit             String
+  lastRefillDate   DateTime?
+  lastRefillAmount Decimal? @db.Decimal(10, 3)
+  monthlyUsage     Decimal  @db.Decimal(10, 3) @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("tester_stock")
+}
+
+model TesterRefill {
+  id          String           @id @default(cuid())
+  productId   String
+  quantity    Decimal          @db.Decimal(10, 3)
+  unit        String
+  sourceType  TesterSourceType
+  cost        Decimal          @db.Decimal(10, 2)
+  refilledBy  String
+  notes       String?
+  createdAt   DateTime         @default(now())
+
+  // Relations
+  product    Product @relation(fields: [productId], references: [id])
+  refilledByUser User @relation("TesterRefilledBy", fields: [refilledBy], references: [id])
+
+  @@map("tester_refills")
+}
+
+enum SamplingOutcome {
+  PURCHASED
+  NOT_PURCHASED
+}
+
+enum TesterSourceType {
+  MAIN_INVENTORY
+  PURCHASE
 }

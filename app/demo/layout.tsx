@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import SidebarNavigation from '@/components/navigation/sidebar';
+import { Sidebar } from '@/components/layout/sidebar';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
@@ -11,7 +11,6 @@ export default function DemoLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [userRole, setUserRole] = useState<'hq-admin' | 'store-manager' | 'cashier' | 'accountant' | 'production-staff'>('hq-admin');
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -21,10 +20,7 @@ export default function DemoLayout({
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:relative lg:translate-x-0
       `}>
-        <SidebarNavigation
-          userRole={userRole}
-          isCollapsed={false}
-        />
+        <Sidebar />
       </div>
 
       {/* Overlay for mobile */}
@@ -54,19 +50,7 @@ export default function DemoLayout({
               </h1>
             </div>
 
-            {/* Role Switcher for Demo */}
             <div className="flex items-center gap-4">
-              <select
-                value={userRole}
-                onChange={(e) => setUserRole(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="hq-admin">HQ Admin</option>
-                <option value="store-manager">Store Manager</option>
-                <option value="cashier">Cashier</option>
-                <option value="accountant">Accountant</option>
-                <option value="production-staff">Production Staff</option>
-              </select>
               <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 A
               </div>

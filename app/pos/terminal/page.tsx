@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { KeyboardShortcuts } from '@/components/pos/KeyboardShortcuts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +49,7 @@ import {
 } from 'lucide-react';
 
 const POSTerminal = () => {
+  const router = useRouter();
   const [cart, setCart] = useState([]);
   const [currentCustomer, setCurrentCustomer] = useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('cash');
@@ -58,6 +61,7 @@ const POSTerminal = () => {
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
   const [language, setLanguage] = useState('en');
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     name: '',
     nameArabic: '',
@@ -259,6 +263,19 @@ const POSTerminal = () => {
     setDiscountValue(0);
   };
 
+  const handleScanSuccess = (decodedText: string) => {
+    // Find product by barcode
+    const product = products.find(p => p.barcode === decodedText);
+    if (product) {
+      addToCart(product);
+      setIsScannerOpen(false);
+      // Show success feedback
+      alert(`Product scanned: ${product.name}`);
+    } else {
+      alert(`Barcode not found: ${decodedText}`);
+    }
+  };
+
   const getText = (en, ar) => language === 'ar' ? ar : en;
 
   // Add new customer
@@ -277,6 +294,13 @@ const POSTerminal = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      <KeyboardShortcuts
+        onScan={() => setIsScannerOpen(true)}
+        onNewCustomer={() => setIsNewCustomerModalOpen(true)}
+        onPayment={() => cart.length > 0 && setIsPaymentModalOpen(true)}
+        onClear={clearCart}
+        onHold={() => router.push('/pos/hold')}
+      />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -298,7 +322,7 @@ const POSTerminal = () => {
                 <SelectItem value="ar">🇦🇪 العربية</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => router.push('/pos')}>
               <Settings className="h-4 w-4 mr-2" />
               {getText('Settings', 'الإعدادات')}
             </Button>
@@ -322,10 +346,68 @@ const POSTerminal = () => {
                       dir={language === 'ar' ? 'rtl' : 'ltr'}
                     />
                   </div>
-                  <Button variant="outline">
-                    <QrCode className="h-4 w-4 mr-2" />
-                    {getText('Scan', 'مسح')}
-                  </Button>
+                  <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        <QrCode className="h-4 w-4 mr-2" />
+                        {getText('Scan', 'مسح')}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>{getText('Scan Product Barcode/QR Code', 'مسح باركود/رمز المنتج')}</DialogTitle>
+                        <DialogDescription>
+                          {getText('Point camera at product barcode or QR code', 'وجه الكاميرا إلى الباركود أو رمز QR للمنتج')}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <p className="text-sm text-blue-900">
+                            {getText(
+                              'You can also use a handheld barcode scanner or enter the code manually below',
+                              'يمكنك أيضًا استخدام ماسح الباركود المحمول أو إدخال الرمز يدويًا أدناه'
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>{getText('Manual Barcode Entry', 'إدخال الباركود يدويًا')}</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder={getText('Enter barcode number...', 'أدخل رقم الباركود...')}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.currentTarget.value) {
+                                  handleScanSuccess(e.currentTarget.value);
+                                  e.currentTarget.value = '';
+                                }
+                              }}
+                            />
+                            <Button onClick={(e) => {
+                              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                              if (input?.value) {
+                                handleScanSuccess(input.value);
+                                input.value = '';
+                              }
+                            }}>
+                              {getText('Add', 'إضافة')}
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {getText('Tip: Use a USB barcode scanner for quick input', 'نصيحة: استخدم ماسح الباركود USB للإدخال السريع')}
+                          </p>
+                        </div>
+
+                        <Separator />
+
+                        <div className="text-center py-4">
+                          <Button variant="outline" onClick={() => router.push('/inventory/barcode')}>
+                            <QrCode className="h-4 w-4 mr-2" />
+                            {getText('Open Full Scanner', 'فتح الماسح الكامل')}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>
@@ -828,11 +910,11 @@ const POSTerminal = () => {
                     </Dialog>
 
                     <div className="grid grid-cols-3 gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => router.push('/pos/hold')}>
                         <Clock className="h-4 w-4 mr-1" />
                         {getText('Hold', 'تعليق')}
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => router.push('/pos/receipt')}>
                         <Printer className="h-4 w-4 mr-1" />
                         {getText('Print', 'طباعة')}
                       </Button>

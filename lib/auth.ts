@@ -328,4 +328,4 @@ export const authOptions: NextAuthOptions = {
       }
     },
   },
-};
+};export const auth = authOptions;
