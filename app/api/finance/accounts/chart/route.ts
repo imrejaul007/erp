@@ -403,9 +403,8 @@ export async function PATCH(request: NextRequest) {
             currency: 'AED',
             balance: 0,
             isActive: true,
-            isControlAccount: accountData.isControlAccount || false,
             allowPosting: accountData.allowPosting !== false,
-          },
+          } as any,
         });
         createdAccounts[accountData.code] = account.id;
       }
@@ -426,9 +425,8 @@ export async function PATCH(request: NextRequest) {
               currency: 'AED',
               balance: 0,
               isActive: true,
-              isControlAccount: accountData.isControlAccount || false,
               allowPosting: accountData.allowPosting !== false,
-            },
+            } as any,
           });
           createdAccounts[accountData.code] = account.id;
         }
