@@ -49,8 +49,33 @@ interface BrandingProviderProps {
   children: ReactNode;
 }
 
+const DEFAULT_BRANDING: BrandingData = {
+  companyName: 'Oud & Perfume ERP',
+  companyNameAr: 'نظام إدارة العود والعطور',
+  primaryColor: '#d97706',
+  primaryHover: '#b45309',
+  accentColor: '#92400e',
+  bgLight: '#fffbeb',
+  bgDark: '#1f2937',
+  textPrimary: '#111827',
+  textSecondary: '#6b7280',
+  successColor: '#10b981',
+  warningColor: '#f59e0b',
+  errorColor: '#ef4444',
+  infoColor: '#3b82f6',
+  fontFamily: 'Inter',
+  fontSize: 'medium',
+  sidebarStyle: 'light',
+  headerStyle: 'light',
+  borderRadius: 'medium',
+  currency: 'AED',
+  currencySymbol: 'AED',
+  dateFormat: 'DD/MM/YYYY',
+  timeFormat: '24h',
+};
+
 export function BrandingProvider({ children }: BrandingProviderProps) {
-  const [branding, setBranding] = useState<BrandingData | null>(null);
+  const [branding, setBranding] = useState<BrandingData | null>(DEFAULT_BRANDING);
   const [loading, setLoading] = useState(true);
 
   const fetchBranding = async () => {
@@ -61,9 +86,16 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
       if (result.success && result.data) {
         setBranding(result.data);
         applyBranding(result.data);
+      } else {
+        // Use default branding if fetch fails
+        setBranding(DEFAULT_BRANDING);
+        applyBranding(DEFAULT_BRANDING);
       }
     } catch (error) {
       console.error('Error fetching branding:', error);
+      // Use default branding on error
+      setBranding(DEFAULT_BRANDING);
+      applyBranding(DEFAULT_BRANDING);
     } finally {
       setLoading(false);
     }
