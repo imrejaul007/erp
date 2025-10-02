@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Plus, Search, Filter, Beaker, FileText, Copy, Edit, Trash2, Clock, Users, AlertCircle, CheckCircle, Star, Archive, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

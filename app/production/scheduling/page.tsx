@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Plus, Search, Filter, Calendar, Clock, Users, AlertTriangle, CheckCircle, RotateCcw, ChevronLeft, ChevronRight, Eye, Edit, Trash2, Play, Pause, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

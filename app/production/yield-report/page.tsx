@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Plus, Search, Filter, BarChart3, TrendingUp, TrendingDown, DollarSign, Percent, Calculator, FileText, Download, Eye, Calendar, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
