@@ -681,12 +681,20 @@ model StockMovement {
 
 // Enums
 enum UserRole {
-  OWNER
-  MANAGER
-  ACCOUNTANT
-  SALES_STAFF
-  INVENTORY_STAFF
-  USER
+  SUPER_ADMIN           // Owner / Head Office - Full control
+  ADMIN                 // Branch Manager - Manage assigned store
+  SALES_STAFF           // POS User - Daily sales operations
+  INVENTORY_STAFF       // Warehouse Staff - Stock management
+  PRODUCTION_STAFF      // Lab/Production - Batch management
+  PROCUREMENT_OFFICER   // Purchase Officer - Supplier & PO management
+  ACCOUNTANT            // Finance & Accounts - Financial operations
+  HR_MANAGER            // HR - Staff, payroll, attendance
+  EVENT_STAFF           // Temporary location/exhibition POS
+  EVENT_MANAGER         // Event Manager - Event profitability
+  AUDITOR               // Read-only access for compliance
+  MANAGER               // Legacy - Branch operations
+  OWNER                 // Legacy - Kept for backwards compatibility
+  USER                  // Basic user
 }
 
 enum StoreRole {
