@@ -33,6 +33,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Oud & Perfume ERP Team' }],
   creator: 'Oud & Perfume ERP',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://oud-erp.onrender.com'),
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
