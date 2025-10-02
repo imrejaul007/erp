@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:render": "prisma generate && prisma db push --accept-data-loss && npm run db:seed && next build",
+    "build:render": "prisma generate && prisma db push --accept-data-loss && next build",
+    "build:render:seed": "prisma generate && prisma db push --accept-data-loss && npm run db:seed && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
