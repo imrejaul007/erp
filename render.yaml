@@ -1,16 +1,4 @@
 services:
-  # PostgreSQL Database
-  - type: pserv
-    name: oud-erp-db
-    env: docker
-    plan: free
-    region: oregon
-    disk:
-      name: oud-erp-db-disk
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 1
-    ipAllowList: []
-
   # Web Service (Next.js App)
   - type: web
     name: oud-erp
