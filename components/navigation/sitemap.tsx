@@ -67,6 +67,7 @@ import {
   Key,
   Database,
   Cloud,
+  TrendingDown,
   Wifi,
   WifiOff,
   Bluetooth,

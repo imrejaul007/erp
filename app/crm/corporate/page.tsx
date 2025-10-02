@@ -38,6 +38,7 @@ import {
   Edit,
   Download,
   Settings,
+  Gift,
   UserPlus,
   Briefcase,
   Award,
