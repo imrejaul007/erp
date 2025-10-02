@@ -3,7 +3,7 @@ services:
     name: oud-erp
     env: node
     plan: free
-    buildCommand: npm install && npm run build:render:seed
+    buildCommand: rm -rf .next && npm install && npm run build:render:seed
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
