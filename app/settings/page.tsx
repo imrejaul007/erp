@@ -204,7 +204,7 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -224,7 +224,7 @@ const SettingsPage = () => {
       </div>
 
       {/* Settings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -253,7 +253,7 @@ const SettingsPage = () => {
         </TabsList>
 
         {/* General Settings */}
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Company Information</CardTitle>
@@ -397,7 +397,7 @@ const SettingsPage = () => {
         </TabsContent>
 
         {/* Users & Roles */}
-        <TabsContent value="users" className="space-y-6">
+        <TabsContent value="users" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -458,13 +458,13 @@ const SettingsPage = () => {
         </TabsContent>
 
         {/* Notifications */}
-        <TabsContent value="notifications" className="space-y-6">
+        <TabsContent value="notifications" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Notification Preferences</CardTitle>
               <CardDescription>Configure when and how you receive notifications</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div>
                 <h3 className="font-medium mb-4">Business Alerts</h3>
                 <div className="space-y-3">
@@ -492,7 +492,7 @@ const SettingsPage = () => {
         </TabsContent>
 
         {/* Integrations */}
-        <TabsContent value="integrations" className="space-y-6">
+        <TabsContent value="integrations" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Third-Party Integrations</CardTitle>
@@ -536,13 +536,13 @@ const SettingsPage = () => {
         </TabsContent>
 
         {/* System Settings */}
-        <TabsContent value="system" className="space-y-6">
+        <TabsContent value="system" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>System Configuration</CardTitle>
               <CardDescription>Core system settings and maintenance options</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div>
                 <h3 className="font-medium mb-4">Data Management</h3>
                 <div className="space-y-3">
@@ -578,13 +578,13 @@ const SettingsPage = () => {
         </TabsContent>
 
         {/* Security */}
-        <TabsContent value="security" className="space-y-6">
+        <TabsContent value="security" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Security Settings</CardTitle>
               <CardDescription>Configure authentication and security policies</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div>
                 <h3 className="font-medium mb-4">Authentication</h3>
                 <div className="space-y-4">

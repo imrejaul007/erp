@@ -211,7 +211,7 @@ export default function PnLStatementPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -306,7 +306,7 @@ export default function PnLStatementPage() {
       </Card>
 
       {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -315,7 +315,7 @@ export default function PnLStatementPage() {
             <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.revenue.total)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -338,7 +338,7 @@ export default function PnLStatementPage() {
             <TrendingUp className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.grossProfit)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -361,7 +361,7 @@ export default function PnLStatementPage() {
             <Target className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.operatingIncome)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -384,7 +384,7 @@ export default function PnLStatementPage() {
             <Calculator className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.netIncome)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -434,7 +434,7 @@ export default function PnLStatementPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Revenue Section */}
                 <div>
                   <h3 className="text-lg font-semibold text-green-900 mb-3 flex items-center">
@@ -504,7 +504,7 @@ export default function PnLStatementPage() {
                   <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold text-blue-900">Gross Profit</h3>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-900">
+                      <div className="text-xl sm:text-2xl font-bold text-blue-900">
                         {formatAED(currentData.grossProfit)}
                       </div>
                       <div className="text-sm text-blue-700">
@@ -575,7 +575,7 @@ export default function PnLStatementPage() {
                   <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold text-purple-900">Operating Income</h3>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-purple-900">
+                      <div className="text-xl sm:text-2xl font-bold text-purple-900">
                         {formatAED(currentData.operatingIncome)}
                       </div>
                       <div className="text-sm text-purple-700">
@@ -621,7 +621,7 @@ export default function PnLStatementPage() {
                 {/* Net Income */}
                 <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-2xl font-bold text-amber-900">Net Income</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-amber-900">Net Income</h3>
                     <div className="text-right">
                       <div className="text-3xl font-bold text-amber-900">
                         {formatAED(currentData.netIncome)}
@@ -821,7 +821,7 @@ export default function PnLStatementPage() {
 
         {/* Financial Ratios Tab */}
         <TabsContent value="ratios">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -833,7 +833,7 @@ export default function PnLStatementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Gross Profit Margin</span>
@@ -952,7 +952,7 @@ export default function PnLStatementPage() {
 
         {/* Trends Tab */}
         <TabsContent value="trends">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -982,7 +982,7 @@ export default function PnLStatementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <h4 className="font-medium">Revenue Growth</h4>
                     <div className="flex items-center gap-2">

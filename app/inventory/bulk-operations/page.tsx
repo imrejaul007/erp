@@ -80,7 +80,7 @@ export default function BulkOperationsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Bulk Operations</h1>
@@ -92,7 +92,7 @@ export default function BulkOperationsPage() {
         </Button>
       </div>
 
-      <Tabs defaultValue="import" className="space-y-6">
+      <Tabs defaultValue="import" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="import">
             <Upload className="h-4 w-4 mr-2" />
@@ -112,8 +112,8 @@ export default function BulkOperationsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="import" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <TabsContent value="import" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Import Products</CardTitle>
@@ -197,7 +197,7 @@ export default function BulkOperationsPage() {
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-5 w-5 text-green-600" />
                         <div>
-                          <p className="text-2xl font-bold text-green-600">{results.success}</p>
+                          <p className="text-xl sm:text-2xl font-bold text-green-600">{results.success}</p>
                           <p className="text-sm text-green-700">Successful</p>
                         </div>
                       </div>
@@ -206,7 +206,7 @@ export default function BulkOperationsPage() {
                       <div className="flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-red-600" />
                         <div>
-                          <p className="text-2xl font-bold text-red-600">{results.failed}</p>
+                          <p className="text-xl sm:text-2xl font-bold text-red-600">{results.failed}</p>
                           <p className="text-sm text-red-700">Failed</p>
                         </div>
                       </div>
@@ -215,7 +215,7 @@ export default function BulkOperationsPage() {
                       <div className="flex items-center gap-2">
                         <Package className="h-5 w-5 text-blue-600" />
                         <div>
-                          <p className="text-2xl font-bold text-blue-600">{results.total}</p>
+                          <p className="text-xl sm:text-2xl font-bold text-blue-600">{results.total}</p>
                           <p className="text-sm text-blue-700">Total Processed</p>
                         </div>
                       </div>
@@ -240,8 +240,8 @@ export default function BulkOperationsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="export" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <TabsContent value="export" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Export Products</CardTitle>

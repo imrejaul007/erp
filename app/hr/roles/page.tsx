@@ -298,7 +298,7 @@ const RolesPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -390,13 +390,13 @@ const RolesPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Roles</p>
-                <p className="text-2xl font-bold">{roleMetrics.totalRoles}</p>
+                <p className="text-xl sm:text-2xl font-bold">{roleMetrics.totalRoles}</p>
               </div>
               <Shield className="h-8 w-8 text-blue-600" />
             </div>
@@ -408,7 +408,7 @@ const RolesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Roles</p>
-                <p className="text-2xl font-bold">{roleMetrics.activeRoles}</p>
+                <p className="text-xl sm:text-2xl font-bold">{roleMetrics.activeRoles}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
@@ -420,7 +420,7 @@ const RolesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Custom Roles</p>
-                <p className="text-2xl font-bold">{roleMetrics.customRoles}</p>
+                <p className="text-xl sm:text-2xl font-bold">{roleMetrics.customRoles}</p>
               </div>
               <Settings className="h-8 w-8 text-purple-600" />
             </div>
@@ -432,7 +432,7 @@ const RolesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Users with Roles</p>
-                <p className="text-2xl font-bold">{roleMetrics.usersWithRoles}</p>
+                <p className="text-xl sm:text-2xl font-bold">{roleMetrics.usersWithRoles}</p>
               </div>
               <Users className="h-8 w-8 text-orange-600" />
             </div>
@@ -444,7 +444,7 @@ const RolesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending</p>
-                <p className="text-2xl font-bold">{roleMetrics.pendingAssignments}</p>
+                <p className="text-xl sm:text-2xl font-bold">{roleMetrics.pendingAssignments}</p>
               </div>
               <Clock className="h-8 w-8 text-yellow-600" />
             </div>
@@ -452,7 +452,7 @@ const RolesPage = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="roles" className="space-y-6">
+      <Tabs defaultValue="roles" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="roles">Role Management</TabsTrigger>
           <TabsTrigger value="assignments">User Assignments</TabsTrigger>
@@ -460,7 +460,7 @@ const RolesPage = () => {
         </TabsList>
 
         {/* Role Management Tab */}
-        <TabsContent value="roles" className="space-y-6">
+        <TabsContent value="roles" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -514,7 +514,7 @@ const RolesPage = () => {
                         <div className="text-sm text-gray-600">{role.description}</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 sm:gap-6">
                       <div className="text-center">
                         <div className="font-medium">{role.usersCount}</div>
                         <div className="text-xs text-gray-500">Users</div>
@@ -552,7 +552,7 @@ const RolesPage = () => {
         </TabsContent>
 
         {/* User Assignments Tab */}
-        <TabsContent value="assignments" className="space-y-6">
+        <TabsContent value="assignments" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -639,14 +639,14 @@ const RolesPage = () => {
         </TabsContent>
 
         {/* Permission Matrix Tab */}
-        <TabsContent value="permissions" className="space-y-6">
+        <TabsContent value="permissions" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Permission Matrix</CardTitle>
               <CardDescription>Overview of permissions across all roles</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {Object.entries(permissions).map(([moduleKey, module]) => (
                   <div key={moduleKey} className="space-y-3">
                     <div className="flex items-center gap-2">
@@ -711,7 +711,7 @@ const RolesPage = () => {
               Select the permissions and access levels for this role
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {Object.entries(permissions).map(([moduleKey, module]) => (
               <div key={moduleKey} className="space-y-3">
                 <div className="flex items-center gap-2">

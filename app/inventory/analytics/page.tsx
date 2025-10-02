@@ -12,7 +12,7 @@ export default function InventoryAnalyticsPage() {
   const router = useRouter();
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Inventory Analytics</h1>
@@ -44,7 +44,7 @@ export default function InventoryAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Stock Turnover</p>
-                <p className="text-2xl font-bold">4.2x</p>
+                <p className="text-xl sm:text-2xl font-bold">4.2x</p>
                 <div className="flex items-center gap-1 text-xs text-green-600">
                   <TrendingUp className="h-3 w-3" />
                   +12% vs last month
@@ -60,7 +60,7 @@ export default function InventoryAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Avg Days on Hand</p>
-                <p className="text-2xl font-bold">87</p>
+                <p className="text-xl sm:text-2xl font-bold">87</p>
                 <div className="flex items-center gap-1 text-xs text-red-600">
                   <TrendingDown className="h-3 w-3" />
                   -8 days
@@ -76,7 +76,7 @@ export default function InventoryAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Stock Accuracy</p>
-                <p className="text-2xl font-bold">96.5%</p>
+                <p className="text-xl sm:text-2xl font-bold">96.5%</p>
                 <div className="flex items-center gap-1 text-xs text-green-600">
                   <TrendingUp className="h-3 w-3" />
                   +2.1%
@@ -92,7 +92,7 @@ export default function InventoryAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Carrying Cost</p>
-                <p className="text-2xl font-bold">AED 12.5K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED 12.5K</p>
                 <div className="flex items-center gap-1 text-xs text-yellow-600">
                   <AlertTriangle className="h-3 w-3" />
                   High
@@ -104,7 +104,7 @@ export default function InventoryAnalyticsPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Top Selling Items</CardTitle>

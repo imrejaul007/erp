@@ -228,7 +228,7 @@ const SupplierReportsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -259,13 +259,13 @@ const SupplierReportsPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Spend</p>
-                <p className="text-2xl font-bold">USD ${(spendingAnalysis.totalSpend / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">USD ${(spendingAnalysis.totalSpend / 1000).toFixed(0)}K</p>
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   +12.5% from last quarter
@@ -281,7 +281,7 @@ const SupplierReportsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Performance</p>
-                <p className="text-2xl font-bold">88.3</p>
+                <p className="text-xl sm:text-2xl font-bold">88.3</p>
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   +3.2% improvement
@@ -297,7 +297,7 @@ const SupplierReportsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">On-Time Delivery</p>
-                <p className="text-2xl font-bold">{deliveryMetrics.onTimeDeliveryRate}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{deliveryMetrics.onTimeDeliveryRate}%</p>
                 <div className="text-xs text-yellow-600 flex items-center gap-1">
                   <TrendingDown className="h-3 w-3" />
                   -1.5% from target
@@ -313,7 +313,7 @@ const SupplierReportsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Quality Rating</p>
-                <p className="text-2xl font-bold">{qualityMetrics.overallRating}</p>
+                <p className="text-xl sm:text-2xl font-bold">{qualityMetrics.overallRating}</p>
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <Star className="h-3 w-3 fill-current" />
                   Excellent standard
@@ -335,8 +335,8 @@ const SupplierReportsPage = () => {
           <TabsTrigger value="risk">Risk Analysis</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="performance" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="performance" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Vendor Performance Table */}
             <div className="lg:col-span-2">
               <Card>
@@ -402,7 +402,7 @@ const SupplierReportsPage = () => {
             </div>
 
             {/* Performance Summary */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Top Performers</CardTitle>
@@ -457,8 +457,8 @@ const SupplierReportsPage = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="spending" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="spending" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Spending by Category */}
             <Card>
               <CardHeader>
@@ -549,8 +549,8 @@ const SupplierReportsPage = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="delivery" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="delivery" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Delivery Performance Overview */}
             <Card>
               <CardHeader>
@@ -559,11 +559,11 @@ const SupplierReportsPage = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{deliveryMetrics.averageLeadTime}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">{deliveryMetrics.averageLeadTime}</div>
                     <div className="text-sm text-blue-800">Avg Lead Time (days)</div>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{deliveryMetrics.onTimeDeliveryRate}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">{deliveryMetrics.onTimeDeliveryRate}%</div>
                     <div className="text-sm text-green-800">On-Time Delivery</div>
                   </div>
                 </div>
@@ -675,8 +675,8 @@ const SupplierReportsPage = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="quality" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="quality" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Quality Overview */}
             <Card>
               <CardHeader>
@@ -685,14 +685,14 @@ const SupplierReportsPage = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600 flex items-center justify-center gap-1">
+                    <div className="text-xl sm:text-2xl font-bold text-yellow-600 flex items-center justify-center gap-1">
                       <Star className="h-6 w-6 fill-current" />
                       {qualityMetrics.overallRating}
                     </div>
                     <div className="text-sm text-yellow-800">Overall Rating</div>
                   </div>
                   <div className="text-center p-4 bg-red-50 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">{qualityMetrics.defectRate}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-red-600">{qualityMetrics.defectRate}%</div>
                     <div className="text-sm text-red-800">Defect Rate</div>
                   </div>
                 </div>
@@ -809,8 +809,8 @@ const SupplierReportsPage = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="risk" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="risk" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Risk Assessment */}
             <div className="lg:col-span-2">
               <Card>
@@ -896,7 +896,7 @@ const SupplierReportsPage = () => {
             </div>
 
             {/* Risk Summary */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Risk Distribution</CardTitle>

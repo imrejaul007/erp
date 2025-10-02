@@ -41,7 +41,7 @@ export default function AddLocationPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -61,8 +61,8 @@ export default function AddLocationPage() {
             <CardTitle>Location Details</CardTitle>
             <CardDescription>Enter the details for the new store location</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Store Name */}
               <div className="space-y-2">
                 <Label htmlFor="name">Store Name *</Label>

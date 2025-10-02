@@ -348,7 +348,7 @@ export default function CorporateClientManagementPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -377,14 +377,14 @@ export default function CorporateClientManagementPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalClients)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.totalClients)}</div>
             <p className="text-xs text-muted-foreground">
               {stats.activeClients} active accounts
             </p>
@@ -397,7 +397,7 @@ export default function CorporateClientManagementPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               Avg contract: {formatCurrency(stats.averageContractValue)}
             </p>
@@ -410,7 +410,7 @@ export default function CorporateClientManagementPage() {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalOutstanding)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(stats.totalOutstanding)}</div>
             <p className="text-xs text-muted-foreground">
               {formatCurrency(stats.overduePay)} overdue
             </p>
@@ -423,7 +423,7 @@ export default function CorporateClientManagementPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.pendingApprovals}</div>
+            <div className="text-xl sm:text-2xl font-bold text-orange-600">{stats.pendingApprovals}</div>
             <p className="text-xs text-muted-foreground">
               Require attention
             </p>
@@ -432,7 +432,7 @@ export default function CorporateClientManagementPage() {
       </div>
 
       {/* Industry & Business Type Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -500,12 +500,12 @@ export default function CorporateClientManagementPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <div className="text-center p-6 border rounded-lg border-green-200">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <div className="text-2xl font-bold text-green-600">{stats.riskDistribution.low}</div>
+              <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.riskDistribution.low}</div>
               <div className="text-sm text-gray-600">Low Risk Clients</div>
               <div className="mt-2">
                 <Progress
@@ -519,7 +519,7 @@ export default function CorporateClientManagementPage() {
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="w-8 h-8 text-yellow-600" />
               </div>
-              <div className="text-2xl font-bold text-yellow-600">{stats.riskDistribution.medium}</div>
+              <div className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.riskDistribution.medium}</div>
               <div className="text-sm text-gray-600">Medium Risk Clients</div>
               <div className="mt-2">
                 <Progress
@@ -533,7 +533,7 @@ export default function CorporateClientManagementPage() {
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-8 h-8 text-red-600" />
               </div>
-              <div className="text-2xl font-bold text-red-600">{stats.riskDistribution.high}</div>
+              <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.riskDistribution.high}</div>
               <div className="text-sm text-gray-600">High Risk Clients</div>
               <div className="mt-2">
                 <Progress
@@ -547,7 +547,7 @@ export default function CorporateClientManagementPage() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="clients" className="space-y-6">
+      <Tabs defaultValue="clients" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="clients">Corporate Clients</TabsTrigger>
           <TabsTrigger value="proposals">Proposals & Quotes</TabsTrigger>
@@ -556,7 +556,7 @@ export default function CorporateClientManagementPage() {
         </TabsList>
 
         {/* Corporate Clients Tab */}
-        <TabsContent value="clients" className="space-y-6">
+        <TabsContent value="clients" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -701,7 +701,7 @@ export default function CorporateClientManagementPage() {
         </TabsContent>
 
         {/* Proposals & Quotes Tab */}
-        <TabsContent value="proposals" className="space-y-6">
+        <TabsContent value="proposals" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -782,8 +782,8 @@ export default function CorporateClientManagementPage() {
         </TabsContent>
 
         {/* Contracts & Terms Tab */}
-        <TabsContent value="contracts" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="contracts" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Volume Discount Tiers</CardTitle>
@@ -856,7 +856,7 @@ export default function CorporateClientManagementPage() {
         </TabsContent>
 
         {/* Performance Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -909,7 +909,7 @@ export default function CorporateClientManagementPage() {
                 {selectedClient.companyName} - Corporate Profile
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Company Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
@@ -939,7 +939,7 @@ export default function CorporateClientManagementPage() {
               <Separator />
 
               {/* Company Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <Label className="text-lg">Company Information</Label>
                   <div className="mt-3 space-y-2">

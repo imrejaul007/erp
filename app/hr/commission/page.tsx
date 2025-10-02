@@ -339,7 +339,7 @@ const CommissionPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -419,13 +419,13 @@ const CommissionPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Commissions</p>
-                <p className="text-2xl font-bold">AED {commissionMetrics.totalCommissions?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {commissionMetrics.totalCommissions?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(commissionMetrics.trends.commissions)}`}>
                   {getTrendIcon(commissionMetrics.trends.commissions)}
                   {Math.abs(commissionMetrics.trends.commissions)}% vs last month
@@ -441,7 +441,7 @@ const CommissionPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Commission Rate</p>
-                <p className="text-2xl font-bold">{commissionMetrics.avgCommissionRate}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{commissionMetrics.avgCommissionRate}%</p>
                 <p className="text-xs text-blue-600">Across all positions</p>
               </div>
               <Percent className="h-8 w-8 text-blue-600" />
@@ -454,7 +454,7 @@ const CommissionPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Commission Sales</p>
-                <p className="text-2xl font-bold">AED {(commissionMetrics.totalSalesForCommission / 1000000).toFixed(1)}M</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(commissionMetrics.totalSalesForCommission / 1000000).toFixed(1)}M</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(commissionMetrics.trends.salesVolume)}`}>
                   {getTrendIcon(commissionMetrics.trends.salesVolume)}
                   {Math.abs(commissionMetrics.trends.salesVolume)}% vs last month
@@ -470,7 +470,7 @@ const CommissionPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
-                <p className="text-2xl font-bold">{commissionMetrics.pendingApprovals}</p>
+                <p className="text-xl sm:text-2xl font-bold">{commissionMetrics.pendingApprovals}</p>
                 <p className="text-xs text-orange-600">Require review</p>
               </div>
               <Clock className="h-8 w-8 text-orange-600" />
@@ -479,7 +479,7 @@ const CommissionPage = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="commissions" className="space-y-6">
+      <Tabs defaultValue="commissions" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="commissions">Commission Tracking</TabsTrigger>
           <TabsTrigger value="schemes">Commission Schemes</TabsTrigger>
@@ -488,7 +488,7 @@ const CommissionPage = () => {
         </TabsList>
 
         {/* Commission Tracking Tab */}
-        <TabsContent value="commissions" className="space-y-6">
+        <TabsContent value="commissions" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -615,7 +615,7 @@ const CommissionPage = () => {
         </TabsContent>
 
         {/* Commission Schemes Tab */}
-        <TabsContent value="schemes" className="space-y-6">
+        <TabsContent value="schemes" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -736,7 +736,7 @@ const CommissionPage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 sm:gap-6">
                       <div className="text-center">
                         <div className="font-medium">{scheme.structure.base}%</div>
                         <div className="text-xs text-gray-500">Base Rate</div>
@@ -774,8 +774,8 @@ const CommissionPage = () => {
         </TabsContent>
 
         {/* Performance Analytics Tab */}
-        <TabsContent value="performance" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="performance" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Top Performers</CardTitle>
@@ -859,19 +859,19 @@ const CommissionPage = () => {
               <CardDescription>Commission and sales performance over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">+15.8%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">+15.8%</div>
                   <div className="text-sm text-gray-600">Commission Growth</div>
                   <div className="text-xs text-gray-500">vs last month</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">+12.3%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">+12.3%</div>
                   <div className="text-sm text-gray-600">Sales Volume</div>
                   <div className="text-xs text-gray-500">vs last month</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">+8.2%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">+8.2%</div>
                   <div className="text-sm text-gray-600">Active Participants</div>
                   <div className="text-xs text-gray-500">vs last month</div>
                 </div>
@@ -881,7 +881,7 @@ const CommissionPage = () => {
         </TabsContent>
 
         {/* Reports & Payouts Tab */}
-        <TabsContent value="reports" className="space-y-6">
+        <TabsContent value="reports" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Commission Reports & Payouts</CardTitle>

@@ -249,7 +249,7 @@ export default function PredictiveAnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -270,11 +270,11 @@ export default function PredictiveAnalyticsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <AlertTriangle className="h-8 w-8 text-red-600 mb-2" />
-            <div className="text-2xl font-bold text-red-600">12</div>
+            <div className="text-xl sm:text-2xl font-bold text-red-600">12</div>
             <div className="text-sm text-gray-600">Restock Alerts</div>
             <div className="text-xs text-gray-500 mt-1">Urgent action needed</div>
           </CardContent>
@@ -283,7 +283,7 @@ export default function PredictiveAnalyticsPage() {
         <Card>
           <CardContent className="pt-6">
             <TrendingUp className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold text-green-600">25%</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">25%</div>
             <div className="text-sm text-gray-600">Demand Increase</div>
             <div className="text-xs text-gray-500 mt-1">Next 30 days</div>
           </CardContent>
@@ -292,7 +292,7 @@ export default function PredictiveAnalyticsPage() {
         <Card>
           <CardContent className="pt-6">
             <Users className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold text-amber-600">185</div>
+            <div className="text-xl sm:text-2xl font-bold text-amber-600">185</div>
             <div className="text-sm text-gray-600">At-Risk Customers</div>
             <div className="text-xs text-gray-500 mt-1">Retention needed</div>
           </CardContent>
@@ -301,7 +301,7 @@ export default function PredictiveAnalyticsPage() {
         <Card>
           <CardContent className="pt-6">
             <Activity className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold text-blue-600">4</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">4</div>
             <div className="text-sm text-gray-600">Anomalies Detected</div>
             <div className="text-xs text-gray-500 mt-1">Last 24 hours</div>
           </CardContent>
@@ -656,13 +656,13 @@ export default function PredictiveAnalyticsPage() {
                     <div className="grid grid-cols-2 gap-4 mb-3">
                       <div>
                         <div className="text-sm text-gray-600">Predicted Sales</div>
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-xl sm:text-2xl font-bold text-green-600">
                           AED {(forecast.predictedSales / 1000000).toFixed(2)}M
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">vs Last Year</div>
-                        <div className="text-2xl font-bold text-blue-600">+{forecast.vsLastYear}%</div>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">+{forecast.vsLastYear}%</div>
                       </div>
                     </div>
                     <div className="mb-3">

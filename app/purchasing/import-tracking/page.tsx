@@ -237,7 +237,7 @@ const ImportTrackingPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -261,13 +261,13 @@ const ImportTrackingPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Shipments</p>
-                <p className="text-2xl font-bold">8</p>
+                <p className="text-xl sm:text-2xl font-bold">8</p>
                 <p className="text-xs text-blue-600">+2 from last week</p>
               </div>
               <Package className="h-8 w-8 text-blue-600" />
@@ -280,7 +280,7 @@ const ImportTrackingPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">In Transit</p>
-                <p className="text-2xl font-bold">3</p>
+                <p className="text-xl sm:text-2xl font-bold">3</p>
                 <p className="text-xs text-green-600">On schedule</p>
               </div>
               <Navigation className="h-8 w-8 text-green-600" />
@@ -293,7 +293,7 @@ const ImportTrackingPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">At Customs</p>
-                <p className="text-2xl font-bold">2</p>
+                <p className="text-xl sm:text-2xl font-bold">2</p>
                 <p className="text-xs text-yellow-600">Awaiting clearance</p>
               </div>
               <Shield className="h-8 w-8 text-yellow-600" />
@@ -306,7 +306,7 @@ const ImportTrackingPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Transit Time</p>
-                <p className="text-2xl font-bold">12 days</p>
+                <p className="text-xl sm:text-2xl font-bold">12 days</p>
                 <p className="text-xs text-purple-600">-2 days improved</p>
               </div>
               <Clock className="h-8 w-8 text-purple-600" />
@@ -316,7 +316,7 @@ const ImportTrackingPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Shipments List */}
         <div className="lg:col-span-2">
           <Card>
@@ -408,7 +408,7 @@ const ImportTrackingPage = () => {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Customs Status */}
           <Card>
             <CardHeader>

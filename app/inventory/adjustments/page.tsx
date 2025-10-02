@@ -196,7 +196,7 @@ export default function StockAdjustmentsPage() {
   const positiveAdjustments = adjustments.filter(a => a.adjustmentQuantity > 0).length;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
@@ -310,14 +310,14 @@ export default function StockAdjustmentsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Total Adjustments</CardTitle>
             <Package className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{totalAdjustments}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{totalAdjustments}</div>
             <p className="text-xs text-gray-500 mt-1">This month</p>
           </CardContent>
         </Card>
@@ -328,7 +328,7 @@ export default function StockAdjustmentsPage() {
             <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{pendingAdjustments}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{pendingAdjustments}</div>
             <p className="text-xs text-gray-500 mt-1">Awaiting review</p>
           </CardContent>
         </Card>
@@ -342,7 +342,7 @@ export default function StockAdjustmentsPage() {
             }
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totalCostImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${totalCostImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               AED {Math.abs(totalCostImpact)?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-500 mt-1">{totalCostImpact >= 0 ? 'Positive' : 'Negative'} impact</p>
@@ -355,7 +355,7 @@ export default function StockAdjustmentsPage() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{positiveAdjustments}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{positiveAdjustments}</div>
             <p className="text-xs text-gray-500 mt-1">Positive adjustments</p>
           </CardContent>
         </Card>
@@ -529,7 +529,7 @@ export default function StockAdjustmentsPage() {
             <DialogHeader>
               <DialogTitle>Adjustment Details - {selectedAdjustment.adjustmentNumber}</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-600">Material Information</Label>

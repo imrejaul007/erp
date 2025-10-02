@@ -363,7 +363,7 @@ export default function ComplaintsAndFeedbackPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -392,14 +392,14 @@ export default function ComplaintsAndFeedbackPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Tickets</CardTitle>
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalTickets)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.totalTickets)}</div>
             <p className="text-xs text-muted-foreground">
               {stats.openTickets} currently open
             </p>
@@ -412,7 +412,7 @@ export default function ComplaintsAndFeedbackPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageResolutionTime}h</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.averageResolutionTime}h</div>
             <p className="text-xs text-muted-foreground">
               First response: {stats.firstResponseTime}h
             </p>
@@ -425,7 +425,7 @@ export default function ComplaintsAndFeedbackPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.customerSatisfactionScore}/5</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.customerSatisfactionScore}/5</div>
             <p className="text-xs text-muted-foreground">
               From resolved tickets
             </p>
@@ -438,7 +438,7 @@ export default function ComplaintsAndFeedbackPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {Math.round((stats.resolvedTickets / stats.totalTickets) * 100)}%
             </div>
             <p className="text-xs text-muted-foreground">
@@ -449,7 +449,7 @@ export default function ComplaintsAndFeedbackPage() {
       </div>
 
       {/* Priority & Channel Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -551,7 +551,7 @@ export default function ComplaintsAndFeedbackPage() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="tickets" className="space-y-6">
+      <Tabs defaultValue="tickets" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="tickets">Support Tickets</TabsTrigger>
           <TabsTrigger value="feedback">Customer Feedback</TabsTrigger>
@@ -560,7 +560,7 @@ export default function ComplaintsAndFeedbackPage() {
         </TabsList>
 
         {/* Support Tickets Tab */}
-        <TabsContent value="tickets" className="space-y-6">
+        <TabsContent value="tickets" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -707,7 +707,7 @@ export default function ComplaintsAndFeedbackPage() {
         </TabsContent>
 
         {/* Customer Feedback Tab */}
-        <TabsContent value="feedback" className="space-y-6">
+        <TabsContent value="feedback" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -820,8 +820,8 @@ export default function ComplaintsAndFeedbackPage() {
         </TabsContent>
 
         {/* Analytics & Reports Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -874,7 +874,7 @@ export default function ComplaintsAndFeedbackPage() {
                           />
                         </div>
                       </div>
-                      <div className="flex gap-6 text-sm">
+                      <div className="flex gap-4 sm:gap-6 text-sm">
                         <div>
                           <div className="text-gray-600">Tickets</div>
                           <div className="font-semibold">{month.tickets}</div>
@@ -897,8 +897,8 @@ export default function ComplaintsAndFeedbackPage() {
         </TabsContent>
 
         {/* Support Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="settings" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Ticket Categories</CardTitle>
@@ -975,7 +975,7 @@ export default function ComplaintsAndFeedbackPage() {
                 Ticket #{selectedTicket.ticketNumber}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Ticket Header */}
               <div className="flex items-start justify-between">
                 <div className="flex-1">

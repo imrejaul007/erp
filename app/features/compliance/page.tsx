@@ -351,7 +351,7 @@ export default function CompliancePage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -529,7 +529,7 @@ export default function CompliancePage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-green-600">{reg.score}%</p>
+                        <p className="text-xl sm:text-2xl font-bold text-green-600">{reg.score}%</p>
                       </div>
                     </div>
                     <Progress value={reg.score} />

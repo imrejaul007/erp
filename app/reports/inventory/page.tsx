@@ -262,7 +262,7 @@ export default function InventoryReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -341,7 +341,7 @@ export default function InventoryReportsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {formatCurrency(inventoryOverview.totalValue)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -359,7 +359,7 @@ export default function InventoryReportsPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{inventoryOverview.turnoverRate}x</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{inventoryOverview.turnoverRate}x</div>
             <p className="text-xs text-muted-foreground">
               Annual inventory turnover
             </p>
@@ -375,7 +375,7 @@ export default function InventoryReportsPage() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{inventoryOverview.outOfStock}</div>
+            <div className="text-xl sm:text-2xl font-bold text-orange-600">{inventoryOverview.outOfStock}</div>
             <p className="text-xs text-muted-foreground">
               Items requiring attention
             </p>
@@ -391,7 +391,7 @@ export default function InventoryReportsPage() {
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-xl sm:text-2xl font-bold text-red-600">
               {formatCurrency(inventoryOverview.deadStock)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -416,7 +416,7 @@ export default function InventoryReportsPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Inventory Health Dashboard</CardTitle>
@@ -684,7 +684,7 @@ export default function InventoryReportsPage() {
         </TabsContent>
 
         <TabsContent value="valuation" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Inventory Valuation Trend</CardTitle>
@@ -827,7 +827,7 @@ export default function InventoryReportsPage() {
               <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="p-4 border-2 border-green-200 bg-green-50">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">
                       {abcAnalysis.filter(item => item.classification === 'A').length}
                     </div>
                     <p className="text-sm font-medium">Class A Categories</p>
@@ -837,7 +837,7 @@ export default function InventoryReportsPage() {
 
                 <Card className="p-4 border-2 border-yellow-200 bg-yellow-50">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-600">
+                    <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                       {abcAnalysis.filter(item => item.classification === 'B').length}
                     </div>
                     <p className="text-sm font-medium">Class B Categories</p>
@@ -847,7 +847,7 @@ export default function InventoryReportsPage() {
 
                 <Card className="p-4 border-2 border-blue-200 bg-blue-50">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">
                       {abcAnalysis.filter(item => item.classification === 'C').length}
                     </div>
                     <p className="text-sm font-medium">Class C Categories</p>

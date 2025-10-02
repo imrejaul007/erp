@@ -294,7 +294,7 @@ const ClickCollectPage = () => {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -318,13 +318,13 @@ const ClickCollectPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{stats.totalOrders}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.totalOrders}</p>
                 <p className="text-xs text-green-600">+8% vs last week</p>
               </div>
               <ShoppingBag className="h-8 w-8 text-blue-600" />
@@ -337,7 +337,7 @@ const ClickCollectPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Ready for Pickup</p>
-                <p className="text-2xl font-bold">{stats.readyForPickup}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.readyForPickup}</p>
                 <p className="text-xs text-blue-600">Awaiting collection</p>
               </div>
               <Package className="h-8 w-8 text-green-600" />
@@ -350,7 +350,7 @@ const ClickCollectPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Today's Pickups</p>
-                <p className="text-2xl font-bold">{stats.todayPickups}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.todayPickups}</p>
                 <p className="text-xs text-purple-600">Completed today</p>
               </div>
               <UserCheck className="h-8 w-8 text-purple-600" />
@@ -363,7 +363,7 @@ const ClickCollectPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Expiring Soon</p>
-                <p className="text-2xl font-bold">{stats.expiringSoon}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.expiringSoon}</p>
                 <p className="text-xs text-orange-600">Within 24 hours</p>
               </div>
               <Timer className="h-8 w-8 text-orange-600" />
@@ -373,7 +373,7 @@ const ClickCollectPage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="orders" className="space-y-6">
+      <Tabs defaultValue="orders" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="orders">All Orders</TabsTrigger>
           <TabsTrigger value="ready">Ready for Pickup</TabsTrigger>
@@ -383,7 +383,7 @@ const ClickCollectPage = () => {
         </TabsList>
 
         {/* All Orders Tab */}
-        <TabsContent value="orders" className="space-y-6">
+        <TabsContent value="orders" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -533,7 +533,7 @@ const ClickCollectPage = () => {
         </TabsContent>
 
         {/* Ready for Pickup Tab */}
-        <TabsContent value="ready" className="space-y-6">
+        <TabsContent value="ready" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Ready for Pickup</CardTitle>
@@ -621,7 +621,7 @@ const ClickCollectPage = () => {
         </TabsContent>
 
         {/* Store Locations Tab */}
-        <TabsContent value="locations" className="space-y-6">
+        <TabsContent value="locations" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -725,8 +725,8 @@ const ClickCollectPage = () => {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Performance Metrics */}
             <Card>
               <CardHeader>
@@ -735,19 +735,19 @@ const ClickCollectPage = () => {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{stats.averagePickupTime}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.averagePickupTime}</div>
                     <div className="text-sm text-gray-500">Avg Pickup Time</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">96.5%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">96.5%</div>
                     <div className="text-sm text-gray-500">Collection Rate</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">{stats.customerSatisfaction}/5</div>
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">{stats.customerSatisfaction}/5</div>
                     <div className="text-sm text-gray-500">Customer Rating</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">3.5%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-orange-600">3.5%</div>
                     <div className="text-sm text-gray-500">Expiry Rate</div>
                   </div>
                 </div>
@@ -794,22 +794,22 @@ const ClickCollectPage = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">156</div>
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">156</div>
                   <div className="text-sm text-gray-500">Total Orders</div>
                   <div className="text-xs text-green-600">+12% vs last week</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">AED 84.2K</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">AED 84.2K</div>
                   <div className="text-sm text-gray-500">Total Value</div>
                   <div className="text-xs text-green-600">+18% vs last week</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">AED 540</div>
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">AED 540</div>
                   <div className="text-sm text-gray-500">Avg Order Value</div>
                   <div className="text-xs text-blue-600">+5% vs last week</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">2.1 hrs</div>
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600">2.1 hrs</div>
                   <div className="text-sm text-gray-500">Avg Prep Time</div>
                   <div className="text-xs text-green-600">-15% vs last week</div>
                 </div>
@@ -819,8 +819,8 @@ const ClickCollectPage = () => {
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="settings" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Click & Collect Settings</CardTitle>
@@ -952,7 +952,7 @@ const ClickCollectPage = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedOrder && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Order Header */}
               <div className="flex justify-between items-start">
                 <div>

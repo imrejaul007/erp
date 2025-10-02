@@ -404,7 +404,7 @@ const PerfumeOudFeatures = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -550,13 +550,13 @@ const PerfumeOudFeatures = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Premium Oud Stock</p>
-                <p className="text-2xl font-bold">{oudProducts.filter(p => p.type.includes('oud')).length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{oudProducts.filter(p => p.type.includes('oud')).length}</p>
                 <p className="text-xs text-purple-600">Super A+ grade available</p>
               </div>
               <Crown className="h-8 w-8 text-purple-600" />
@@ -569,7 +569,7 @@ const PerfumeOudFeatures = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Distillations</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xl sm:text-2xl font-bold">
                   {distillationBatches.filter(b => b.status === 'in_progress').length}
                 </p>
                 <p className="text-xs text-blue-600">2 batches in progress</p>
@@ -584,7 +584,7 @@ const PerfumeOudFeatures = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Aging Products</p>
-                <p className="text-2xl font-bold">{agingPrograms.length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{agingPrograms.length}</p>
                 <p className="text-xs text-green-600">Up to 25 years aging</p>
               </div>
               <Timer className="h-8 w-8 text-green-600" />
@@ -597,7 +597,7 @@ const PerfumeOudFeatures = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Cultural Occasions</p>
-                <p className="text-2xl font-bold">{culturalElements.occasions.length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{culturalElements.occasions.length}</p>
                 <p className="text-xs text-orange-600">UAE heritage focused</p>
               </div>
               <Heart className="h-8 w-8 text-orange-600" />
@@ -607,7 +607,7 @@ const PerfumeOudFeatures = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="grading" className="space-y-6">
+      <Tabs defaultValue="grading" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="grading">Grading</TabsTrigger>
           <TabsTrigger value="distillation">Distillation</TabsTrigger>
@@ -619,8 +619,8 @@ const PerfumeOudFeatures = () => {
         </TabsList>
 
         {/* Grading Tab */}
-        <TabsContent value="grading" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="grading" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Product Quality Grading */}
             <Card>
               <CardHeader>
@@ -804,8 +804,8 @@ const PerfumeOudFeatures = () => {
         </TabsContent>
 
         {/* Distillation Tab */}
-        <TabsContent value="distillation" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="distillation" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Active Distillation Batches */}
             <Card>
               <CardHeader>
@@ -969,7 +969,7 @@ const PerfumeOudFeatures = () => {
               <CardTitle>Distillation Process Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {distillationBatches[1].stages.map((stage, index) => (
                   <div key={index} className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -998,8 +998,8 @@ const PerfumeOudFeatures = () => {
         </TabsContent>
 
         {/* Aging Tab */}
-        <TabsContent value="aging" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="aging" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Aging Programs */}
             <Card>
               <CardHeader>
@@ -1197,8 +1197,8 @@ const PerfumeOudFeatures = () => {
         </TabsContent>
 
         {/* Cultural Tab */}
-        <TabsContent value="cultural" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="cultural" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Cultural Occasions */}
             <Card>
               <CardHeader>
@@ -1307,7 +1307,7 @@ const PerfumeOudFeatures = () => {
         </TabsContent>
 
         {/* Seasonal Tab */}
-        <TabsContent value="seasonal" className="space-y-6">
+        <TabsContent value="seasonal" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1316,7 +1316,7 @@ const PerfumeOudFeatures = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {seasonalRecommendations.map((season, index) => (
                   <div key={index} className="border rounded-lg p-4 space-y-4">
                     <div className="flex justify-between items-center">
@@ -1418,8 +1418,8 @@ const PerfumeOudFeatures = () => {
         </TabsContent>
 
         {/* Aromatherapy Tab */}
-        <TabsContent value="aromatherapy" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="aromatherapy" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Aromatherapy Benefits */}
             <Card>
               <CardHeader>
@@ -1552,8 +1552,8 @@ const PerfumeOudFeatures = () => {
         </TabsContent>
 
         {/* Heritage Tab */}
-        <TabsContent value="heritage" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="heritage" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Master Distillers */}
             <Card>
               <CardHeader>
@@ -1662,7 +1662,7 @@ const PerfumeOudFeatures = () => {
               <CardTitle>Cultural & Spiritual Significance</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <h4 className="font-medium">Religious Significance</h4>
                   <div className="space-y-3">

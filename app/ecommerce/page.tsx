@@ -230,7 +230,7 @@ const EcommercePage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -254,13 +254,13 @@ const EcommercePage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold">AED {(ecommerceMetrics.totalRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(ecommerceMetrics.totalRevenue / 1000).toFixed(0)}K</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(ecommerceMetrics.trends.revenue)}`}>
                   {getTrendIcon(ecommerceMetrics.trends.revenue)}
                   {Math.abs(ecommerceMetrics.trends.revenue)}% vs last period
@@ -276,7 +276,7 @@ const EcommercePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{ecommerceMetrics.totalOrders?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">{ecommerceMetrics.totalOrders?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(ecommerceMetrics.trends.orders)}`}>
                   {getTrendIcon(ecommerceMetrics.trends.orders)}
                   {Math.abs(ecommerceMetrics.trends.orders)}% vs last period
@@ -292,7 +292,7 @@ const EcommercePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Online Visitors</p>
-                <p className="text-2xl font-bold">{(ecommerceMetrics.onlineVisitors / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">{(ecommerceMetrics.onlineVisitors / 1000).toFixed(0)}K</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(ecommerceMetrics.trends.visitors)}`}>
                   {getTrendIcon(ecommerceMetrics.trends.visitors)}
                   {Math.abs(ecommerceMetrics.trends.visitors)}% vs last period
@@ -308,7 +308,7 @@ const EcommercePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                <p className="text-2xl font-bold">{ecommerceMetrics.conversionRate}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{ecommerceMetrics.conversionRate}%</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(ecommerceMetrics.trends.conversion)}`}>
                   {getTrendIcon(ecommerceMetrics.trends.conversion)}
                   {Math.abs(ecommerceMetrics.trends.conversion)}% vs last period
@@ -355,7 +355,7 @@ const EcommercePage = () => {
                     <div className="text-sm text-gray-500">{channel.platform}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 sm:gap-6">
                   <div className="text-center">
                     <div className="font-medium">AED {(channel.revenue / 1000).toFixed(0)}K</div>
                     <div className="text-xs text-gray-500">Revenue</div>
@@ -396,7 +396,7 @@ const EcommercePage = () => {
       </Card>
 
       {/* Recent Orders & Integration Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Recent Online Orders</CardTitle>

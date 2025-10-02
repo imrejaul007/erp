@@ -272,7 +272,7 @@ const ReportsAnalytics = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -413,13 +413,13 @@ const ReportsAnalytics = () => {
       </Card>
 
       {/* KPI Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold">{formatCurrency(kpiMetrics.totalRevenue)}</p>
+                <p className="text-xl sm:text-2xl font-bold">{formatCurrency(kpiMetrics.totalRevenue)}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(kpiMetrics.trends.revenue)}`}>
                   {getTrendIcon(kpiMetrics.trends.revenue)}
                   {Math.abs(kpiMetrics.trends.revenue)}% vs last period
@@ -435,7 +435,7 @@ const ReportsAnalytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{kpiMetrics.totalOrders?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">{kpiMetrics.totalOrders?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(kpiMetrics.trends.orders)}`}>
                   {getTrendIcon(kpiMetrics.trends.orders)}
                   {Math.abs(kpiMetrics.trends.orders)}% vs last period
@@ -451,7 +451,7 @@ const ReportsAnalytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                <p className="text-2xl font-bold">{kpiMetrics.totalCustomers?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">{kpiMetrics.totalCustomers?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(kpiMetrics.trends.customers)}`}>
                   {getTrendIcon(kpiMetrics.trends.customers)}
                   {Math.abs(kpiMetrics.trends.customers)}% vs last period
@@ -467,7 +467,7 @@ const ReportsAnalytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                <p className="text-2xl font-bold">AED {kpiMetrics.avgOrderValue}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {kpiMetrics.avgOrderValue}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(kpiMetrics.trends.aov)}`}>
                   {getTrendIcon(kpiMetrics.trends.aov)}
                   {Math.abs(kpiMetrics.trends.aov)}% vs last period
@@ -480,7 +480,7 @@ const ReportsAnalytics = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="sales">Sales</TabsTrigger>
@@ -492,8 +492,8 @@ const ReportsAnalytics = () => {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Sales Trend */}
             <Card>
               <CardHeader>
@@ -564,7 +564,7 @@ const ReportsAnalytics = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600">{kpiMetrics.conversionRate}%</div>
+                <div className="text-xl sm:text-2xl font-bold text-blue-600">{kpiMetrics.conversionRate}%</div>
                 <div className="text-sm text-gray-500">Conversion Rate</div>
                 <div className={`text-xs flex items-center justify-center gap-1 ${getTrendColor(kpiMetrics.trends.conversion)}`}>
                   {getTrendIcon(kpiMetrics.trends.conversion)}
@@ -575,7 +575,7 @@ const ReportsAnalytics = () => {
 
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">{kpiMetrics.customerRetention}%</div>
+                <div className="text-xl sm:text-2xl font-bold text-green-600">{kpiMetrics.customerRetention}%</div>
                 <div className="text-sm text-gray-500">Customer Retention</div>
                 <div className={`text-xs flex items-center justify-center gap-1 ${getTrendColor(kpiMetrics.trends.retention)}`}>
                   {getTrendIcon(kpiMetrics.trends.retention)}
@@ -586,7 +586,7 @@ const ReportsAnalytics = () => {
 
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600">{kpiMetrics.inventoryTurnover}</div>
+                <div className="text-xl sm:text-2xl font-bold text-purple-600">{kpiMetrics.inventoryTurnover}</div>
                 <div className="text-sm text-gray-500">Inventory Turnover</div>
                 <div className={`text-xs flex items-center justify-center gap-1 ${getTrendColor(kpiMetrics.trends.turnover)}`}>
                   {getTrendIcon(kpiMetrics.trends.turnover)}
@@ -597,7 +597,7 @@ const ReportsAnalytics = () => {
 
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-orange-600">{kpiMetrics.grossMargin}%</div>
+                <div className="text-xl sm:text-2xl font-bold text-orange-600">{kpiMetrics.grossMargin}%</div>
                 <div className="text-sm text-gray-500">Gross Margin</div>
                 <div className={`text-xs flex items-center justify-center gap-1 ${getTrendColor(kpiMetrics.trends.margin)}`}>
                   {getTrendIcon(kpiMetrics.trends.margin)}
@@ -640,8 +640,8 @@ const ReportsAnalytics = () => {
         </TabsContent>
 
         {/* Sales Tab */}
-        <TabsContent value="sales" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="sales" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Monthly Sales Chart */}
             <Card>
               <CardHeader>
@@ -750,8 +750,8 @@ const ReportsAnalytics = () => {
         </TabsContent>
 
         {/* Customers Tab */}
-        <TabsContent value="customers" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="customers" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Customer Segmentation */}
             <Card>
               <CardHeader>
@@ -792,7 +792,7 @@ const ReportsAnalytics = () => {
                 <CardTitle>Customer Demographics</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
                     <h4 className="font-medium mb-3">Age Distribution</h4>
                     <div className="space-y-2">
@@ -853,13 +853,13 @@ const ReportsAnalytics = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
                     {customerAnalytics.loyaltyMetrics.totalMembers?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Total Members</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">
                     {customerAnalytics.loyaltyMetrics.activeMembers?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Active Members</div>
@@ -868,19 +868,19 @@ const ReportsAnalytics = () => {
                   </div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">
                     {customerAnalytics.loyaltyMetrics.pointsEarned?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Points Earned</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600">
                     {customerAnalytics.loyaltyMetrics.pointsRedeemed?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Points Redeemed</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-xl sm:text-2xl font-bold text-red-600">
                     {customerAnalytics.loyaltyMetrics.avgPointsPerMember}
                   </div>
                   <div className="text-sm text-gray-500">Avg Points/Member</div>
@@ -891,8 +891,8 @@ const ReportsAnalytics = () => {
         </TabsContent>
 
         {/* Inventory Tab */}
-        <TabsContent value="inventory" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="inventory" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Inventory Turnover */}
             <Card>
               <CardHeader>
@@ -941,25 +941,25 @@ const ReportsAnalytics = () => {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">
                       {inventoryAnalytics.stockLevels.inStock}
                     </div>
                     <div className="text-sm text-gray-500">In Stock</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600">
+                    <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                       {inventoryAnalytics.stockLevels.lowStock}
                     </div>
                     <div className="text-sm text-gray-500">Low Stock</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">
+                    <div className="text-xl sm:text-2xl font-bold text-red-600">
                       {inventoryAnalytics.stockLevels.outOfStock}
                     </div>
                     <div className="text-sm text-gray-500">Out of Stock</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">
                       {inventoryAnalytics.stockLevels.overStock}
                     </div>
                     <div className="text-sm text-gray-500">Overstock</div>
@@ -1046,8 +1046,8 @@ const ReportsAnalytics = () => {
         </TabsContent>
 
         {/* Financial Tab */}
-        <TabsContent value="financial" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="financial" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Profit & Loss */}
             <Card>
               <CardHeader>
@@ -1169,22 +1169,22 @@ const ReportsAnalytics = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">65.3%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">65.3%</div>
                   <div className="text-sm text-gray-500">Gross Margin</div>
                   <div className="text-xs text-green-600">+2.1% vs target</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">42.2%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">42.2%</div>
                   <div className="text-sm text-gray-500">Net Margin</div>
                   <div className="text-xs text-blue-600">+1.8% vs target</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">4.2x</div>
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">4.2x</div>
                   <div className="text-sm text-gray-500">Inventory Turnover</div>
                   <div className="text-xs text-purple-600">+0.3x vs target</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">1.8x</div>
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600">1.8x</div>
                   <div className="text-sm text-gray-500">Current Ratio</div>
                   <div className="text-xs text-orange-600">Healthy</div>
                 </div>
@@ -1194,7 +1194,7 @@ const ReportsAnalytics = () => {
         </TabsContent>
 
         {/* Locations Tab */}
-        <TabsContent value="locations" className="space-y-6">
+        <TabsContent value="locations" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1288,7 +1288,7 @@ const ReportsAnalytics = () => {
         </TabsContent>
 
         {/* Custom Reports Tab */}
-        <TabsContent value="custom" className="space-y-6">
+        <TabsContent value="custom" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Custom Report Builder</CardTitle>
@@ -1297,7 +1297,7 @@ const ReportsAnalytics = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Report Type</Label>

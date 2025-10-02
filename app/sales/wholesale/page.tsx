@@ -140,7 +140,7 @@ export default function WholesaleOrdersPage() {
   const activeClients = new Set(wholesaleOrders.map(order => order.company)).size;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -257,7 +257,7 @@ export default function WholesaleOrdersPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalOrderValue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalOrderValue)}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>
@@ -270,7 +270,7 @@ export default function WholesaleOrdersPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalDiscount)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalDiscount)}</div>
             <p className="text-xs text-muted-foreground">
               Wholesale discounts given
             </p>
@@ -283,7 +283,7 @@ export default function WholesaleOrdersPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingOrders}</div>
+            <div className="text-xl sm:text-2xl font-bold">{pendingOrders}</div>
             <p className="text-xs text-muted-foreground">
               Awaiting processing
             </p>
@@ -296,7 +296,7 @@ export default function WholesaleOrdersPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeClients}</div>
+            <div className="text-xl sm:text-2xl font-bold">{activeClients}</div>
             <p className="text-xs text-muted-foreground">
               Business clients
             </p>

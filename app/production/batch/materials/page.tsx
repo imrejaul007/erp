@@ -260,7 +260,7 @@ export default function BatchMaterialsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -375,7 +375,7 @@ export default function BatchMaterialsPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {materialAssignments.filter(ma => ma.status === 'Pending').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -390,7 +390,7 @@ export default function BatchMaterialsPage() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {materials.filter(m => m.currentStock <= m.minStock).length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -405,7 +405,7 @@ export default function BatchMaterialsPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {materialAssignments.filter(ma => ma.status === 'Allocated').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -420,7 +420,7 @@ export default function BatchMaterialsPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               AED {materials.reduce((acc, m) => acc + (m.currentStock * m.costPerUnit), 0)?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -704,7 +704,7 @@ export default function BatchMaterialsPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Stock Information */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
@@ -728,7 +728,7 @@ export default function BatchMaterialsPage() {
                 <Separator />
 
                 {/* Supplier & Location */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Supplier Information</h3>
                     <div className="space-y-2">

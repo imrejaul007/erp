@@ -160,7 +160,7 @@ export default function OilExtractionPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -188,7 +188,7 @@ export default function OilExtractionPage() {
                 Begin distillation process to extract oud oil from wood chips
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-6 py-4">
+            <div className="grid gap-4 sm:gap-6 py-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Input Material</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -409,7 +409,7 @@ export default function OilExtractionPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary group-hover:text-primary">{batch.progress}%</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary group-hover:text-primary">{batch.progress}%</p>
                     <p className="text-xs text-gray-600 group-hover:text-gray-700">Complete</p>
                   </div>
                 </div>
@@ -513,7 +513,7 @@ export default function OilExtractionPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600 group-hover:text-green-700">AED {batch.totalValue?.toLocaleString() || "0"}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600 group-hover:text-green-700">AED {batch.totalValue?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 group-hover:text-gray-700">Total value</p>
                   </div>
                 </div>
@@ -604,7 +604,7 @@ export default function OilExtractionPage() {
               <CardDescription>Choose the right method for your raw material</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {distillationMethods.map((method) => (
                   <Card key={method.method} className="border-2">
                     <CardHeader>
@@ -725,7 +725,7 @@ export default function OilExtractionPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedBatch && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">
@@ -817,16 +817,16 @@ export default function OilExtractionPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                       <p className="text-xs text-gray-700 mb-1">Oud Oil</p>
-                      <p className="text-2xl font-bold text-amber-600">{selectedBatch.currentYield || 0} ml</p>
+                      <p className="text-xl sm:text-2xl font-bold text-amber-600">{selectedBatch.currentYield || 0} ml</p>
                       <p className="text-xs text-gray-600">Expected: {selectedBatch.expectedOilYield} ml</p>
                     </div>
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <p className="text-xs text-gray-700 mb-1">Hydrosol</p>
-                      <p className="text-2xl font-bold text-blue-600">{selectedBatch.expectedHydrosol} ml</p>
+                      <p className="text-xl sm:text-2xl font-bold text-blue-600">{selectedBatch.expectedHydrosol} ml</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <p className="text-xs text-gray-700 mb-1">Wood Residue</p>
-                      <p className="text-2xl font-bold text-gray-600">{selectedBatch.expectedResidue} kg</p>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-600">{selectedBatch.expectedResidue} kg</p>
                     </div>
                   </div>
                 </Card>

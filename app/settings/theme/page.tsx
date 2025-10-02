@@ -179,7 +179,7 @@ export default function ThemeSettingsPage() {
   const currentPageSections = PAGE_SECTIONS.find(p => p.id === selectedPage)?.sections || [];
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50 min-h-screen">
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
         <Link href="/dashboard" className="hover:text-blue-600 flex items-center gap-1">
@@ -239,9 +239,9 @@ export default function ThemeSettingsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Panel - Theme Controls */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Dark/Light Mode Toggle */}
           <Card>
             <CardHeader>
@@ -543,7 +543,7 @@ export default function ThemeSettingsPage() {
         </div>
 
         {/* Right Panel - Live Preview */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Card className="sticky top-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-gray-900">
@@ -555,7 +555,7 @@ export default function ThemeSettingsPage() {
             <CardContent className="space-y-4">
               {/* Preview Card */}
               <div
-                className="p-6 rounded-lg border-2 transition-all"
+                className="p-4 sm:p-6 rounded-lg border-2 transition-all"
                 style={{
                   backgroundColor: customColors.backgroundColor,
                   borderColor: customColors.borderColor,
@@ -581,7 +581,7 @@ export default function ThemeSettingsPage() {
               <div>
                 <Label className="text-gray-900 mb-2 block">Hover State</Label>
                 <div
-                  className="p-6 rounded-lg border-2 transition-all cursor-pointer"
+                  className="p-4 sm:p-6 rounded-lg border-2 transition-all cursor-pointer"
                   style={{
                     backgroundColor: customColors.hoverBackground,
                     borderColor: customColors.borderColor,

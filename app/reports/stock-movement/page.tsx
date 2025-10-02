@@ -309,7 +309,7 @@ export default function StockMovementReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -388,7 +388,7 @@ export default function StockMovementReportsPage() {
             <ArrowUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {formatCurrency(movementOverview.totalValueIn)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -406,7 +406,7 @@ export default function StockMovementReportsPage() {
             <ArrowDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-xl sm:text-2xl font-bold text-red-600">
               {formatCurrency(movementOverview.totalValueOut)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -424,7 +424,7 @@ export default function StockMovementReportsPage() {
             <Activity className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${movementOverview.netMovement >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${movementOverview.netMovement >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {formatCurrency(Math.abs(movementOverview.netMovement))}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -442,7 +442,7 @@ export default function StockMovementReportsPage() {
             <DollarSign className="h-4 w-4 text-oud-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-oud-600">
+            <div className="text-xl sm:text-2xl font-bold text-oud-600">
               {formatCurrency(movementOverview.averageTransactionValue)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -467,7 +467,7 @@ export default function StockMovementReportsPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Movement Flow Summary</CardTitle>
@@ -850,7 +850,7 @@ export default function StockMovementReportsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <Card className="p-4">
                   <h3 className="font-semibold mb-3">Key Trends Identified</h3>
                   <div className="space-y-2">

@@ -277,7 +277,7 @@ export default function PettyCashPage() {
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -466,7 +466,7 @@ export default function PettyCashPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
             <div>
               <Label className="text-sm text-gray-600">Current Balance</Label>
               <div className="text-3xl font-bold text-amber-600">
@@ -478,7 +478,7 @@ export default function PettyCashPage() {
             </div>
             <div>
               <Label className="text-sm text-gray-600">Utilization Rate</Label>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-xl sm:text-2xl font-bold text-gray-900">
                 {fundAnalysis.utilizationRate.toFixed(1)}%
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -513,7 +513,7 @@ export default function PettyCashPage() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -522,7 +522,7 @@ export default function PettyCashPage() {
             <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentMonthExpenses)}
             </div>
             <p className="text-xs text-red-600 mt-1">
@@ -539,7 +539,7 @@ export default function PettyCashPage() {
             <Calculator className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(fundAnalysis.averageTransactionSize)}
             </div>
             <p className="text-xs text-blue-600 mt-1">
@@ -556,7 +556,7 @@ export default function PettyCashPage() {
             <Car className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {fundAnalysis.topCategory}
             </div>
             <p className="text-xs text-purple-600 mt-1">
@@ -573,7 +573,7 @@ export default function PettyCashPage() {
             <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {fundAnalysis.daysUntilEmpty}
             </div>
             <p className="text-xs text-orange-600 mt-1">
@@ -822,17 +822,17 @@ export default function PettyCashPage() {
               <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-green-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-green-900">Within Budget</h3>
-                  <p className="text-2xl font-bold text-green-600">3</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">3</p>
                   <p className="text-sm text-green-700">categories on track</p>
                 </div>
                 <div className="bg-orange-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-orange-900">Approaching Limit</h3>
-                  <p className="text-2xl font-bold text-orange-600">1</p>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-600">1</p>
                   <p className="text-sm text-orange-700">category over 60%</p>
                 </div>
                 <div className="bg-red-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-red-900">Over Budget</h3>
-                  <p className="text-2xl font-bold text-red-600">1</p>
+                  <p className="text-xl sm:text-2xl font-bold text-red-600">1</p>
                   <p className="text-sm text-red-700">category exceeded limit</p>
                 </div>
               </div>
@@ -842,7 +842,7 @@ export default function PettyCashPage() {
 
         {/* Analysis Tab */}
         <TabsContent value="analysis">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -872,7 +872,7 @@ export default function PettyCashPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Fund Utilization</span>
@@ -925,7 +925,7 @@ export default function PettyCashPage() {
 
         {/* Fund Settings Tab */}
         <TabsContent value="settings">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">

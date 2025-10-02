@@ -58,7 +58,7 @@ export default function MultiLocationSettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -87,8 +87,8 @@ export default function MultiLocationSettingsPage() {
               <CardTitle>General Settings</CardTitle>
               <CardDescription>Configure basic system preferences</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="defaultCurrency">Default Currency</Label>
                   <Select
@@ -202,7 +202,7 @@ export default function MultiLocationSettingsPage() {
               </CardTitle>
               <CardDescription>Manage alerts and notification channels</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b">
                   <div className="space-y-0.5">
@@ -326,7 +326,7 @@ export default function MultiLocationSettingsPage() {
               </CardTitle>
               <CardDescription>Configure security and access controls</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b">
                   <div className="space-y-0.5">
@@ -427,7 +427,7 @@ export default function MultiLocationSettingsPage() {
               </CardTitle>
               <CardDescription>Manage data backup and synchronization settings</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b">
                   <div className="space-y-0.5">

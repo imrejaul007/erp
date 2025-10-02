@@ -95,7 +95,7 @@ export default function UnitConversionPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -109,7 +109,7 @@ export default function UnitConversionPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Main Converter */}
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -121,7 +121,7 @@ export default function UnitConversionPage() {
               Convert between different units of measurement
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6">
             {/* Category Selection */}
             <div className="flex justify-center">
               <div className="flex bg-gray-100 rounded-lg p-1">
@@ -226,7 +226,7 @@ export default function UnitConversionPage() {
                 <p className="text-lg">
                   <span className="font-bold">{fromValue}</span> {unitConversions[category][fromUnit].name} =
                 </p>
-                <p className="text-2xl font-bold text-oud-600 mt-1">
+                <p className="text-xl sm:text-2xl font-bold text-oud-600 mt-1">
                   {formatNumber(result)} {unitConversions[category][toUnit].name}
                 </p>
               </div>

@@ -304,7 +304,7 @@ const MarketplacePage = () => {
   const availableMarketplaces = marketplaces.filter(m => m.status === 'available');
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -328,13 +328,13 @@ const MarketplacePage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold">AED {(marketplaceMetrics.totalRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(marketplaceMetrics.totalRevenue / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-green-600">+{marketplaceMetrics.growthRate}% vs last month</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -347,7 +347,7 @@ const MarketplacePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{marketplaceMetrics.totalOrders}</p>
+                <p className="text-xl sm:text-2xl font-bold">{marketplaceMetrics.totalOrders}</p>
                 <p className="text-xs text-blue-600">Across all platforms</p>
               </div>
               <ShoppingCart className="h-8 w-8 text-blue-600" />
@@ -360,7 +360,7 @@ const MarketplacePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Connected Platforms</p>
-                <p className="text-2xl font-bold">{connectedMarketplaces.length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{connectedMarketplaces.length}</p>
                 <p className="text-xs text-purple-600">Active integrations</p>
               </div>
               <Wifi className="h-8 w-8 text-purple-600" />
@@ -373,7 +373,7 @@ const MarketplacePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Commission</p>
-                <p className="text-2xl font-bold">{marketplaceMetrics.averageCommission}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{marketplaceMetrics.averageCommission}%</p>
                 <p className="text-xs text-orange-600">Platform fees</p>
               </div>
               <TrendingUp className="h-8 w-8 text-orange-600" />
@@ -383,7 +383,7 @@ const MarketplacePage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="connected">Connected</TabsTrigger>
@@ -394,8 +394,8 @@ const MarketplacePage = () => {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Connected Marketplaces Summary */}
             <Card>
               <CardHeader>
@@ -497,7 +497,7 @@ const MarketplacePage = () => {
         </TabsContent>
 
         {/* Connected Tab */}
-        <TabsContent value="connected" className="space-y-6">
+        <TabsContent value="connected" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Connected Marketplaces</CardTitle>
@@ -620,7 +620,7 @@ const MarketplacePage = () => {
         </TabsContent>
 
         {/* Available Tab */}
-        <TabsContent value="available" className="space-y-6">
+        <TabsContent value="available" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Available Marketplaces</CardTitle>
@@ -708,7 +708,7 @@ const MarketplacePage = () => {
         </TabsContent>
 
         {/* Orders Tab */}
-        <TabsContent value="orders" className="space-y-6">
+        <TabsContent value="orders" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -804,8 +804,8 @@ const MarketplacePage = () => {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Revenue by Marketplace */}
             <Card>
               <CardHeader>
@@ -884,25 +884,25 @@ const MarketplacePage = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">
                     AED {((marketplaceMetrics.totalRevenue - marketplaceMetrics.totalFees) / 1000).toFixed(0)}K
                   </div>
                   <div className="text-sm text-gray-500">Net Revenue</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-xl sm:text-2xl font-bold text-red-600">
                     AED {(marketplaceMetrics.totalFees / 1000).toFixed(0)}K
                   </div>
                   <div className="text-sm text-gray-500">Total Fees</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
                     AED {Math.round(marketplaceMetrics.totalRevenue / marketplaceMetrics.totalOrders)}
                   </div>
                   <div className="text-sm text-gray-500">Avg Order Value</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">
                     {((marketplaceMetrics.totalRevenue - marketplaceMetrics.totalFees) / marketplaceMetrics.totalRevenue * 100).toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-500">Profit Margin</div>
@@ -913,8 +913,8 @@ const MarketplacePage = () => {
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="settings" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Global Settings</CardTitle>
@@ -1036,7 +1036,7 @@ const MarketplacePage = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedMarketplaceDetail && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Marketplace Info */}
               <div className="p-4 border rounded-lg bg-gray-50">
                 <div className="flex items-center gap-3 mb-3">

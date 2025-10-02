@@ -57,7 +57,7 @@ export default function ReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -102,7 +102,7 @@ export default function ReportsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {formatCurrency(salesData.totalRevenue)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -117,7 +117,7 @@ export default function ReportsPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{salesData.totalOrders}</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{salesData.totalOrders}</div>
             <p className="text-xs text-muted-foreground">
               Avg: {formatCurrency(salesData.averageOrderValue)}
             </p>
@@ -130,7 +130,7 @@ export default function ReportsPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{customerAnalytics.totalCustomers}</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">{customerAnalytics.totalCustomers}</div>
             <p className="text-xs text-muted-foreground">
               {customerAnalytics.retentionRate}% retention rate
             </p>
@@ -143,7 +143,7 @@ export default function ReportsPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-oud-600">
+            <div className="text-xl sm:text-2xl font-bold text-oud-600">
               {formatCurrency(inventoryStats.reduce((sum, item) => sum + item.value, 0))}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -164,7 +164,7 @@ export default function ReportsPage() {
         </TabsList>
 
         <TabsContent value="sales" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Sales Trend</CardTitle>
@@ -222,22 +222,22 @@ export default function ReportsPage() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-oud-600">{formatCurrency(125000)}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-oud-600">{formatCurrency(125000)}</div>
                   <p className="text-sm text-muted-foreground">Revenue</p>
                   <Badge className="mt-1 bg-green-500 text-white">+12%</Badge>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-oud-600">85</div>
+                  <div className="text-xl sm:text-2xl font-bold text-oud-600">85</div>
                   <p className="text-sm text-muted-foreground">Orders</p>
                   <Badge className="mt-1 bg-blue-500 text-white">+8%</Badge>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-oud-600">{formatCurrency(1470)}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-oud-600">{formatCurrency(1470)}</div>
                   <p className="text-sm text-muted-foreground">Avg Order</p>
                   <Badge className="mt-1 bg-purple-500 text-white">+3%</Badge>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-oud-600">62%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-oud-600">62%</div>
                   <p className="text-sm text-muted-foreground">Margin</p>
                   <Badge className="mt-1 bg-amber-500 text-white">+2%</Badge>
                 </div>
@@ -282,7 +282,7 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="customers" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Customer Analytics</CardTitle>
@@ -293,11 +293,11 @@ export default function ReportsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-oud-600">{customerAnalytics.totalCustomers}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-oud-600">{customerAnalytics.totalCustomers}</div>
                     <p className="text-sm text-muted-foreground">Total Customers</p>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{customerAnalytics.newCustomers}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">{customerAnalytics.newCustomers}</div>
                     <p className="text-sm text-muted-foreground">New This Month</p>
                   </div>
                 </div>
@@ -376,7 +376,7 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="financial" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Revenue Breakdown</CardTitle>

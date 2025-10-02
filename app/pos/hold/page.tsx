@@ -156,7 +156,7 @@ export default function HoldBillPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -291,7 +291,7 @@ export default function HoldBillPage() {
             <Pause className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalHeldBills}</div>
+            <div className="text-xl sm:text-2xl font-bold">{totalHeldBills}</div>
             <p className="text-xs text-muted-foreground">
               Currently on hold
             </p>
@@ -304,7 +304,7 @@ export default function HoldBillPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalHeldValue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalHeldValue)}</div>
             <p className="text-xs text-muted-foreground">
               Total transaction value
             </p>
@@ -317,7 +317,7 @@ export default function HoldBillPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{highPriorityBills}</div>
+            <div className="text-xl sm:text-2xl font-bold">{highPriorityBills}</div>
             <p className="text-xs text-muted-foreground">
               Urgent transactions
             </p>
@@ -330,7 +330,7 @@ export default function HoldBillPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2h 15m</div>
+            <div className="text-xl sm:text-2xl font-bold">2h 15m</div>
             <p className="text-xs text-muted-foreground">
               Average duration
             </p>

@@ -301,7 +301,7 @@ export default function TouristCustomerManagementPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -330,14 +330,14 @@ export default function TouristCustomerManagementPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Tourists</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalTourists)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.totalTourists)}</div>
             <p className="text-xs text-muted-foreground">
               {stats.newTouristsThisMonth} new this month
             </p>
@@ -350,7 +350,7 @@ export default function TouristCustomerManagementPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               Avg: {formatCurrency(stats.averageSpendPerTourist)} per tourist
             </p>
@@ -363,7 +363,7 @@ export default function TouristCustomerManagementPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.satisfactionScore}/5</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.satisfactionScore}/5</div>
             <p className="text-xs text-muted-foreground">
               Tourist feedback rating
             </p>
@@ -376,7 +376,7 @@ export default function TouristCustomerManagementPage() {
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.returnRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.returnRate}%</div>
             <p className="text-xs text-muted-foreground">
               Tourists who return
             </p>
@@ -385,7 +385,7 @@ export default function TouristCustomerManagementPage() {
       </div>
 
       {/* Top Nationalities & Spending Patterns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -492,7 +492,7 @@ export default function TouristCustomerManagementPage() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="tourists" className="space-y-6">
+      <Tabs defaultValue="tourists" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="tourists">Tourist Directory</TabsTrigger>
           <TabsTrigger value="services">Services & Support</TabsTrigger>
@@ -501,7 +501,7 @@ export default function TouristCustomerManagementPage() {
         </TabsList>
 
         {/* Tourist Directory Tab */}
-        <TabsContent value="tourists" className="space-y-6">
+        <TabsContent value="tourists" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -649,7 +649,7 @@ export default function TouristCustomerManagementPage() {
         </TabsContent>
 
         {/* Services & Support Tab */}
-        <TabsContent value="services" className="space-y-6">
+        <TabsContent value="services" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -664,7 +664,7 @@ export default function TouristCustomerManagementPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {services.map((service) => (
                   <Card key={service.id}>
                     <CardContent className="p-6">
@@ -729,7 +729,7 @@ export default function TouristCustomerManagementPage() {
         </TabsContent>
 
         {/* Cultural Guides Tab */}
-        <TabsContent value="cultural" className="space-y-6">
+        <TabsContent value="cultural" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -744,7 +744,7 @@ export default function TouristCustomerManagementPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {culturalGuides.map((guide) => (
                   <Card key={guide.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
@@ -802,7 +802,7 @@ export default function TouristCustomerManagementPage() {
         </TabsContent>
 
         {/* Analytics & Insights Tab */}
-        <TabsContent value="analytics" className="space-y-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -887,7 +887,7 @@ export default function TouristCustomerManagementPage() {
                 {selectedTourist.name} - Tourist Profile
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Tourist Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>

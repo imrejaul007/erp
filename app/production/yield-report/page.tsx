@@ -220,7 +220,7 @@ export default function YieldReportPage() {
   const avgWastage = yieldReports.reduce((acc, r) => acc + r.wastagePercentage, 0) / yieldReports.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -252,7 +252,7 @@ export default function YieldReportPage() {
             <Percent className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgYieldEfficiency.toFixed(1)}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{avgYieldEfficiency.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               Target: {benchmarkData.yieldEfficiency.target}%
             </p>
@@ -265,7 +265,7 @@ export default function YieldReportPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">AED {avgCostPerUnit.toFixed(2)}</div>
+            <div className="text-xl sm:text-2xl font-bold">AED {avgCostPerUnit.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
               Target: AED {benchmarkData.costPerUnit.target}
             </p>
@@ -278,7 +278,7 @@ export default function YieldReportPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgGrossMargin.toFixed(1)}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{avgGrossMargin.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               Target: {benchmarkData.grossMargin.target}%
             </p>
@@ -291,7 +291,7 @@ export default function YieldReportPage() {
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgWastage.toFixed(1)}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{avgWastage.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               Target: {benchmarkData.wastageRate.target}%
             </p>
@@ -523,7 +523,7 @@ export default function YieldReportPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Yield Efficiency</span>
@@ -717,7 +717,7 @@ export default function YieldReportPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-center p-4 bg-oud-50 rounded-lg">
-                    <div className="text-2xl font-bold text-oud-600">AED 425,000</div>
+                    <div className="text-xl sm:text-2xl font-bold text-oud-600">AED 425,000</div>
                     <div className="text-sm text-muted-foreground">Annual Savings Potential</div>
                   </div>
 
@@ -784,27 +784,27 @@ export default function YieldReportPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Summary Metrics */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{selectedReport.yieldEfficiency}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">{selectedReport.yieldEfficiency}%</div>
                     <div className="text-sm text-muted-foreground">Yield Efficiency</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">
                       AED {selectedReport.costPerUnit.actual.toFixed(2)}
                     </div>
                     <div className="text-sm text-muted-foreground">Cost per Unit</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600">
+                    <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                       {selectedReport.grossMarginPercentage.actual.toFixed(1)}%
                     </div>
                     <div className="text-sm text-muted-foreground">Gross Margin</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">{selectedReport.wastagePercentage}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-red-600">{selectedReport.wastagePercentage}%</div>
                     <div className="text-sm text-muted-foreground">Wastage Rate</div>
                   </div>
                 </div>
@@ -814,7 +814,7 @@ export default function YieldReportPage() {
                 {/* Cost Breakdown */}
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Cost Analysis</h3>
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <h4 className="font-medium mb-3">Material Costs</h4>
                       <div className="space-y-2">
@@ -870,7 +870,7 @@ export default function YieldReportPage() {
                 <Separator />
 
                 {/* Performance Summary */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Performance Summary</h3>
                     <div className="space-y-3">

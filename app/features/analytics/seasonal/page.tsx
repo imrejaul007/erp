@@ -177,7 +177,7 @@ export default function SeasonalAnalysisPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -194,11 +194,11 @@ export default function SeasonalAnalysisPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <Star className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold text-purple-600">Ramadan</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">Ramadan</div>
             <div className="text-sm text-gray-600">Next Peak Event</div>
             <div className="text-xs text-gray-500 mt-1">120 days away</div>
           </CardContent>
@@ -207,7 +207,7 @@ export default function SeasonalAnalysisPage() {
         <Card>
           <CardContent className="pt-6">
             <TrendingUp className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold text-green-600">+145%</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">+145%</div>
             <div className="text-sm text-gray-600">Peak Increase</div>
             <div className="text-xs text-gray-500 mt-1">During Ramadan</div>
           </CardContent>
@@ -216,7 +216,7 @@ export default function SeasonalAnalysisPage() {
         <Card>
           <CardContent className="pt-6">
             <DollarSign className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold text-blue-600">AED 3.3M</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">AED 3.3M</div>
             <div className="text-sm text-gray-600">Ramadan Forecast</div>
             <div className="text-xs text-gray-500 mt-1">+15.3% vs 2024</div>
           </CardContent>
@@ -225,7 +225,7 @@ export default function SeasonalAnalysisPage() {
         <Card>
           <CardContent className="pt-6">
             <Target className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold text-amber-600">6</div>
+            <div className="text-xl sm:text-2xl font-bold text-amber-600">6</div>
             <div className="text-sm text-gray-600">Seasonal Events</div>
             <div className="text-xs text-gray-500 mt-1">This year</div>
           </CardContent>
@@ -245,7 +245,7 @@ export default function SeasonalAnalysisPage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Seasonal Revenue Distribution</CardTitle>
@@ -571,11 +571,11 @@ export default function SeasonalAnalysisPage() {
                     <div className="grid grid-cols-2 gap-4 mb-3">
                       <div>
                         <div className="text-sm text-gray-600">Revenue Opportunity</div>
-                        <div className="text-2xl font-bold text-green-600">{opp.opportunity}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-green-600">{opp.opportunity}</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Days Left</div>
-                        <div className={`text-2xl font-bold ${
+                        <div className={`text-xl sm:text-2xl font-bold ${
                           opp.daysLeft > 60 ? 'text-green-600' :
                           opp.daysLeft > 30 ? 'text-amber-600' :
                           opp.daysLeft > 0 ? 'text-red-600' :

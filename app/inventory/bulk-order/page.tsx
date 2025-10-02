@@ -183,7 +183,7 @@ export default function BulkOrderPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
@@ -212,14 +212,14 @@ export default function BulkOrderPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Active Orders</CardTitle>
             <ShoppingCart className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">12</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">12</div>
             <p className="text-xs text-gray-500 mt-1">Pending & in progress</p>
           </CardContent>
         </Card>
@@ -230,7 +230,7 @@ export default function BulkOrderPage() {
             <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">AED 890K</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">AED 890K</div>
             <p className="text-xs text-gray-500 mt-1">This quarter</p>
           </CardContent>
         </Card>
@@ -241,7 +241,7 @@ export default function BulkOrderPage() {
             <AlertTriangle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">3</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">3</div>
             <p className="text-xs text-gray-500 mt-1">Awaiting review</p>
           </CardContent>
         </Card>
@@ -252,7 +252,7 @@ export default function BulkOrderPage() {
             <Truck className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">18 days</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">18 days</div>
             <p className="text-xs text-gray-500 mt-1">Average delivery time</p>
           </CardContent>
         </Card>
@@ -260,7 +260,7 @@ export default function BulkOrderPage() {
 
       {isCreatingOrder ? (
         // Create New Order Form
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Card className="border-amber-100">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -270,7 +270,7 @@ export default function BulkOrderPage() {
               <CardDescription>Add multiple items to create a comprehensive bulk order</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Order Header Information */}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
@@ -423,7 +423,7 @@ export default function BulkOrderPage() {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-2xl font-bold text-green-600">
+                              <p className="text-xl sm:text-2xl font-bold text-green-600">
                                 AED {calculateOrderTotal()?.toLocaleString() || "0"}
                               </p>
                               <p className="text-sm text-gray-500">Total Order Value</p>

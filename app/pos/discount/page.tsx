@@ -168,7 +168,7 @@ export default function DiscountLoyaltyPage() {
   const maxLoyaltyPoints = Math.min(mockCustomer.loyaltyPoints, cartSubtotal * 0.5); // Max 50% of cart
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -182,7 +182,7 @@ export default function DiscountLoyaltyPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Customer Information */}
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -365,7 +365,7 @@ export default function DiscountLoyaltyPage() {
               <div className="bg-oud-50 p-4 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium">Available Points:</span>
-                  <span className="text-2xl font-bold text-oud-600">
+                  <span className="text-xl sm:text-2xl font-bold text-oud-600">
                     {mockCustomer.loyaltyPoints?.toLocaleString() || "0"}
                   </span>
                 </div>

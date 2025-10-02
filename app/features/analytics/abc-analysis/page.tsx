@@ -277,7 +277,7 @@ export default function ABCAnalysisPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -294,13 +294,13 @@ export default function ABCAnalysisPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
               <Package className="h-8 w-8 text-blue-600" />
             </div>
-            <div className="text-2xl font-bold">{summary.totalItems}</div>
+            <div className="text-xl sm:text-2xl font-bold">{summary.totalItems}</div>
             <div className="text-sm text-gray-600">Total Products</div>
             <div className="text-xs text-gray-500 mt-1">
               Value: AED {(summary.totalValue / 1000000).toFixed(2)}M
@@ -314,7 +314,7 @@ export default function ABCAnalysisPage() {
               <Star className="h-8 w-8 text-green-600" />
               <Badge className="bg-green-600">A</Badge>
             </div>
-            <div className="text-2xl font-bold text-green-600">{summary.aItems.count}</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{summary.aItems.count}</div>
             <div className="text-sm text-gray-700">{summary.aItems.percentage}% of items</div>
             <div className="text-xs text-gray-600 mt-1">
               {summary.aItems.valuePercentage}% of value (AED {(summary.aItems.value / 1000000).toFixed(2)}M)
@@ -328,7 +328,7 @@ export default function ABCAnalysisPage() {
               <Target className="h-8 w-8 text-amber-600" />
               <Badge className="bg-amber-600">B</Badge>
             </div>
-            <div className="text-2xl font-bold text-amber-600">{summary.bItems.count}</div>
+            <div className="text-xl sm:text-2xl font-bold text-amber-600">{summary.bItems.count}</div>
             <div className="text-sm text-gray-700">{summary.bItems.percentage}% of items</div>
             <div className="text-xs text-gray-600 mt-1">
               {summary.bItems.valuePercentage}% of value (AED {(summary.bItems.value / 1000).toFixed(0)}K)
@@ -342,7 +342,7 @@ export default function ABCAnalysisPage() {
               <Package className="h-8 w-8 text-gray-600" />
               <Badge className="bg-gray-600">C</Badge>
             </div>
-            <div className="text-2xl font-bold text-gray-600">{summary.cItems.count}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-600">{summary.cItems.count}</div>
             <div className="text-sm text-gray-700">{summary.cItems.percentage}% of items</div>
             <div className="text-xs text-gray-600 mt-1">
               {summary.cItems.valuePercentage}% of value (AED {(summary.cItems.value / 1000).toFixed(0)}K)
@@ -358,7 +358,7 @@ export default function ABCAnalysisPage() {
           <CardDescription>Pareto principle: 20% of items = 80% of value</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
               <div className="flex justify-between mb-2">
                 <span className="font-semibold">A Items (High Value)</span>
@@ -457,7 +457,7 @@ export default function ABCAnalysisPage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <Card className="border-green-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -686,7 +686,7 @@ export default function ABCAnalysisPage() {
 
         {/* Recommendations Tab */}
         <TabsContent value="recommendations">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <Card className="border-green-200">
               <CardHeader>
                 <CardTitle className="text-green-700">A Items Strategy</CardTitle>

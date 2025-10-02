@@ -291,7 +291,7 @@ const CurrencySettingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -333,7 +333,7 @@ const CurrencySettingsPage = () => {
       </Card>
 
       {/* Currency Settings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -354,7 +354,7 @@ const CurrencySettingsPage = () => {
         </TabsList>
 
         {/* General Currency Settings */}
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Currency Configuration</CardTitle>
@@ -597,7 +597,7 @@ const CurrencySettingsPage = () => {
         </TabsContent>
 
         {/* Supported Currencies */}
-        <TabsContent value="currencies" className="space-y-6">
+        <TabsContent value="currencies" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -668,7 +668,7 @@ const CurrencySettingsPage = () => {
         </TabsContent>
 
         {/* Exchange Rates */}
-        <TabsContent value="rates" className="space-y-6">
+        <TabsContent value="rates" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -753,7 +753,7 @@ const CurrencySettingsPage = () => {
         </TabsContent>
 
         {/* Rate Sources */}
-        <TabsContent value="sources" className="space-y-6">
+        <TabsContent value="sources" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Exchange Rate Sources</CardTitle>

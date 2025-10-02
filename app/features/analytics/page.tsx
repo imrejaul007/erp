@@ -109,7 +109,7 @@ export default function AdvancedAnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -126,13 +126,13 @@ export default function AdvancedAnalyticsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Reports</p>
-                <p className="text-2xl font-bold text-purple-600">24</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-600">24</p>
               </div>
               <BarChart3 className="h-8 w-8 text-purple-600" />
             </div>
@@ -144,7 +144,7 @@ export default function AdvancedAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Data Points</p>
-                <p className="text-2xl font-bold text-blue-600">1.2M+</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">1.2M+</p>
               </div>
               <Brain className="h-8 w-8 text-blue-600" />
             </div>
@@ -156,7 +156,7 @@ export default function AdvancedAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Accuracy</p>
-                <p className="text-2xl font-bold text-green-600">94%</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">94%</p>
               </div>
               <Target className="h-8 w-8 text-green-600" />
             </div>
@@ -168,7 +168,7 @@ export default function AdvancedAnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Insights/Day</p>
-                <p className="text-2xl font-bold text-amber-600">45</p>
+                <p className="text-xl sm:text-2xl font-bold text-amber-600">45</p>
               </div>
               <Zap className="h-8 w-8 text-amber-600" />
             </div>
@@ -177,7 +177,7 @@ export default function AdvancedAnalyticsPage() {
       </div>
 
       {/* Analytics Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {analyticsFeatures.map((feature) => {
           const Icon = feature.icon;
           return (

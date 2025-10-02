@@ -247,7 +247,7 @@ export default function BarcodeGeneratorPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Barcode & QR Code System</h1>
@@ -271,10 +271,10 @@ export default function BarcodeGeneratorPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="generate" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="generate" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Configuration Panel */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1 space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Label Configuration</CardTitle>
@@ -393,7 +393,7 @@ export default function BarcodeGeneratorPage() {
             </div>
 
             {/* Product Selection & Preview */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Select Product</CardTitle>
@@ -514,7 +514,7 @@ export default function BarcodeGeneratorPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="scan" className="space-y-6">
+        <TabsContent value="scan" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Scan Barcode or QR Code</CardTitle>

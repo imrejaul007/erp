@@ -162,7 +162,7 @@ export default function PerformanceDashboardPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -189,11 +189,11 @@ export default function PerformanceDashboardPage() {
       </div>
 
       {/* Real-time Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <DollarSign className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold text-green-600">AED {realtimeMetrics.todaySales?.toLocaleString() || "0"}</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">AED {realtimeMetrics.todaySales?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Sales Today</div>
             <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
               <TrendingUp className="h-3 w-3" />
@@ -205,7 +205,7 @@ export default function PerformanceDashboardPage() {
         <Card>
           <CardContent className="pt-6">
             <ShoppingCart className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold text-blue-600">{realtimeMetrics.todayOrders}</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{realtimeMetrics.todayOrders}</div>
             <div className="text-sm text-gray-600">Orders</div>
             <div className="flex items-center gap-1 text-xs text-blue-600 mt-1">
               <Clock className="h-3 w-3" />
@@ -217,7 +217,7 @@ export default function PerformanceDashboardPage() {
         <Card>
           <CardContent className="pt-6">
             <Target className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold text-purple-600">AED {realtimeMetrics.avgOrderValue}</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">AED {realtimeMetrics.avgOrderValue}</div>
             <div className="text-sm text-gray-600">Avg Order Value</div>
             <div className="flex items-center gap-1 text-xs text-purple-600 mt-1">
               <TrendingUp className="h-3 w-3" />
@@ -229,7 +229,7 @@ export default function PerformanceDashboardPage() {
         <Card>
           <CardContent className="pt-6">
             <Users className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold text-amber-600">{realtimeMetrics.activeSessions}</div>
+            <div className="text-xl sm:text-2xl font-bold text-amber-600">{realtimeMetrics.activeSessions}</div>
             <div className="text-sm text-gray-600">Active Sessions</div>
             <div className="flex items-center gap-1 text-xs text-amber-600 mt-1">
               <Activity className="h-3 w-3" />
@@ -252,7 +252,7 @@ export default function PerformanceDashboardPage() {
 
         {/* Real-time Tab */}
         <TabsContent value="realtime">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Today's Hourly Performance</CardTitle>
@@ -321,7 +321,7 @@ export default function PerformanceDashboardPage() {
 
                 <div className="border rounded-lg p-4 bg-green-50">
                   <div className="text-sm font-medium text-green-900 mb-1">Peak Hour</div>
-                  <div className="text-2xl font-bold text-green-600">4:00 PM - 5:00 PM</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">4:00 PM - 5:00 PM</div>
                   <div className="text-xs text-green-700 mt-1">Average peak sales: AED 7,250</div>
                 </div>
 
@@ -335,7 +335,7 @@ export default function PerformanceDashboardPage() {
 
         {/* KPIs Tab */}
         <TabsContent value="kpis">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {kpis.map((kpi, index) => {
               const Icon = kpi.icon;
               return (
@@ -356,7 +356,7 @@ export default function PerformanceDashboardPage() {
                         </div>
                         <div>
                           <div className="text-sm text-gray-600">{kpi.name}</div>
-                          <div className="text-2xl font-bold">{kpi.value}</div>
+                          <div className="text-xl sm:text-2xl font-bold">{kpi.value}</div>
                         </div>
                       </div>
                       <Badge className={

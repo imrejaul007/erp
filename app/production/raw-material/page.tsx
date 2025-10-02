@@ -218,7 +218,7 @@ export default function RawMaterialPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -246,7 +246,7 @@ export default function RawMaterialPage() {
                 Complete lot registration with purchase details, costs, and landed cost calculation
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-6 py-4">
+            <div className="grid gap-4 sm:gap-6 py-4">
               {/* Basic Lot Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Lot Information</h3>
@@ -480,7 +480,7 @@ export default function RawMaterialPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">Cost per kg (True Landed)</p>
-                      <p className="text-2xl font-bold text-green-600">
+                      <p className="text-xl sm:text-2xl font-bold text-green-600">
                         AED {calculateCostPerKg().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                       </p>
                     </div>
@@ -778,7 +778,7 @@ export default function RawMaterialPage() {
               <CardDescription>Automatic conversion between kg, grams, tola, oz, and ml</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card className="p-4 bg-primary/5">
                     <h3 className="font-semibold mb-3">Weight Conversions</h3>
@@ -828,7 +828,7 @@ export default function RawMaterialPage() {
                       </Button>
                       <div className="p-3 bg-white rounded border-2 border-primary">
                         <p className="text-sm text-muted-foreground">Result:</p>
-                        <p className="text-2xl font-bold text-primary">-</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">-</p>
                       </div>
                     </div>
                   </Card>
@@ -897,22 +897,22 @@ export default function RawMaterialPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Avg Quality</p>
-                        <p className="text-2xl font-bold text-primary">{supplier.avgQuality}/10</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">{supplier.avgQuality}/10</p>
                         <Progress value={supplier.avgQuality * 10} className="mt-2" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">On-Time Delivery</p>
-                        <p className="text-2xl font-bold text-green-600">{supplier.onTimeDelivery}%</p>
+                        <p className="text-xl sm:text-2xl font-bold text-green-600">{supplier.onTimeDelivery}%</p>
                         <Progress value={supplier.onTimeDelivery} className="mt-2" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Avg Moisture Loss</p>
-                        <p className="text-2xl font-bold text-amber-600">{supplier.avgMoistureLoss}%</p>
+                        <p className="text-xl sm:text-2xl font-bold text-amber-600">{supplier.avgMoistureLoss}%</p>
                         <Progress value={supplier.avgMoistureLoss} className="mt-2" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground mb-1">Net Yield</p>
-                        <p className="text-2xl font-bold text-blue-600">{(100 - supplier.avgMoistureLoss).toFixed(1)}%</p>
+                        <p className="text-xl sm:text-2xl font-bold text-blue-600">{(100 - supplier.avgMoistureLoss).toFixed(1)}%</p>
                         <Progress value={100 - supplier.avgMoistureLoss} className="mt-2" />
                       </div>
                     </div>
@@ -989,7 +989,7 @@ export default function RawMaterialPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedBatch && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">
@@ -1119,11 +1119,11 @@ export default function RawMaterialPage() {
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground mb-1">Cost per kg</p>
-                    <p className="text-2xl font-bold text-primary">AED {selectedBatch.costPerKg?.toLocaleString() || "0"}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">AED {selectedBatch.costPerKg?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground mb-1">Total Cost (Net Weight)</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">
                       AED {(selectedBatch.costPerKg * selectedBatch.netWeight)?.toLocaleString() || "0"}
                     </p>
                   </div>
@@ -1176,7 +1176,7 @@ export default function RawMaterialPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedPO && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* PO Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">

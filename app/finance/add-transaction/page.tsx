@@ -63,7 +63,7 @@ export default function AddTransactionPage() {
   const categories = formData.type === 'income' ? incomeCategories : expenseCategories;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -83,8 +83,8 @@ export default function AddTransactionPage() {
             <CardTitle>Transaction Details</CardTitle>
             <CardDescription>Enter the details of the financial transaction</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Transaction Type */}
               <div className="space-y-2">
                 <Label htmlFor="type">Transaction Type *</Label>

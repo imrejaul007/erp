@@ -272,7 +272,7 @@ const ProductSyncPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -305,13 +305,13 @@ const ProductSyncPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Products</p>
-                <p className="text-2xl font-bold">1,847</p>
+                <p className="text-xl sm:text-2xl font-bold">1,847</p>
                 <p className="text-xs text-green-600">+32 this week</p>
               </div>
               <Package className="h-8 w-8 text-blue-600" />
@@ -324,7 +324,7 @@ const ProductSyncPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Channels</p>
-                <p className="text-2xl font-bold">{channels.filter(ch => ch.status === 'active').length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{channels.filter(ch => ch.status === 'active').length}</p>
                 <p className="text-xs text-blue-600">All synced</p>
               </div>
               <Sync className="h-8 w-8 text-green-600" />
@@ -337,7 +337,7 @@ const ProductSyncPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Sync Success Rate</p>
-                <p className="text-2xl font-bold">98.5%</p>
+                <p className="text-xl sm:text-2xl font-bold">98.5%</p>
                 <p className="text-xs text-green-600">+2.1% vs last month</p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-600" />
@@ -350,7 +350,7 @@ const ProductSyncPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Syncs</p>
-                <p className="text-2xl font-bold">12</p>
+                <p className="text-xl sm:text-2xl font-bold">12</p>
                 <p className="text-xs text-orange-600">Needs attention</p>
               </div>
               <Clock className="h-8 w-8 text-orange-600" />
@@ -360,7 +360,7 @@ const ProductSyncPage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="channels">Channels</TabsTrigger>
@@ -371,8 +371,8 @@ const ProductSyncPage = () => {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Channel Status */}
             <Card>
               <CardHeader>
@@ -485,7 +485,7 @@ const ProductSyncPage = () => {
         </TabsContent>
 
         {/* Channels Tab */}
-        <TabsContent value="channels" className="space-y-6">
+        <TabsContent value="channels" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Channel Management</CardTitle>
@@ -551,7 +551,7 @@ const ProductSyncPage = () => {
         </TabsContent>
 
         {/* Products Tab */}
-        <TabsContent value="products" className="space-y-6">
+        <TabsContent value="products" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -720,7 +720,7 @@ const ProductSyncPage = () => {
         </TabsContent>
 
         {/* Sync Rules Tab */}
-        <TabsContent value="rules" className="space-y-6">
+        <TabsContent value="rules" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -788,7 +788,7 @@ const ProductSyncPage = () => {
         </TabsContent>
 
         {/* Field Mapping Tab */}
-        <TabsContent value="mapping" className="space-y-6">
+        <TabsContent value="mapping" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Field Mapping Configuration</CardTitle>
@@ -797,7 +797,7 @@ const ProductSyncPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {channels.filter(ch => ch.status === 'active').map((channel) => (
                   <Card key={channel.id}>
                     <CardHeader>
@@ -906,8 +906,8 @@ const ProductSyncPage = () => {
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="settings" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>General Settings</CardTitle>

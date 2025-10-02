@@ -181,7 +181,7 @@ export default function FinancePage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -206,7 +206,7 @@ export default function FinancePage() {
       </div>
 
       {/* Financial Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {financialStats.map((stat, index) => {
           const Icon = stat.icon;
           const TrendIcon = stat.trend === 'up' ? TrendingUp : TrendingDown;
@@ -219,7 +219,7 @@ export default function FinancePage() {
                 <Icon className={`h-4 w-4 ${stat.color}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</div>
                 <p className="text-xs text-gray-500 mt-1 flex items-center">
                   <TrendIcon className="h-3 w-3 mr-1 text-green-600" />
                   <span className="text-green-600">{stat.change}</span> from last month
@@ -298,7 +298,7 @@ export default function FinancePage() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -361,20 +361,20 @@ export default function FinancePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <div className="bg-green-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-green-900">Cash Flow</h3>
-                  <p className="text-2xl font-bold text-green-600">{formatAED(56780)}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">{formatAED(56780)}</p>
                   <p className="text-sm text-green-700">Positive this month</p>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-blue-900">Profit Margin</h3>
-                  <p className="text-2xl font-bold text-blue-600">63.6%</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">63.6%</p>
                   <p className="text-sm text-blue-700">Above industry average</p>
                 </div>
                 <div className="bg-amber-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-amber-900">Tax Liability</h3>
-                  <p className="text-2xl font-bold text-amber-600">{formatAED(2839)}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-600">{formatAED(2839)}</p>
                   <p className="text-sm text-amber-700">VAT payable this period</p>
                 </div>
               </div>
@@ -540,7 +540,7 @@ export default function FinancePage() {
 
         {/* Analytics Tab */}
         <TabsContent value="analytics">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle>Monthly Trends</CardTitle>
@@ -567,7 +567,7 @@ export default function FinancePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Liquidity Ratio</span>

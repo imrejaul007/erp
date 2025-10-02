@@ -282,7 +282,7 @@ const LoyaltySettingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -324,7 +324,7 @@ const LoyaltySettingsPage = () => {
       </Card>
 
       {/* Loyalty Settings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -349,7 +349,7 @@ const LoyaltySettingsPage = () => {
         </TabsList>
 
         {/* General Loyalty Settings */}
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Program Configuration</CardTitle>
@@ -536,7 +536,7 @@ const LoyaltySettingsPage = () => {
         </TabsContent>
 
         {/* Loyalty Tiers */}
-        <TabsContent value="tiers" className="space-y-6">
+        <TabsContent value="tiers" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -551,7 +551,7 @@ const LoyaltySettingsPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {loyaltyTiers.map((tier) => (
                   <div key={tier.id} className="border rounded-lg p-6" style={{borderColor: tier.color}}>
                     <div className="flex items-start justify-between">
@@ -566,7 +566,7 @@ const LoyaltySettingsPage = () => {
                           </div>
                           <p className="text-gray-600 mb-4">{tier.description}</p>
 
-                          <div className="grid grid-cols-2 gap-6 mb-4">
+                          <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-4">
                             <div>
                               <h4 className="font-medium mb-2">Requirements</h4>
                               <div className="text-sm text-gray-600 space-y-1">
@@ -621,7 +621,7 @@ const LoyaltySettingsPage = () => {
         </TabsContent>
 
         {/* Rewards */}
-        <TabsContent value="rewards" className="space-y-6">
+        <TabsContent value="rewards" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -636,7 +636,7 @@ const LoyaltySettingsPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {rewardCategories.map((category) => (
                   <div key={category.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">
@@ -692,7 +692,7 @@ const LoyaltySettingsPage = () => {
         </TabsContent>
 
         {/* Analytics */}
-        <TabsContent value="analytics" className="space-y-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-4 gap-4">
             <Card>
               <CardContent className="pt-6">
@@ -700,7 +700,7 @@ const LoyaltySettingsPage = () => {
                   <Users className="h-5 w-5 text-blue-600" />
                   <h3 className="font-medium">Total Members</h3>
                 </div>
-                <p className="text-2xl font-bold">{programStats.totalMembers?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">{programStats.totalMembers?.toLocaleString() || "0"}</p>
                 <p className="text-sm text-green-600 flex items-center gap-1">
                   <TrendingUp className="h-4 w-4" />
                   +{programStats.monthlyGrowth}% this month
@@ -713,7 +713,7 @@ const LoyaltySettingsPage = () => {
                   <Star className="h-5 w-5 text-yellow-600" />
                   <h3 className="font-medium">Points Issued</h3>
                 </div>
-                <p className="text-2xl font-bold">{programStats.pointsIssued?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">{programStats.pointsIssued?.toLocaleString() || "0"}</p>
                 <p className="text-sm text-gray-600">Total lifetime</p>
               </CardContent>
             </Card>
@@ -723,7 +723,7 @@ const LoyaltySettingsPage = () => {
                   <Gift className="h-5 w-5 text-green-600" />
                   <h3 className="font-medium">Redemption Rate</h3>
                 </div>
-                <p className="text-2xl font-bold">{programStats.redemptionRate}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{programStats.redemptionRate}%</p>
                 <p className="text-sm text-gray-600">{programStats.pointsRedeemed?.toLocaleString() || "0"} points redeemed</p>
               </CardContent>
             </Card>
@@ -733,7 +733,7 @@ const LoyaltySettingsPage = () => {
                   <ShoppingBag className="h-5 w-5 text-purple-600" />
                   <h3 className="font-medium">Avg Order Value</h3>
                 </div>
-                <p className="text-2xl font-bold">AED {programStats.averageOrderValue}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {programStats.averageOrderValue}</p>
                 <p className="text-sm text-gray-600">Member vs non-member</p>
               </CardContent>
             </Card>
@@ -798,7 +798,7 @@ const LoyaltySettingsPage = () => {
         </TabsContent>
 
         {/* Members */}
-        <TabsContent value="members" className="space-y-6">
+        <TabsContent value="members" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">

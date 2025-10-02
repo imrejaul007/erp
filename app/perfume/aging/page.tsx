@@ -353,7 +353,7 @@ const AgingProgramPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -449,13 +449,13 @@ const AgingProgramPage = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Programs</p>
-                <p className="text-2xl font-bold">{agingPrograms.filter(p => p.status === 'active').length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{agingPrograms.filter(p => p.status === 'active').length}</p>
                 <p className="text-xs text-green-600">Currently aging</p>
               </div>
               <Timer className="h-8 w-8 text-blue-600" />
@@ -468,7 +468,7 @@ const AgingProgramPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Average Age</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xl sm:text-2xl font-bold">
                   {Math.round(agingPrograms.reduce((acc, p) => acc + p.currentAge, 0) / agingPrograms.length)}
                 </p>
                 <p className="text-xs text-purple-600">years</p>
@@ -483,7 +483,7 @@ const AgingProgramPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Quality Checks Due</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xl sm:text-2xl font-bold">
                   {agingPrograms.filter(p => isCheckDue(p.nextCheck)).length}
                 </p>
                 <p className="text-xs text-orange-600">Within 30 days</p>
@@ -498,7 +498,7 @@ const AgingProgramPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Premium Grade</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xl sm:text-2xl font-bold">
                   {agingPrograms.filter(p => p.currentGrade === 'Super A+' || p.currentGrade === 'A+').length}
                 </p>
                 <p className="text-xs text-yellow-600">A+ and above</p>
@@ -510,7 +510,7 @@ const AgingProgramPage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="programs" className="space-y-6">
+      <Tabs defaultValue="programs" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="programs">Active Programs</TabsTrigger>
           <TabsTrigger value="facilities">Facilities</TabsTrigger>
@@ -520,8 +520,8 @@ const AgingProgramPage = () => {
         </TabsList>
 
         {/* Programs Tab */}
-        <TabsContent value="programs" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="programs" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {agingPrograms.map((program) => {
               const progress = calculateProgress(program.currentAge, program.targetAge);
               const nextMilestone = getNextMilestone(program);
@@ -633,8 +633,8 @@ const AgingProgramPage = () => {
         </TabsContent>
 
         {/* Facilities Tab */}
-        <TabsContent value="facilities" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="facilities" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {agingFacilities.map((facility) => {
               const occupancyPercentage = (facility.currentOccupancy / facility.capacity) * 100;
 
@@ -708,8 +708,8 @@ const AgingProgramPage = () => {
         </TabsContent>
 
         {/* Methods Tab */}
-        <TabsContent value="methods" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="methods" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {agingMethods.map((method, index) => (
               <Card key={index}>
                 <CardHeader>
@@ -768,8 +768,8 @@ const AgingProgramPage = () => {
         </TabsContent>
 
         {/* Monitoring Tab */}
-        <TabsContent value="monitoring" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="monitoring" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Environmental Monitoring */}
             <Card>
               <CardHeader>
@@ -893,8 +893,8 @@ const AgingProgramPage = () => {
         </TabsContent>
 
         {/* Reports Tab */}
-        <TabsContent value="reports" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="reports" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Program Summary */}
             <Card>
               <CardHeader>

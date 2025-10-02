@@ -279,7 +279,7 @@ export default function PurchaseHistoryPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -299,14 +299,14 @@ export default function PurchaseHistoryPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(analytics.totalRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(analytics.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               From {formatNumber(analytics.totalOrders)} orders
             </p>
@@ -319,7 +319,7 @@ export default function PurchaseHistoryPage() {
             <ShoppingBag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(analytics.averageOrderValue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(analytics.averageOrderValue)}</div>
             <p className="text-xs text-muted-foreground">
               Per transaction
             </p>
@@ -332,7 +332,7 @@ export default function PurchaseHistoryPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{customers.filter(c => c.isActive).length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{customers.filter(c => c.isActive).length}</div>
             <p className="text-xs text-muted-foreground">
               With recent purchases
             </p>
@@ -345,7 +345,7 @@ export default function PurchaseHistoryPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {customers.filter(c => c.totalOrders > 1).length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -356,7 +356,7 @@ export default function PurchaseHistoryPage() {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="customers" className="space-y-6">
+      <Tabs defaultValue="customers" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="customers">Customer Analysis</TabsTrigger>
           <TabsTrigger value="orders">Order History</TabsTrigger>
@@ -365,7 +365,7 @@ export default function PurchaseHistoryPage() {
         </TabsList>
 
         {/* Customer Analysis Tab */}
-        <TabsContent value="customers" className="space-y-6">
+        <TabsContent value="customers" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -507,7 +507,7 @@ export default function PurchaseHistoryPage() {
         </TabsContent>
 
         {/* Order History Tab */}
-        <TabsContent value="orders" className="space-y-6">
+        <TabsContent value="orders" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -658,8 +658,8 @@ export default function PurchaseHistoryPage() {
         </TabsContent>
 
         {/* Product Insights Tab */}
-        <TabsContent value="products" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="products" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -747,7 +747,7 @@ export default function PurchaseHistoryPage() {
         </TabsContent>
 
         {/* Trends & Patterns Tab */}
-        <TabsContent value="trends" className="space-y-6">
+        <TabsContent value="trends" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -800,7 +800,7 @@ export default function PurchaseHistoryPage() {
                 Order {selectedOrder.orderNumber}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Order Summary */}
               <div className="grid grid-cols-2 gap-4">
                 <div>

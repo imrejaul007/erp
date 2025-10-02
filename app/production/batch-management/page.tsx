@@ -89,7 +89,7 @@ export default function BatchManagementPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -117,7 +117,7 @@ export default function BatchManagementPage() {
                 Create a new batch with lot number and schedule production timeline
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-6 py-4">
+            <div className="grid gap-4 sm:gap-6 py-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Batch Information</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -315,7 +315,7 @@ export default function BatchManagementPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{batch.progress}%</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">{batch.progress}%</p>
                     <p className="text-xs text-muted-foreground">Progress</p>
                   </div>
                 </div>
@@ -402,7 +402,7 @@ export default function BatchManagementPage() {
               <CardDescription>Track products from raw material to final sale</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div className="p-4 border-2 border-primary rounded-lg">
                   <h3 className="font-semibold mb-4">Example: Royal Oud Premium 50ml - Bottle #0412-045</h3>
                   <div className="space-y-3">

@@ -237,7 +237,7 @@ export default function MobileAppsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -254,11 +254,11 @@ export default function MobileAppsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <Download className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{usageStats.totalDownloads?.toLocaleString() || "0"}</div>
+            <div className="text-xl sm:text-2xl font-bold">{usageStats.totalDownloads?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Total Downloads</div>
             <div className="text-xs text-green-600 mt-1">+{usageStats.monthlyGrowth}% this month</div>
           </CardContent>
@@ -267,7 +267,7 @@ export default function MobileAppsPage() {
         <Card>
           <CardContent className="pt-6">
             <Smartphone className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{usageStats.activeDevices}</div>
+            <div className="text-xl sm:text-2xl font-bold">{usageStats.activeDevices}</div>
             <div className="text-sm text-gray-600">Active Devices</div>
             <div className="text-xs text-gray-500 mt-1">Currently in use</div>
           </CardContent>
@@ -276,7 +276,7 @@ export default function MobileAppsPage() {
         <Card>
           <CardContent className="pt-6">
             <TrendingUp className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold">{usageStats.dailyTransactions?.toLocaleString() || "0"}</div>
+            <div className="text-xl sm:text-2xl font-bold">{usageStats.dailyTransactions?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Daily Transactions</div>
             <div className="text-xs text-gray-500 mt-1">Across all apps</div>
           </CardContent>
@@ -285,7 +285,7 @@ export default function MobileAppsPage() {
         <Card>
           <CardContent className="pt-6">
             <Star className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold">{usageStats.avgRating}</div>
+            <div className="text-xl sm:text-2xl font-bold">{usageStats.avgRating}</div>
             <div className="text-sm text-gray-600">Average Rating</div>
             <div className="text-xs text-gray-500 mt-1">User feedback</div>
           </CardContent>
@@ -315,7 +315,7 @@ export default function MobileAppsPage() {
       </Card>
 
       {/* Mobile Apps */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {mobileApps.map((app) => {
           const Icon = app.icon;
           return (
@@ -446,7 +446,7 @@ export default function MobileAppsPage() {
           <CardDescription>How to deploy mobile apps to your team</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-xl font-bold text-blue-600">1</span>
@@ -483,7 +483,7 @@ export default function MobileAppsPage() {
       </Card>
 
       {/* Support & Resources */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Download Links</CardTitle>

@@ -167,7 +167,7 @@ export default function CRMDashboard() {
   }));
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -191,14 +191,14 @@ export default function CRMDashboard() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.overview.totalCustomers)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.overview.totalCustomers)}</div>
             <p className="text-xs text-muted-foreground">
               {stats.overview.newCustomers} new this month
             </p>
@@ -211,7 +211,7 @@ export default function CRMDashboard() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.overview.activeCustomers)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.overview.activeCustomers)}</div>
             <p className="text-xs text-muted-foreground">
               {Math.round((stats.overview.activeCustomers / stats.overview.totalCustomers) * 100)}% of total
             </p>
@@ -224,7 +224,7 @@ export default function CRMDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.overview.totalRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(stats.overview.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               Avg: {formatCurrency(stats.overview.avgOrderValue)} per order
             </p>
@@ -237,7 +237,7 @@ export default function CRMDashboard() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.overview.customerSatisfactionScore}/5</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.overview.customerSatisfactionScore}/5</div>
             <p className="text-xs text-muted-foreground">
               Based on recent feedback
             </p>
@@ -246,14 +246,14 @@ export default function CRMDashboard() {
       </div>
 
       {/* Loyalty Program Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Loyalty Members</CardTitle>
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.loyalty.totalMembers)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.loyalty.totalMembers)}</div>
             <p className="text-xs text-muted-foreground">
               Active loyalty accounts
             </p>
@@ -266,7 +266,7 @@ export default function CRMDashboard() {
             <Gift className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.loyalty.totalPoints)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.loyalty.totalPoints)}</div>
             <p className="text-xs text-muted-foreground">
               Available for redemption
             </p>
@@ -279,7 +279,7 @@ export default function CRMDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.loyalty.totalEarned)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.loyalty.totalEarned)}</div>
             <p className="text-xs text-muted-foreground">
               Lifetime points earned
             </p>
@@ -292,7 +292,7 @@ export default function CRMDashboard() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.loyalty.redemptionRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.loyalty.redemptionRate}%</div>
             <p className="text-xs text-muted-foreground">
               Points redeemed vs earned
             </p>
@@ -301,7 +301,7 @@ export default function CRMDashboard() {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="customers" className="space-y-6">
+      <Tabs defaultValue="customers" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="loyalty">Loyalty</TabsTrigger>
@@ -312,7 +312,7 @@ export default function CRMDashboard() {
         </TabsList>
 
         {/* Customers Tab */}
-        <TabsContent value="customers" className="space-y-6">
+        <TabsContent value="customers" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -421,8 +421,8 @@ export default function CRMDashboard() {
         </TabsContent>
 
         {/* Loyalty Tab */}
-        <TabsContent value="loyalty" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="loyalty" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Customer Segments</CardTitle>
@@ -473,7 +473,7 @@ export default function CRMDashboard() {
         </TabsContent>
 
         {/* Communications Tab */}
-        <TabsContent value="communications" className="space-y-6">
+        <TabsContent value="communications" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -504,7 +504,7 @@ export default function CRMDashboard() {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -521,7 +521,7 @@ export default function CRMDashboard() {
         </TabsContent>
 
         {/* Support Tab */}
-        <TabsContent value="support" className="space-y-6">
+        <TabsContent value="support" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -538,7 +538,7 @@ export default function CRMDashboard() {
         </TabsContent>
 
         {/* VIP Portal Tab */}
-        <TabsContent value="vip" className="space-y-6">
+        <TabsContent value="vip" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -549,19 +549,19 @@ export default function CRMDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-4 rounded-lg">
-                  <div className="text-2xl font-bold">{stats.overview.vipCustomers}</div>
+                  <div className="text-xl sm:text-2xl font-bold">{stats.overview.vipCustomers}</div>
                   <div className="text-sm opacity-90">VIP Customers</div>
                 </div>
                 <div className="bg-gradient-to-br from-gold-500 to-yellow-600 text-white p-4 rounded-lg">
-                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-xl sm:text-2xl font-bold">12</div>
                   <div className="text-sm opacity-90">Personal Shoppers</div>
                 </div>
                 <div className="bg-gradient-to-br from-green-500 to-green-700 text-white p-4 rounded-lg">
-                  <div className="text-2xl font-bold">98%</div>
+                  <div className="text-xl sm:text-2xl font-bold">98%</div>
                   <div className="text-sm opacity-90">Satisfaction Rate</div>
                 </div>
                 <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-4 rounded-lg">
-                  <div className="text-2xl font-bold">24/7</div>
+                  <div className="text-xl sm:text-2xl font-bold">24/7</div>
                   <div className="text-sm opacity-90">Priority Support</div>
                 </div>
               </div>

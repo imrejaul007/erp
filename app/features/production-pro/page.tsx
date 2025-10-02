@@ -287,7 +287,7 @@ export default function ProductionProPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -304,11 +304,11 @@ export default function ProductionProPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <Package className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{productionSummary.activeBatches}</div>
+            <div className="text-xl sm:text-2xl font-bold">{productionSummary.activeBatches}</div>
             <div className="text-sm text-gray-600">Active Batches</div>
           </CardContent>
         </Card>
@@ -316,7 +316,7 @@ export default function ProductionProPage() {
         <Card>
           <CardContent className="pt-6">
             <TrendingUp className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{productionSummary.monthlyProduction}</div>
+            <div className="text-xl sm:text-2xl font-bold">{productionSummary.monthlyProduction}</div>
             <div className="text-sm text-gray-600">Monthly Units</div>
           </CardContent>
         </Card>
@@ -324,7 +324,7 @@ export default function ProductionProPage() {
         <Card>
           <CardContent className="pt-6">
             <Target className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold">{productionSummary.yieldRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{productionSummary.yieldRate}%</div>
             <div className="text-sm text-gray-600">Yield Rate</div>
           </CardContent>
         </Card>
@@ -332,7 +332,7 @@ export default function ProductionProPage() {
         <Card>
           <CardContent className="pt-6">
             <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{productionSummary.qualityPassRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{productionSummary.qualityPassRate}%</div>
             <div className="text-sm text-gray-600">Quality Pass</div>
           </CardContent>
         </Card>
@@ -340,7 +340,7 @@ export default function ProductionProPage() {
         <Card>
           <CardContent className="pt-6">
             <Settings className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{productionSummary.oee}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{productionSummary.oee}%</div>
             <div className="text-sm text-gray-600">OEE</div>
           </CardContent>
         </Card>
@@ -348,7 +348,7 @@ export default function ProductionProPage() {
         <Card>
           <CardContent className="pt-6">
             <AlertTriangle className="h-8 w-8 text-red-600 mb-2" />
-            <div className="text-2xl font-bold">{productionSummary.wasteRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{productionSummary.wasteRate}%</div>
             <div className="text-sm text-gray-600">Waste Rate</div>
           </CardContent>
         </Card>
@@ -399,11 +399,11 @@ export default function ProductionProPage() {
                 <div className="flex items-center gap-4 mb-2">
                   <div>
                     <div className="text-sm text-gray-600">Current</div>
-                    <div className="text-2xl font-bold text-blue-600">{metric.current}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">{metric.current}%</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">Target</div>
-                    <div className="text-2xl font-bold text-gray-600">{metric.target}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-gray-600">{metric.target}%</div>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -444,7 +444,7 @@ export default function ProductionProPage() {
           <div className="mt-4 pt-4 border-t">
             <div className="flex items-center justify-between">
               <div className="font-semibold">Total Active Batches</div>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">
                 {batchStatus.reduce((sum, batch) => sum + batch.count, 0)}
               </div>
             </div>
@@ -453,7 +453,7 @@ export default function ProductionProPage() {
       </Card>
 
       {/* Production Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {productionFeatures.map((feature) => {
           const Icon = feature.icon;
           return (
@@ -514,7 +514,7 @@ export default function ProductionProPage() {
           <CardDescription>Set up advanced production management in 4 steps</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-xl font-bold text-blue-600">1</span>

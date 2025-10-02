@@ -311,7 +311,7 @@ export default function MarketingLoyaltyPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -470,14 +470,14 @@ export default function MarketingLoyaltyPage() {
                           {campaign.status}
                         </Badge>
                       </div>
-                      <div className="flex gap-6 text-sm text-muted-foreground">
+                      <div className="flex gap-4 sm:gap-6 text-sm text-muted-foreground">
                         <span>Reach: {campaign.reach?.toLocaleString() || "0"}</span>
                         <span>Engagement: {campaign.engagement}%</span>
                         <span>Conversion: {campaign.conversion}%</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-green-600">AED {(campaign.revenue / 1000).toFixed(0)}K</p>
+                      <p className="text-xl sm:text-2xl font-bold text-green-600">AED {(campaign.revenue / 1000).toFixed(0)}K</p>
                       <p className="text-sm text-muted-foreground">ROI: {campaign.roi}%</p>
                     </div>
                   </div>

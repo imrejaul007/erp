@@ -370,7 +370,7 @@ const HRStaffManagement = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -481,13 +481,13 @@ const HRStaffManagement = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Employees</p>
-                <p className="text-2xl font-bold">{employees.length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{employees.length}</p>
                 <p className="text-xs text-green-600">{employees.filter(e => e.status === 'active').length} active</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
@@ -500,7 +500,7 @@ const HRStaffManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Monthly Payroll</p>
-                <p className="text-2xl font-bold">AED {(payrollSummary.netPayroll / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(payrollSummary.netPayroll / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-blue-600">+5.2% vs last month</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -513,7 +513,7 @@ const HRStaffManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Performance</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xl sm:text-2xl font-bold">
                   {(employees.reduce((sum, emp) => sum + emp.performance.rating, 0) / employees.length).toFixed(1)}
                 </p>
                 <p className="text-xs text-purple-600">Out of 5.0</p>
@@ -528,7 +528,7 @@ const HRStaffManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Attendance Rate</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xl sm:text-2xl font-bold">
                   {((employees.reduce((sum, emp) => sum + emp.attendance.present, 0) /
                      employees.reduce((sum, emp) => sum + emp.attendance.present + emp.attendance.absent, 0)) * 100).toFixed(1)}%
                 </p>
@@ -541,7 +541,7 @@ const HRStaffManagement = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="employees" className="space-y-6">
+      <Tabs defaultValue="employees" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="employees">Employees</TabsTrigger>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
@@ -553,7 +553,7 @@ const HRStaffManagement = () => {
         </TabsList>
 
         {/* Employees Tab */}
-        <TabsContent value="employees" className="space-y-6">
+        <TabsContent value="employees" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Employee Directory</CardTitle>
@@ -662,8 +662,8 @@ const HRStaffManagement = () => {
         </TabsContent>
 
         {/* Attendance Tab */}
-        <TabsContent value="attendance" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="attendance" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Attendance Overview */}
             <Card>
               <CardHeader>
@@ -742,25 +742,25 @@ const HRStaffManagement = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">
                     {employees.reduce((sum, emp) => sum + emp.attendance.present, 0)}
                   </div>
                   <div className="text-sm text-gray-500">Total Present Days</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-xl sm:text-2xl font-bold text-red-600">
                     {employees.reduce((sum, emp) => sum + emp.attendance.absent, 0)}
                   </div>
                   <div className="text-sm text-gray-500">Total Absent Days</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">
+                  <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                     {employees.reduce((sum, emp) => sum + emp.attendance.late, 0)}
                   </div>
                   <div className="text-sm text-gray-500">Late Arrivals</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
                     {employees.reduce((sum, emp) => sum + emp.attendance.overtime, 0)}
                   </div>
                   <div className="text-sm text-gray-500">Overtime Hours</div>
@@ -771,8 +771,8 @@ const HRStaffManagement = () => {
         </TabsContent>
 
         {/* Leave Management Tab */}
-        <TabsContent value="leave" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="leave" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Leave Requests */}
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -904,7 +904,7 @@ const HRStaffManagement = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
@@ -930,8 +930,8 @@ const HRStaffManagement = () => {
         </TabsContent>
 
         {/* Payroll Tab */}
-        <TabsContent value="payroll" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="payroll" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Payroll Summary */}
             <Card>
               <CardHeader>
@@ -1027,8 +1027,8 @@ const HRStaffManagement = () => {
         </TabsContent>
 
         {/* Training Tab */}
-        <TabsContent value="training" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="training" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Training Programs */}
             <Card>
               <CardHeader>
@@ -1128,8 +1128,8 @@ const HRStaffManagement = () => {
         </TabsContent>
 
         {/* Performance Tab */}
-        <TabsContent value="performance" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="performance" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Performance Overview */}
             <Card>
               <CardHeader>
@@ -1170,25 +1170,25 @@ const HRStaffManagement = () => {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">
                       {(employees.reduce((sum, emp) => sum + emp.performance.rating, 0) / employees.length).toFixed(1)}
                     </div>
                     <div className="text-sm text-gray-500">Avg Rating</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">
                       {(employees.reduce((sum, emp) => sum + emp.performance.targetAchievement, 0) / employees.length).toFixed(0)}%
                     </div>
                     <div className="text-sm text-gray-500">Avg Target Achievement</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">
                       {(employees.reduce((sum, emp) => sum + emp.performance.customerSatisfaction, 0) / employees.length).toFixed(1)}
                     </div>
                     <div className="text-sm text-gray-500">Avg Customer Satisfaction</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="text-xl sm:text-2xl font-bold text-orange-600">
                       {employees.filter(emp => emp.performance.rating >= 4.5).length}
                     </div>
                     <div className="text-sm text-gray-500">High Performers</div>
@@ -1262,8 +1262,8 @@ const HRStaffManagement = () => {
         </TabsContent>
 
         {/* Scheduling Tab */}
-        <TabsContent value="scheduling" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="scheduling" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Shift Management */}
             <Card className="lg:col-span-2">
               <CardHeader>

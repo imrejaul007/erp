@@ -268,7 +268,7 @@ const TransfersPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -294,7 +294,7 @@ const TransfersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Transfers</p>
-                <p className="text-2xl font-bold">{transferAnalytics.totalTransfers}</p>
+                <p className="text-xl sm:text-2xl font-bold">{transferAnalytics.totalTransfers}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(transferAnalytics.trends.requests)}`}>
                   {getTrendIcon(transferAnalytics.trends.requests)}
                   {Math.abs(transferAnalytics.trends.requests)}% vs last month
@@ -310,7 +310,7 @@ const TransfersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Approval</p>
-                <p className="text-2xl font-bold">{transferAnalytics.pendingApproval}</p>
+                <p className="text-xl sm:text-2xl font-bold">{transferAnalytics.pendingApproval}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(transferAnalytics.trends.approvals)}`}>
                   {getTrendIcon(transferAnalytics.trends.approvals)}
                   {Math.abs(transferAnalytics.trends.approvals)}% vs last month
@@ -326,7 +326,7 @@ const TransfersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">In Transit</p>
-                <p className="text-2xl font-bold">{transferAnalytics.inTransit}</p>
+                <p className="text-xl sm:text-2xl font-bold">{transferAnalytics.inTransit}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(transferAnalytics.trends.deliveries)}`}>
                   {getTrendIcon(transferAnalytics.trends.deliveries)}
                   {Math.abs(transferAnalytics.trends.deliveries)}% vs last month
@@ -342,7 +342,7 @@ const TransfersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Value</p>
-                <p className="text-2xl font-bold">AED {(transferAnalytics.totalValue / 1000).toFixed(1)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(transferAnalytics.totalValue / 1000).toFixed(1)}K</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(transferAnalytics.trends.value)}`}>
                   {getTrendIcon(transferAnalytics.trends.value)}
                   {Math.abs(transferAnalytics.trends.value)}% vs last month
@@ -711,7 +711,7 @@ const TransfersPage = () => {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Transfer Volume Chart */}
             <Card>
               <CardHeader>

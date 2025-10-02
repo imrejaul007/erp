@@ -178,7 +178,7 @@ export default function StaffManagementPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -193,13 +193,13 @@ export default function StaffManagementPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Total Staff</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{staffStats.totalStaff}</div>
+            <div className="text-xl sm:text-2xl font-bold">{staffStats.totalStaff}</div>
             <p className="text-xs text-muted-foreground">Across all locations</p>
           </CardContent>
         </Card>
@@ -209,7 +209,7 @@ export default function StaffManagementPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Active Today</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{staffStats.activeStaff}</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{staffStats.activeStaff}</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <UserCheck className="h-3 w-3" />
               Currently working
@@ -222,7 +222,7 @@ export default function StaffManagementPage() {
             <CardTitle className="text-sm font-medium text-gray-600">On Leave</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{staffStats.onLeave}</div>
+            <div className="text-xl sm:text-2xl font-bold text-yellow-600">{staffStats.onLeave}</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <UserX className="h-3 w-3" />
               Today
@@ -235,7 +235,7 @@ export default function StaffManagementPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Avg Attendance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{staffStats.avgAttendance}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{staffStats.avgAttendance}%</div>
             <p className="text-xs text-muted-foreground">Last 30 days</p>
           </CardContent>
         </Card>

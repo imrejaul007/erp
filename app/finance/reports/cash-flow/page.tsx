@@ -236,7 +236,7 @@ export default function CashFlowStatementPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -330,7 +330,7 @@ export default function CashFlowStatementPage() {
       </Card>
 
       {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -339,7 +339,7 @@ export default function CashFlowStatementPage() {
             <Building className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.operatingActivities.netCashFromOperatingActivities)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -361,7 +361,7 @@ export default function CashFlowStatementPage() {
             <Factory className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.investingActivities.netCashFromInvestingActivities)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -383,7 +383,7 @@ export default function CashFlowStatementPage() {
             <CreditCard className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.financingActivities.netCashFromFinancingActivities)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -405,7 +405,7 @@ export default function CashFlowStatementPage() {
             <DollarSign className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(currentData.netChangeInCash)}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -454,7 +454,7 @@ export default function CashFlowStatementPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Operating Activities */}
                 <div>
                   <h3 className="text-xl font-bold text-green-900 mb-4 flex items-center">
@@ -680,7 +680,7 @@ export default function CashFlowStatementPage() {
                     <div className="border-t-2 border-amber-300 pt-4">
                       <div className="flex justify-between items-center">
                         <span className="text-xl font-bold text-amber-900">Cash at End of Period</span>
-                        <span className="text-2xl font-bold text-amber-900">
+                        <span className="text-xl sm:text-2xl font-bold text-amber-900">
                           {formatAED(currentData.cashAtEnd)}
                         </span>
                       </div>
@@ -694,7 +694,7 @@ export default function CashFlowStatementPage() {
 
         {/* Cash Flow Analysis Tab */}
         <TabsContent value="analysis">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -706,7 +706,7 @@ export default function CashFlowStatementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Operating Activities</span>
@@ -772,11 +772,11 @@ export default function CashFlowStatementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-medium text-green-900">Free Cash Flow</span>
-                      <span className="text-2xl font-bold text-green-900">
+                      <span className="text-xl sm:text-2xl font-bold text-green-900">
                         {formatAED(ratios.freeCashFlow)}
                       </span>
                     </div>
@@ -827,7 +827,7 @@ export default function CashFlowStatementPage() {
 
         {/* Cash Flow Ratios Tab */}
         <TabsContent value="ratios">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -839,7 +839,7 @@ export default function CashFlowStatementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Operating Cash Flow Ratio</span>
@@ -898,7 +898,7 @@ export default function CashFlowStatementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Cash Coverage Ratio</span>
@@ -956,7 +956,7 @@ export default function CashFlowStatementPage() {
 
         {/* Cash Forecast Tab */}
         <TabsContent value="forecast">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -986,7 +986,7 @@ export default function CashFlowStatementPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />

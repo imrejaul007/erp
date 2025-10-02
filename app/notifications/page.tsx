@@ -139,7 +139,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -158,13 +158,13 @@ export default function NotificationsPage() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Unread</p>
-                <p className="text-2xl font-bold text-blue-600">{unreadCount}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">{unreadCount}</p>
               </div>
               <Bell className="h-8 w-8 text-blue-600" />
             </div>
@@ -176,7 +176,7 @@ export default function NotificationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Alerts</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-xl sm:text-2xl font-bold text-red-600">
                   {notifications.filter(n => n.type === 'alert').length}
                 </p>
               </div>
@@ -190,7 +190,7 @@ export default function NotificationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Updates</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-xl sm:text-2xl font-bold text-green-600">
                   {notifications.filter(n => n.type === 'success').length}
                 </p>
               </div>
@@ -204,7 +204,7 @@ export default function NotificationsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Info</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">
                   {notifications.filter(n => n.type === 'info').length}
                 </p>
               </div>

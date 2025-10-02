@@ -938,7 +938,7 @@ export default function PurchasingVendorManagementPage() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
               <Truck className="h-6 w-6 mr-2 text-blue-600" />
               Purchasing & Vendor Management
             </h1>
@@ -1053,13 +1053,13 @@ export default function PurchasingVendorManagementPage() {
 
       <div className="p-6">
         {/* Statistics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Vendors</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.totalVendors}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.totalVendors}</p>
                   <p className="text-xs text-gray-500">{stats.activeVendors} active</p>
                 </div>
                 <Building className="h-8 w-8 text-blue-600" />
@@ -1072,7 +1072,7 @@ export default function PurchasingVendorManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Purchase Orders</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.totalPOs}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.totalPOs}</p>
                   <p className="text-xs text-gray-500">{stats.pendingPOs} pending</p>
                 </div>
                 <FileText className="h-8 w-8 text-green-600" />
@@ -1085,7 +1085,7 @@ export default function PurchasingVendorManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total PO Value</p>
-                  <p className="text-2xl font-bold text-purple-600">AED {stats.totalPOValue?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-purple-600">AED {stats.totalPOValue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">current orders</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-purple-600" />
@@ -1098,7 +1098,7 @@ export default function PurchasingVendorManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Avg Performance</p>
-                  <p className="text-2xl font-bold text-amber-600">{stats.avgVendorRating.toFixed(1)}/5.0</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-600">{stats.avgVendorRating.toFixed(1)}/5.0</p>
                   <p className="text-xs text-gray-500">{stats.onTimeDelivery.toFixed(1)}% on-time</p>
                 </div>
                 <Award className="h-8 w-8 text-amber-600" />
@@ -1162,7 +1162,7 @@ export default function PurchasingVendorManagementPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -1394,33 +1394,33 @@ export default function PurchasingVendorManagementPage() {
           </TabsContent>
 
           <TabsContent value="imports" className="mt-6">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
                     <Ship className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-blue-600">2</p>
+                    <p className="text-xl sm:text-2xl font-bold text-blue-600">2</p>
                     <p className="text-sm text-gray-600">In Transit</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
                     <Package className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-yellow-600">1</p>
+                    <p className="text-xl sm:text-2xl font-bold text-yellow-600">1</p>
                     <p className="text-sm text-gray-600">At Customs</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
                     <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-green-600">5</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">5</p>
                     <p className="text-sm text-gray-600">Cleared</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
                     <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-red-600">0</p>
+                    <p className="text-xl sm:text-2xl font-bold text-red-600">0</p>
                     <p className="text-sm text-gray-600">Issues</p>
                   </CardContent>
                 </Card>
@@ -1476,7 +1476,7 @@ export default function PurchasingVendorManagementPage() {
           </TabsContent>
 
           <TabsContent value="compliance" className="mt-6">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -1485,7 +1485,7 @@ export default function PurchasingVendorManagementPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <h4 className="font-semibold mb-3">Required Documents</h4>
                       <div className="space-y-2">
@@ -1599,7 +1599,7 @@ export default function PurchasingVendorManagementPage() {
               </TabsList>
 
               <TabsContent value="profile" className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h4 className="font-semibold mb-3">Basic Information</h4>
                     <div className="space-y-2 text-sm">
@@ -1731,7 +1731,7 @@ export default function PurchasingVendorManagementPage() {
               </TabsContent>
 
               <TabsContent value="performance" className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h4 className="font-semibold mb-3">Performance Metrics</h4>
                     <div className="space-y-3">
@@ -1855,7 +1855,7 @@ export default function PurchasingVendorManagementPage() {
               </TabsContent>
 
               <TabsContent value="financial" className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h4 className="font-semibold mb-3">Payment Terms</h4>
                     <div className="space-y-2 text-sm">
@@ -1978,7 +1978,7 @@ export default function PurchasingVendorManagementPage() {
               </TabsList>
 
               <TabsContent value="overview" className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h4 className="font-semibold mb-3">Order Information</h4>
                     <div className="space-y-2 text-sm">
@@ -2077,7 +2077,7 @@ export default function PurchasingVendorManagementPage() {
               </TabsContent>
 
               <TabsContent value="shipping" className="mt-4">
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {selectedPO.shipping && (
                     <div>
                       <h4 className="font-semibold mb-3">Shipping Information</h4>
@@ -2193,7 +2193,7 @@ export default function PurchasingVendorManagementPage() {
               </TabsContent>
 
               <TabsContent value="payment" className="mt-4">
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
                     <h4 className="font-semibold mb-3">Payment Terms & Status</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

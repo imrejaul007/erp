@@ -260,7 +260,7 @@ export default function VIPCustomerManagementPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -285,14 +285,14 @@ export default function VIPCustomerManagementPage() {
       </div>
 
       {/* VIP Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-purple-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total VIP Customers</CardTitle>
             <Crown className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{formatNumber(stats.totalVIPCustomers)}</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">{formatNumber(stats.totalVIPCustomers)}</div>
             <p className="text-xs text-muted-foreground">
               {stats.activeVIPs} active ({Math.round((stats.activeVIPs / stats.totalVIPCustomers) * 100)}%)
             </p>
@@ -305,7 +305,7 @@ export default function VIPCustomerManagementPage() {
             <TrendingUp className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{formatCurrency(stats.totalVIPRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold text-yellow-600">{formatCurrency(stats.totalVIPRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               Avg: {formatCurrency(stats.averageVIPSpend)} per VIP
             </p>
@@ -318,7 +318,7 @@ export default function VIPCustomerManagementPage() {
             <Star className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.satisfactionScore}/5</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.satisfactionScore}/5</div>
             <p className="text-xs text-muted-foreground">
               VIP customer satisfaction
             </p>
@@ -331,7 +331,7 @@ export default function VIPCustomerManagementPage() {
             <Target className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.vipRetentionRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.vipRetentionRate}%</div>
             <p className="text-xs text-muted-foreground">
               VIP customer retention
             </p>
@@ -348,12 +348,12 @@ export default function VIPCustomerManagementPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <div className="text-center p-6 border rounded-lg" style={{ borderColor: TIER_COLORS.GOLD }}>
               <div className="flex items-center justify-center mb-4">
                 <Trophy className="w-8 h-8" style={{ color: TIER_COLORS.GOLD }} />
               </div>
-              <div className="text-2xl font-bold" style={{ color: TIER_COLORS.GOLD }}>
+              <div className="text-xl sm:text-2xl font-bold" style={{ color: TIER_COLORS.GOLD }}>
                 {stats.goldTier}
               </div>
               <div className="text-sm text-gray-600">Gold Tier Members</div>
@@ -369,7 +369,7 @@ export default function VIPCustomerManagementPage() {
               <div className="flex items-center justify-center mb-4">
                 <Crown className="w-8 h-8" style={{ color: TIER_COLORS.PLATINUM }} />
               </div>
-              <div className="text-2xl font-bold" style={{ color: TIER_COLORS.PLATINUM }}>
+              <div className="text-xl sm:text-2xl font-bold" style={{ color: TIER_COLORS.PLATINUM }}>
                 {stats.platinumTier}
               </div>
               <div className="text-sm text-gray-600">Platinum Tier Members</div>
@@ -385,7 +385,7 @@ export default function VIPCustomerManagementPage() {
               <div className="flex items-center justify-center mb-4">
                 <Gem className="w-8 h-8" style={{ color: TIER_COLORS.DIAMOND }} />
               </div>
-              <div className="text-2xl font-bold" style={{ color: TIER_COLORS.DIAMOND }}>
+              <div className="text-xl sm:text-2xl font-bold" style={{ color: TIER_COLORS.DIAMOND }}>
                 {stats.diamondTier}
               </div>
               <div className="text-sm text-gray-600">Diamond Tier Members</div>
@@ -426,7 +426,7 @@ export default function VIPCustomerManagementPage() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="customers" className="space-y-6">
+      <Tabs defaultValue="customers" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="customers">VIP Customers</TabsTrigger>
           <TabsTrigger value="shoppers">Personal Shoppers</TabsTrigger>
@@ -435,7 +435,7 @@ export default function VIPCustomerManagementPage() {
         </TabsList>
 
         {/* VIP Customers Tab */}
-        <TabsContent value="customers" className="space-y-6">
+        <TabsContent value="customers" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -468,7 +468,7 @@ export default function VIPCustomerManagementPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredCustomers.map((customer) => (
                   <Card key={customer.id} className="relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-purple-500 to-purple-700 rounded-bl-3xl"></div>
@@ -560,7 +560,7 @@ export default function VIPCustomerManagementPage() {
         </TabsContent>
 
         {/* Personal Shoppers Tab */}
-        <TabsContent value="shoppers" className="space-y-6">
+        <TabsContent value="shoppers" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -575,7 +575,7 @@ export default function VIPCustomerManagementPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {personalShoppers.map((shopper) => (
                   <Card key={shopper.id}>
                     <CardHeader className="pb-4">
@@ -655,7 +655,7 @@ export default function VIPCustomerManagementPage() {
         </TabsContent>
 
         {/* Exclusive Events Tab */}
-        <TabsContent value="events" className="space-y-6">
+        <TabsContent value="events" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -733,13 +733,13 @@ export default function VIPCustomerManagementPage() {
         </TabsContent>
 
         {/* Benefits Management Tab */}
-        <TabsContent value="benefits" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="benefits" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>VIP Benefits Configuration</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
@@ -788,7 +788,7 @@ export default function VIPCustomerManagementPage() {
               <CardHeader>
                 <CardTitle>Tier Upgrade Thresholds</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 <div className="space-y-4">
                   <div className="p-4 border rounded-lg" style={{ borderColor: TIER_COLORS.GOLD }}>
                     <div className="flex items-center gap-2 mb-2">
@@ -838,7 +838,7 @@ export default function VIPCustomerManagementPage() {
                 {selectedCustomer.name} - VIP Profile
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Customer Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>

@@ -195,7 +195,7 @@ export default function BrandingPage() {
         </Button>
       </div>
 
-      <Tabs defaultValue="company" className="space-y-6">
+      <Tabs defaultValue="company" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="company">
             <Building2 className="h-4 w-4 mr-2" />
@@ -370,7 +370,7 @@ export default function BrandingPage() {
               <CardTitle>Brand Colors</CardTitle>
               <CardDescription>Customize your brand colors and theme</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div>
                 <h3 className="text-lg font-semibold mb-3">Primary Colors</h3>
                 <div className="grid grid-cols-3 gap-4">

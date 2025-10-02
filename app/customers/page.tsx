@@ -160,7 +160,7 @@ export default function CustomersPage() {
   const nextRewardThreshold = selectedCustomer ? Math.ceil(selectedCustomer.loyaltyPoints / 1000) * 1000 : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -248,7 +248,7 @@ export default function CustomersPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{customers.length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{customers.length}</div>
             <p className="text-xs text-muted-foreground">
               +12% from last month
             </p>
@@ -261,7 +261,7 @@ export default function CustomersPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {customers.filter(c => c.status === 'VIP').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -276,7 +276,7 @@ export default function CustomersPage() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
+            <div className="text-xl sm:text-2xl font-bold">8</div>
             <p className="text-xs text-muted-foreground">
               Recently joined
             </p>
@@ -289,7 +289,7 @@ export default function CustomersPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {formatCurrency(
                 customers.reduce((sum, c) => sum + c.totalSpent, 0) /
                 customers.reduce((sum, c) => sum + c.totalOrders, 0)
@@ -419,7 +419,7 @@ export default function CustomersPage() {
         </TabsContent>
 
         <TabsContent value="loyalty" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Loyalty Program Overview</CardTitle>
@@ -515,7 +515,7 @@ export default function CustomersPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Customer Distribution</CardTitle>
@@ -600,9 +600,9 @@ export default function CustomersPage() {
                 </DialogTitle>
               </DialogHeader>
 
-              <div className="grid gap-6">
+              <div className="grid gap-4 sm:gap-6">
                 {/* Contact Information */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Contact Information</CardTitle>
@@ -664,13 +664,13 @@ export default function CustomersPage() {
                 <div className="grid md:grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-oud-600">{selectedCustomer.totalOrders}</div>
+                      <div className="text-xl sm:text-2xl font-bold text-oud-600">{selectedCustomer.totalOrders}</div>
                       <p className="text-sm text-muted-foreground">Total Orders</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-oud-600">
+                      <div className="text-xl sm:text-2xl font-bold text-oud-600">
                         {formatCurrency(selectedCustomer.totalSpent)}
                       </div>
                       <p className="text-sm text-muted-foreground">Total Spent</p>
@@ -678,7 +678,7 @@ export default function CustomersPage() {
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-oud-600">
+                      <div className="text-xl sm:text-2xl font-bold text-oud-600">
                         {formatCurrency(selectedCustomer.totalSpent / selectedCustomer.totalOrders)}
                       </div>
                       <p className="text-sm text-muted-foreground">Average Order</p>

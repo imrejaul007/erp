@@ -292,7 +292,7 @@ const OrdersPage = () => {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -316,13 +316,13 @@ const OrdersPage = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{orderStats.totalOrders}</p>
+                <p className="text-xl sm:text-2xl font-bold">{orderStats.totalOrders}</p>
                 <p className="text-xs text-green-600">+12% vs last month</p>
               </div>
               <ShoppingCart className="h-8 w-8 text-blue-600" />
@@ -335,7 +335,7 @@ const OrdersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold">AED {(orderStats.totalRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(orderStats.totalRevenue / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-green-600">+18.5% vs last month</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -348,7 +348,7 @@ const OrdersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                <p className="text-2xl font-bold">AED {orderStats.averageOrderValue}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {orderStats.averageOrderValue}</p>
                 <p className="text-xs text-blue-600">+5.2% vs last month</p>
               </div>
               <TrendingUp className="h-8 w-8 text-purple-600" />
@@ -361,7 +361,7 @@ const OrdersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Orders</p>
-                <p className="text-2xl font-bold">{orderStats.pendingOrders}</p>
+                <p className="text-xl sm:text-2xl font-bold">{orderStats.pendingOrders}</p>
                 <p className="text-xs text-orange-600">Needs attention</p>
               </div>
               <Clock className="h-8 w-8 text-orange-600" />
@@ -371,7 +371,7 @@ const OrdersPage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="orders" className="space-y-6">
+      <Tabs defaultValue="orders" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="orders">All Orders</TabsTrigger>
           <TabsTrigger value="pending">Pending</TabsTrigger>
@@ -381,7 +381,7 @@ const OrdersPage = () => {
         </TabsList>
 
         {/* All Orders Tab */}
-        <TabsContent value="orders" className="space-y-6">
+        <TabsContent value="orders" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -511,7 +511,7 @@ const OrdersPage = () => {
         </TabsContent>
 
         {/* Pending Orders Tab */}
-        <TabsContent value="pending" className="space-y-6">
+        <TabsContent value="pending" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Pending Orders</CardTitle>
@@ -568,7 +568,7 @@ const OrdersPage = () => {
         </TabsContent>
 
         {/* Processing Orders Tab */}
-        <TabsContent value="processing" className="space-y-6">
+        <TabsContent value="processing" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Processing Orders</CardTitle>
@@ -635,7 +635,7 @@ const OrdersPage = () => {
         </TabsContent>
 
         {/* Shipping Tab */}
-        <TabsContent value="shipping" className="space-y-6">
+        <TabsContent value="shipping" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Shipping & Delivery</CardTitle>
@@ -726,8 +726,8 @@ const OrdersPage = () => {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Order Status Distribution */}
             <Card>
               <CardHeader>
@@ -849,19 +849,19 @@ const OrdersPage = () => {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">98.5%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">98.5%</div>
                   <div className="text-sm text-gray-500">Order Fulfillment Rate</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">2.4 days</div>
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">2.4 days</div>
                   <div className="text-sm text-gray-500">Avg Processing Time</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">4.7/5</div>
+                  <div className="text-xl sm:text-2xl font-bold text-purple-600">4.7/5</div>
                   <div className="text-sm text-gray-500">Customer Satisfaction</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">1.2%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-orange-600">1.2%</div>
                   <div className="text-sm text-gray-500">Return Rate</div>
                 </div>
               </div>
@@ -880,7 +880,7 @@ const OrdersPage = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedOrder && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Order Header */}
               <div className="flex justify-between items-start">
                 <div>

@@ -347,7 +347,7 @@ export default function ProductionPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -529,7 +529,7 @@ export default function ProductionPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-primary">{batch.progress}%</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">{batch.progress}%</p>
                       </div>
                     </div>
                     <Progress value={batch.progress} />

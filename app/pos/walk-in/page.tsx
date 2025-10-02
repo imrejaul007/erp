@@ -133,7 +133,7 @@ export default function WalkInCustomersPage() {
   const conversionRate = todayVisits > 0 ? (todayPurchases / todayVisits * 100).toFixed(1) : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -278,7 +278,7 @@ export default function WalkInCustomersPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayVisits}</div>
+            <div className="text-xl sm:text-2xl font-bold">{todayVisits}</div>
             <p className="text-xs text-muted-foreground">
               Walk-in customers today
             </p>
@@ -291,7 +291,7 @@ export default function WalkInCustomersPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayPurchases}</div>
+            <div className="text-xl sm:text-2xl font-bold">{todayPurchases}</div>
             <p className="text-xs text-muted-foreground">
               Customers who purchased
             </p>
@@ -304,7 +304,7 @@ export default function WalkInCustomersPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{conversionRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{conversionRate}%</div>
             <p className="text-xs text-muted-foreground">
               Visit to purchase ratio
             </p>
@@ -317,7 +317,7 @@ export default function WalkInCustomersPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(todayRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(todayRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               From walk-in customers
             </p>

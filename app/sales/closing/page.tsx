@@ -126,7 +126,7 @@ export default function SalesClosingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -185,7 +185,7 @@ export default function SalesClosingPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(todaySalesData.totalSales)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(todaySalesData.totalSales)}</div>
             <p className="text-xs text-muted-foreground">
               {todaySalesData.totalTransactions} transactions
             </p>
@@ -198,7 +198,7 @@ export default function SalesClosingPage() {
             <Banknote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(todaySalesData.expectedClosingCash)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(todaySalesData.expectedClosingCash)}</div>
             <p className="text-xs text-muted-foreground">
               Opening: {formatCurrency(todaySalesData.openingCash)}
             </p>
@@ -211,7 +211,7 @@ export default function SalesClosingPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(todaySalesData.vatAmount)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(todaySalesData.vatAmount)}</div>
             <p className="text-xs text-muted-foreground">
               5% VAT on sales
             </p>
@@ -224,7 +224,7 @@ export default function SalesClosingPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todaySalesData.customerCount}</div>
+            <div className="text-xl sm:text-2xl font-bold">{todaySalesData.customerCount}</div>
             <p className="text-xs text-muted-foreground">
               {todaySalesData.loyaltySignups} new loyalty members
             </p>
@@ -388,12 +388,12 @@ export default function SalesClosingPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Discounts Applied</Label>
-                    <div className="text-2xl font-bold text-red-600">-{formatCurrency(todaySalesData.totalDiscounts)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-red-600">-{formatCurrency(todaySalesData.totalDiscounts)}</div>
                     <p className="text-sm text-muted-foreground">Manual discounts and promotions</p>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Voucher Redemptions</Label>
-                    <div className="text-2xl font-bold text-blue-600">-{formatCurrency(todaySalesData.voucherRedemptions)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">-{formatCurrency(todaySalesData.voucherRedemptions)}</div>
                     <p className="text-sm text-muted-foreground">Gift cards and vouchers used</p>
                   </div>
                 </div>
@@ -401,12 +401,12 @@ export default function SalesClosingPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Returns Processed</Label>
-                    <div className="text-2xl font-bold text-orange-600">-{formatCurrency(todaySalesData.returns)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-orange-600">-{formatCurrency(todaySalesData.returns)}</div>
                     <p className="text-sm text-muted-foreground">Customer returns</p>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Exchanges</Label>
-                    <div className="text-2xl font-bold text-purple-600">{formatCurrency(todaySalesData.exchanges)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">{formatCurrency(todaySalesData.exchanges)}</div>
                     <p className="text-sm text-muted-foreground">Product exchanges</p>
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function SalesClosingPage() {
               <Separator />
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Expected Closing Cash</Label>
-                <div className="text-2xl font-bold text-blue-600">{formatCurrency(todaySalesData.expectedClosingCash)}</div>
+                <div className="text-xl sm:text-2xl font-bold text-blue-600">{formatCurrency(todaySalesData.expectedClosingCash)}</div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="actual-cash">Actual Cash Count *</Label>
@@ -451,7 +451,7 @@ export default function SalesClosingPage() {
               {actualCash && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Cash Variance</Label>
-                  <div className={`text-2xl font-bold ${cashVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className={`text-xl sm:text-2xl font-bold ${cashVariance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {cashVariance >= 0 ? '+' : ''}{formatCurrency(cashVariance)}
                   </div>
                   {Math.abs(cashVariance) > 10 && (

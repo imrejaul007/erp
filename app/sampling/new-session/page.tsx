@@ -238,7 +238,7 @@ export default function NewSamplingSessionPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button
@@ -254,9 +254,9 @@ export default function NewSamplingSessionPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column - Customer & Products */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Customer Information */}
           <Card>
             <CardHeader>
@@ -521,7 +521,7 @@ export default function NewSamplingSessionPage() {
         </div>
 
         {/* Right Column - Summary */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Card className="sticky top-6">
             <CardHeader>
               <CardTitle className="text-gray-900">Session Summary</CardTitle>

@@ -310,7 +310,7 @@ const PermissionsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -357,7 +357,7 @@ const PermissionsPage = () => {
       </Card>
 
       {/* Permissions Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="roles" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
@@ -378,7 +378,7 @@ const PermissionsPage = () => {
         </TabsList>
 
         {/* User Roles */}
-        <TabsContent value="roles" className="space-y-6">
+        <TabsContent value="roles" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -472,7 +472,7 @@ const PermissionsPage = () => {
         </TabsContent>
 
         {/* Active Users */}
-        <TabsContent value="users" className="space-y-6">
+        <TabsContent value="users" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -531,14 +531,14 @@ const PermissionsPage = () => {
         </TabsContent>
 
         {/* Permissions */}
-        <TabsContent value="permissions" className="space-y-6">
+        <TabsContent value="permissions" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Permission Modules</CardTitle>
               <CardDescription>System permissions organized by functional modules</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {permissionModules.map((module) => (
                   <div key={module.id} className="border rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-4">
@@ -566,13 +566,13 @@ const PermissionsPage = () => {
         </TabsContent>
 
         {/* Security */}
-        <TabsContent value="security" className="space-y-6">
+        <TabsContent value="security" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Security Policies</CardTitle>
               <CardDescription>Configure system security and access control policies</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div>
                 <h3 className="font-medium mb-4">Authentication Security</h3>
                 <div className="space-y-3">
@@ -659,7 +659,7 @@ const PermissionsPage = () => {
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <h4 className="font-medium">Login Attempts</h4>
                   </div>
-                  <p className="text-2xl font-bold">156</p>
+                  <p className="text-xl sm:text-2xl font-bold">156</p>
                   <p className="text-sm text-gray-600">Today</p>
                 </div>
                 <div className="p-4 border rounded-lg">
@@ -667,7 +667,7 @@ const PermissionsPage = () => {
                     <AlertTriangle className="h-5 w-5 text-yellow-600" />
                     <h4 className="font-medium">Failed Logins</h4>
                   </div>
-                  <p className="text-2xl font-bold">3</p>
+                  <p className="text-xl sm:text-2xl font-bold">3</p>
                   <p className="text-sm text-gray-600">Today</p>
                 </div>
                 <div className="p-4 border rounded-lg">
@@ -675,7 +675,7 @@ const PermissionsPage = () => {
                     <Users className="h-5 w-5 text-blue-600" />
                     <h4 className="font-medium">Active Sessions</h4>
                   </div>
-                  <p className="text-2xl font-bold">28</p>
+                  <p className="text-xl sm:text-2xl font-bold">28</p>
                   <p className="text-sm text-gray-600">Current</p>
                 </div>
                 <div className="p-4 border rounded-lg">
@@ -683,7 +683,7 @@ const PermissionsPage = () => {
                     <Shield className="h-5 w-5 text-purple-600" />
                     <h4 className="font-medium">Security Events</h4>
                   </div>
-                  <p className="text-2xl font-bold">2</p>
+                  <p className="text-xl sm:text-2xl font-bold">2</p>
                   <p className="text-sm text-gray-600">This week</p>
                 </div>
               </div>

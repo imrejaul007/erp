@@ -217,7 +217,7 @@ View full receipt: ${window.location.href}`;
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
+          <CardContent className="p-4 sm:p-6 text-center">
             <Receipt className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Receipt Not Found</h2>
             <p className="text-gray-600 mb-4">The receipt you're looking for doesn't exist or has expired.</p>
@@ -242,7 +242,7 @@ View full receipt: ${window.location.href}`;
               Back to POS
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Payment Successful</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Payment Successful</h1>
               <p className="text-gray-600">Receipt ID: {receiptData.id}</p>
             </div>
           </div>
@@ -254,7 +254,7 @@ View full receipt: ${window.location.href}`;
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Receipt Display */}
           <div className="lg:col-span-2">
             <Card>
@@ -268,7 +268,7 @@ View full receipt: ${window.location.href}`;
                 <div ref={receiptRef} className="receipt-container bg-white p-6 border rounded-lg">
                   {/* Store Header */}
                   <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-amber-600 mb-1">{receiptData.store.name}</h2>
+                    <h2 className="text-xl sm:text-2xl font-bold text-amber-600 mb-1">{receiptData.store.name}</h2>
                     <p className="text-lg text-gray-600 mb-2">{receiptData.store.nameArabic}</p>
                     <p className="text-sm text-gray-600">{receiptData.store.address}</p>
                     <p className="text-sm text-gray-600">{receiptData.store.addressArabic}</p>
@@ -408,7 +408,7 @@ View full receipt: ${window.location.href}`;
           </div>
 
           {/* Action Panel */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Quick Actions */}
             <Card>
               <CardHeader>

@@ -96,7 +96,7 @@ export default function ViewStaffPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -126,7 +126,7 @@ export default function ViewStaffPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Personal Info */}
             <div className="space-y-4">
               <h3 className="font-semibold text-sm text-gray-600">Personal Information</h3>
@@ -239,13 +239,13 @@ export default function ViewStaffPage() {
       </Card>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Attendance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{staff.attendance}%</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{staff.attendance}%</div>
             <Progress value={staff.attendance} className="h-2 mt-2" />
             <p className="text-xs text-muted-foreground mt-2">Last 30 days</p>
           </CardContent>
@@ -257,7 +257,7 @@ export default function ViewStaffPage() {
               <CardTitle className="text-sm font-medium text-gray-600">{metric.metric}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {metric.metric.includes('Satisfaction') ? metric.value.toFixed(1) : `${metric.value}%`}
               </div>
               <Progress value={(metric.value / metric.target) * 100} className="h-2 mt-2" />

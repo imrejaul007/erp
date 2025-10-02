@@ -287,7 +287,7 @@ export default function LogisticsPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -304,11 +304,11 @@ export default function LogisticsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <Truck className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{logisticsSummary.dailyShipments}</div>
+            <div className="text-xl sm:text-2xl font-bold">{logisticsSummary.dailyShipments}</div>
             <div className="text-sm text-gray-600">Daily Shipments</div>
           </CardContent>
         </Card>
@@ -316,7 +316,7 @@ export default function LogisticsPage() {
         <Card>
           <CardContent className="pt-6">
             <Users className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{logisticsSummary.activeSuppliers}</div>
+            <div className="text-xl sm:text-2xl font-bold">{logisticsSummary.activeSuppliers}</div>
             <div className="text-sm text-gray-600">Active Suppliers</div>
           </CardContent>
         </Card>
@@ -324,7 +324,7 @@ export default function LogisticsPage() {
         <Card>
           <CardContent className="pt-6">
             <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{logisticsSummary.onTimeDelivery}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{logisticsSummary.onTimeDelivery}%</div>
             <div className="text-sm text-gray-600">On-Time Delivery</div>
           </CardContent>
         </Card>
@@ -332,7 +332,7 @@ export default function LogisticsPage() {
         <Card>
           <CardContent className="pt-6">
             <Clock className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold">{logisticsSummary.avgLeadTime} days</div>
+            <div className="text-xl sm:text-2xl font-bold">{logisticsSummary.avgLeadTime} days</div>
             <div className="text-sm text-gray-600">Avg Lead Time</div>
           </CardContent>
         </Card>
@@ -340,7 +340,7 @@ export default function LogisticsPage() {
         <Card>
           <CardContent className="pt-6">
             <DollarSign className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold">AED {(logisticsSummary.logisticsCost / 1000).toFixed(0)}K</div>
+            <div className="text-xl sm:text-2xl font-bold">AED {(logisticsSummary.logisticsCost / 1000).toFixed(0)}K</div>
             <div className="text-sm text-gray-600">Monthly Cost</div>
           </CardContent>
         </Card>
@@ -348,7 +348,7 @@ export default function LogisticsPage() {
         <Card>
           <CardContent className="pt-6">
             <TrendingUp className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{logisticsSummary.fuelSavings}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{logisticsSummary.fuelSavings}%</div>
             <div className="text-sm text-gray-600">Fuel Savings</div>
           </CardContent>
         </Card>
@@ -398,11 +398,11 @@ export default function LogisticsPage() {
                 <div className="flex items-center gap-4 mb-2">
                   <div>
                     <div className="text-sm text-gray-600">Current</div>
-                    <div className="text-2xl font-bold text-blue-600">{metric.current}{metric.metric.includes('Rate') || metric.metric.includes('Delivery') ? '%' : ''}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">{metric.current}{metric.metric.includes('Rate') || metric.metric.includes('Delivery') ? '%' : ''}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">Target</div>
-                    <div className="text-2xl font-bold text-gray-600">{metric.target}{metric.metric.includes('Rate') || metric.metric.includes('Delivery') ? '%' : ''}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-gray-600">{metric.target}{metric.metric.includes('Rate') || metric.metric.includes('Delivery') ? '%' : ''}</div>
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -464,7 +464,7 @@ export default function LogisticsPage() {
       </Card>
 
       {/* Logistics Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {logisticsFeatures.map((feature) => {
           const Icon = feature.icon;
           return (
@@ -525,7 +525,7 @@ export default function LogisticsPage() {
           <CardDescription>Optimize your supply chain in 4 steps</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-xl font-bold text-blue-600">1</span>

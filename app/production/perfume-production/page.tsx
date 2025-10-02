@@ -156,7 +156,7 @@ export default function PerfumeProductionPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -270,7 +270,7 @@ export default function PerfumeProductionPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary group-hover:text-primary">{batch.progress}%</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary group-hover:text-primary">{batch.progress}%</p>
                     <p className="text-xs text-gray-600 group-hover:text-gray-700">Complete</p>
                   </div>
                 </div>
@@ -363,7 +363,7 @@ export default function PerfumeProductionPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600 group-hover:text-green-700">{recipe.margin}%</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600 group-hover:text-green-700">{recipe.margin}%</p>
                     <p className="text-xs text-gray-600 group-hover:text-gray-700">Margin</p>
                   </div>
                 </div>
@@ -453,7 +453,7 @@ export default function PerfumeProductionPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">AED {batch.totalValue?.toLocaleString() || "0"}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">AED {batch.totalValue?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-muted-foreground">Total value</p>
                   </div>
                 </div>
@@ -587,7 +587,7 @@ export default function PerfumeProductionPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedBatch && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">
@@ -736,7 +736,7 @@ export default function PerfumeProductionPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedRecipe && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Recipe Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">
@@ -829,11 +829,11 @@ export default function PerfumeProductionPage() {
               <div className="grid grid-cols-3 gap-4">
                 <Card className="p-4 bg-blue-50 border border-blue-200">
                   <p className="text-xs text-gray-700 mb-1">Aging Time</p>
-                  <p className="text-2xl font-bold text-blue-600">{selectedRecipe.agingTime} {selectedRecipe.agingUnit}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{selectedRecipe.agingTime} {selectedRecipe.agingUnit}</p>
                 </Card>
                 <Card className="p-4 bg-green-50 border border-green-200">
                   <p className="text-xs text-gray-700 mb-1">Total Batches</p>
-                  <p className="text-2xl font-bold text-green-600">{selectedRecipe.totalBatches}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">{selectedRecipe.totalBatches}</p>
                 </Card>
                 <Card className="p-4 bg-purple-50 border border-purple-200">
                   <p className="text-xs text-gray-700 mb-1">Last Used</p>

@@ -70,7 +70,7 @@ export default function StockTransfersPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Stock Transfers</h1>
@@ -94,7 +94,7 @@ export default function StockTransfersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Transfers</p>
-                <p className="text-2xl font-bold">156</p>
+                <p className="text-xl sm:text-2xl font-bold">156</p>
               </div>
               <ArrowUpDown className="h-8 w-8 text-blue-500" />
             </div>
@@ -106,7 +106,7 @@ export default function StockTransfersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">12</p>
+                <p className="text-xl sm:text-2xl font-bold text-yellow-600">12</p>
               </div>
               <Clock className="h-8 w-8 text-yellow-500" />
             </div>
@@ -118,7 +118,7 @@ export default function StockTransfersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">In Transit</p>
-                <p className="text-2xl font-bold text-blue-600">8</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">8</p>
               </div>
               <Truck className="h-8 w-8 text-blue-500" />
             </div>
@@ -130,7 +130,7 @@ export default function StockTransfersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Completed</p>
-                <p className="text-2xl font-bold text-green-600">136</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">136</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>

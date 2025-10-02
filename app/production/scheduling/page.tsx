@@ -221,7 +221,7 @@ export default function ProductionSchedulingPage() {
   const avgProgress = productionSchedule.reduce((acc, s) => acc + s.progress, 0) / totalBatches;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -252,7 +252,7 @@ export default function ProductionSchedulingPage() {
                   Create a new production schedule with resource allocation
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-6 py-4">
+              <div className="grid gap-4 sm:gap-6 py-4">
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Production Details</h3>
@@ -326,7 +326,7 @@ export default function ProductionSchedulingPage() {
                 {/* Resource Allocation */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Resource Allocation</h3>
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-4">
                       <Label>Assign Operator</Label>
                       <Select>
@@ -403,7 +403,7 @@ export default function ProductionSchedulingPage() {
             <RotateCcw className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressBatches}</div>
+            <div className="text-xl sm:text-2xl font-bold">{inProgressBatches}</div>
             <p className="text-xs text-muted-foreground">
               Currently in production
             </p>
@@ -416,7 +416,7 @@ export default function ProductionSchedulingPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgProgress.toFixed(1)}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{avgProgress.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               Across all active batches
             </p>
@@ -429,7 +429,7 @@ export default function ProductionSchedulingPage() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{delayedBatches}</div>
+            <div className="text-xl sm:text-2xl font-bold">{delayedBatches}</div>
             <p className="text-xs text-muted-foreground">
               Requiring attention
             </p>
@@ -442,7 +442,7 @@ export default function ProductionSchedulingPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {operators.filter(op => op.status === 'Available').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -781,7 +781,7 @@ export default function ProductionSchedulingPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Schedule Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
@@ -808,7 +808,7 @@ export default function ProductionSchedulingPage() {
                 <Separator />
 
                 {/* Timeline Information */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Timeline</h3>
                     <div className="space-y-3">

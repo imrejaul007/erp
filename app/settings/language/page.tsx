@@ -251,7 +251,7 @@ const LanguageSettingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -292,7 +292,7 @@ const LanguageSettingsPage = () => {
       </Card>
 
       {/* Language Settings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -313,7 +313,7 @@ const LanguageSettingsPage = () => {
         </TabsList>
 
         {/* General Language Settings */}
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Language Configuration</CardTitle>
@@ -457,7 +457,7 @@ const LanguageSettingsPage = () => {
         </TabsContent>
 
         {/* Available Languages */}
-        <TabsContent value="languages" className="space-y-6">
+        <TabsContent value="languages" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -530,7 +530,7 @@ const LanguageSettingsPage = () => {
         </TabsContent>
 
         {/* Regional Settings */}
-        <TabsContent value="regional" className="space-y-6">
+        <TabsContent value="regional" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Regional Configuration</CardTitle>
@@ -710,7 +710,7 @@ const LanguageSettingsPage = () => {
         </TabsContent>
 
         {/* Translation Management */}
-        <TabsContent value="translations" className="space-y-6">
+        <TabsContent value="translations" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">

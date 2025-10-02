@@ -289,7 +289,7 @@ const MultiLocationManagement = () => {
   const totalMetrics = calculateTotalMetrics();
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -369,13 +369,13 @@ const MultiLocationManagement = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Locations</p>
-                <p className="text-2xl font-bold">{locations.length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{locations.length}</p>
                 <p className="text-xs text-gray-500">{locations.filter(l => l.status === 'active').length} active</p>
               </div>
               <Store className="h-8 w-8 text-blue-600" />
@@ -388,7 +388,7 @@ const MultiLocationManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Sales</p>
-                <p className="text-2xl font-bold">AED {(totalMetrics.totalSales / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(totalMetrics.totalSales / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-green-600">
                   {((totalMetrics.totalSales / totalMetrics.totalTarget) * 100).toFixed(1)}% of target
                 </p>
@@ -403,7 +403,7 @@ const MultiLocationManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Staff</p>
-                <p className="text-2xl font-bold">{totalMetrics.totalStaff}</p>
+                <p className="text-xl sm:text-2xl font-bold">{totalMetrics.totalStaff}</p>
                 <p className="text-xs text-gray-500">Across all locations</p>
               </div>
               <Users className="h-8 w-8 text-purple-600" />
@@ -416,7 +416,7 @@ const MultiLocationManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Inventory Value</p>
-                <p className="text-2xl font-bold">AED {(totalMetrics.totalInventoryValue / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(totalMetrics.totalInventoryValue / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-gray-500">All locations</p>
               </div>
               <Package className="h-8 w-8 text-orange-600" />
@@ -426,7 +426,7 @@ const MultiLocationManagement = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="locations">Locations</TabsTrigger>
@@ -437,8 +437,8 @@ const MultiLocationManagement = () => {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Real-time Performance Dashboard */}
             <Card>
               <CardHeader>
@@ -559,7 +559,7 @@ const MultiLocationManagement = () => {
         </TabsContent>
 
         {/* Locations Tab */}
-        <TabsContent value="locations" className="space-y-6">
+        <TabsContent value="locations" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Location Management</CardTitle>
@@ -685,8 +685,8 @@ const MultiLocationManagement = () => {
         </TabsContent>
 
         {/* Transfers Tab */}
-        <TabsContent value="transfers" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="transfers" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Transfer Requests */}
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -835,8 +835,8 @@ const MultiLocationManagement = () => {
         </TabsContent>
 
         {/* Performance Tab */}
-        <TabsContent value="performance" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="performance" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Sales Performance */}
             <Card>
               <CardHeader>
@@ -888,25 +888,25 @@ const MultiLocationManagement = () => {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">
                       {totalMetrics.avgConversion.toFixed(1)}%
                     </div>
                     <div className="text-sm text-gray-500">Avg Conversion</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">
                       {totalMetrics.totalFootfall}
                     </div>
                     <div className="text-sm text-gray-500">Total Footfall</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">
                       AED {(locations.filter(l => l.type !== 'warehouse').reduce((sum, loc) => sum + loc.performance.avgTransaction, 0) / locations.filter(l => l.type !== 'warehouse').length).toFixed(0)}
                     </div>
                     <div className="text-sm text-gray-500">Avg Transaction</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600">
+                    <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                       {(locations.filter(l => l.type !== 'warehouse').reduce((sum, loc) => sum + loc.performance.customerSatisfaction, 0) / locations.filter(l => l.type !== 'warehouse').length).toFixed(1)}
                     </div>
                     <div className="text-sm text-gray-500">Satisfaction</div>
@@ -978,8 +978,8 @@ const MultiLocationManagement = () => {
         </TabsContent>
 
         {/* Access Control Tab */}
-        <TabsContent value="access" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="access" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Access Levels */}
             <Card>
               <CardHeader>
@@ -1095,7 +1095,7 @@ const MultiLocationManagement = () => {
               <CardTitle>Security & Compliance Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <h4 className="font-medium">Authentication Settings</h4>
                   <div className="space-y-3">
@@ -1137,8 +1137,8 @@ const MultiLocationManagement = () => {
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="settings" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Global Settings */}
             <Card>
               <CardHeader>
@@ -1239,7 +1239,7 @@ const MultiLocationManagement = () => {
               <CardTitle>Notification Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <h4 className="font-medium">Inventory Alerts</h4>
                   <div className="space-y-3">

@@ -169,7 +169,7 @@ export default function CorporateOrdersPage() {
   const corporateClients = new Set(corporateOrders.map(order => order.company)).size;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -311,7 +311,7 @@ export default function CorporateOrdersPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalContractValue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalContractValue)}</div>
             <p className="text-xs text-muted-foreground">
               Active and signed contracts
             </p>
@@ -324,7 +324,7 @@ export default function CorporateOrdersPage() {
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalDiscount)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalDiscount)}</div>
             <p className="text-xs text-muted-foreground">
               Volume discounts provided
             </p>
@@ -337,7 +337,7 @@ export default function CorporateOrdersPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeContracts}</div>
+            <div className="text-xl sm:text-2xl font-bold">{activeContracts}</div>
             <p className="text-xs text-muted-foreground">
               Currently active
             </p>
@@ -350,7 +350,7 @@ export default function CorporateOrdersPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{corporateClients}</div>
+            <div className="text-xl sm:text-2xl font-bold">{corporateClients}</div>
             <p className="text-xs text-muted-foreground">
               Enterprise partners
             </p>

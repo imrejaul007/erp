@@ -277,7 +277,7 @@ export default function VIPCustomerAnalyticsPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -294,11 +294,11 @@ export default function VIPCustomerAnalyticsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <Crown className="h-8 w-8 text-yellow-600 mb-2" />
-            <div className="text-2xl font-bold">{vipSummary.totalVIPs}</div>
+            <div className="text-xl sm:text-2xl font-bold">{vipSummary.totalVIPs}</div>
             <div className="text-sm text-gray-600">VIP Customers</div>
             <div className="text-xs text-gray-500 mt-1">{vipSummary.percentOfCustomers}% of total</div>
           </CardContent>
@@ -307,7 +307,7 @@ export default function VIPCustomerAnalyticsPage() {
         <Card>
           <CardContent className="pt-6">
             <DollarSign className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold text-green-600">AED {(vipSummary.totalRevenue / 1000000).toFixed(2)}M</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">AED {(vipSummary.totalRevenue / 1000000).toFixed(2)}M</div>
             <div className="text-sm text-gray-600">VIP Revenue</div>
             <div className="text-xs text-gray-500 mt-1">{vipSummary.revenueShare}% of total</div>
           </CardContent>
@@ -316,7 +316,7 @@ export default function VIPCustomerAnalyticsPage() {
         <Card>
           <CardContent className="pt-6">
             <Star className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold text-purple-600">AED {(vipSummary.avgLifetimeValue / 1000).toFixed(0)}K</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">AED {(vipSummary.avgLifetimeValue / 1000).toFixed(0)}K</div>
             <div className="text-sm text-gray-600">Avg Lifetime Value</div>
             <div className="text-xs text-gray-500 mt-1">{vipSummary.avgPurchaseFrequency}x purchases/year</div>
           </CardContent>
@@ -325,7 +325,7 @@ export default function VIPCustomerAnalyticsPage() {
         <Card>
           <CardContent className="pt-6">
             <Heart className="h-8 w-8 text-red-600 mb-2" />
-            <div className="text-2xl font-bold text-red-600">{vipSummary.retentionRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold text-red-600">{vipSummary.retentionRate}%</div>
             <div className="text-sm text-gray-600">Retention Rate</div>
             <div className="text-xs text-gray-500 mt-1">{vipSummary.churnRisk} at risk</div>
           </CardContent>
@@ -346,7 +346,7 @@ export default function VIPCustomerAnalyticsPage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>VIP Impact Analysis</CardTitle>
@@ -594,15 +594,15 @@ export default function VIPCustomerAnalyticsPage() {
                     <div className="grid grid-cols-3 gap-4 mb-3">
                       <div>
                         <div className="text-sm text-gray-600">VIP Rate</div>
-                        <div className="text-2xl font-bold text-green-600">{metric.vipRate}%</div>
+                        <div className="text-xl sm:text-2xl font-bold text-green-600">{metric.vipRate}%</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Regular Rate</div>
-                        <div className="text-2xl font-bold text-gray-600">{metric.regularRate}%</div>
+                        <div className="text-xl sm:text-2xl font-bold text-gray-600">{metric.regularRate}%</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Difference</div>
-                        <div className="text-2xl font-bold text-purple-600">+{metric.difference}%</div>
+                        <div className="text-xl sm:text-2xl font-bold text-purple-600">+{metric.difference}%</div>
                       </div>
                     </div>
                     <Progress value={metric.vipRate} className="h-2" />

@@ -283,7 +283,7 @@ export default function EcommercePage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -300,11 +300,11 @@ export default function EcommercePage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <ShoppingCart className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{ecommerceSummary.totalOrders?.toLocaleString() || "0"}</div>
+            <div className="text-xl sm:text-2xl font-bold">{ecommerceSummary.totalOrders?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Monthly Orders</div>
           </CardContent>
         </Card>
@@ -312,7 +312,7 @@ export default function EcommercePage() {
         <Card>
           <CardContent className="pt-6">
             <DollarSign className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">AED {(ecommerceSummary.totalRevenue / 1000).toFixed(0)}K</div>
+            <div className="text-xl sm:text-2xl font-bold">AED {(ecommerceSummary.totalRevenue / 1000).toFixed(0)}K</div>
             <div className="text-sm text-gray-600">Online Revenue</div>
           </CardContent>
         </Card>
@@ -320,7 +320,7 @@ export default function EcommercePage() {
         <Card>
           <CardContent className="pt-6">
             <TrendingUp className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold">AED {ecommerceSummary.avgOrderValue}</div>
+            <div className="text-xl sm:text-2xl font-bold">AED {ecommerceSummary.avgOrderValue}</div>
             <div className="text-sm text-gray-600">Avg Order Value</div>
           </CardContent>
         </Card>
@@ -328,7 +328,7 @@ export default function EcommercePage() {
         <Card>
           <CardContent className="pt-6">
             <CheckCircle className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{ecommerceSummary.conversionRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{ecommerceSummary.conversionRate}%</div>
             <div className="text-sm text-gray-600">Conversion Rate</div>
           </CardContent>
         </Card>
@@ -336,7 +336,7 @@ export default function EcommercePage() {
         <Card>
           <CardContent className="pt-6">
             <Package className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold">{ecommerceSummary.cartAbandonment}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{ecommerceSummary.cartAbandonment}%</div>
             <div className="text-sm text-gray-600">Cart Abandon</div>
           </CardContent>
         </Card>
@@ -344,7 +344,7 @@ export default function EcommercePage() {
         <Card>
           <CardContent className="pt-6">
             <Star className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold">{ecommerceSummary.customerSatisfaction}</div>
+            <div className="text-xl sm:text-2xl font-bold">{ecommerceSummary.customerSatisfaction}</div>
             <div className="text-sm text-gray-600">Satisfaction</div>
           </CardContent>
         </Card>
@@ -419,7 +419,7 @@ export default function EcommercePage() {
       </Card>
 
       {/* E-commerce Features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {ecommerceFeatures.map((feature) => {
           const Icon = feature.icon;
           return (
@@ -480,7 +480,7 @@ export default function EcommercePage() {
           <CardDescription>Launch your online sales channels in 4 easy steps</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-xl font-bold text-blue-600">1</span>

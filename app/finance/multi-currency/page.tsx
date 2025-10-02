@@ -335,7 +335,7 @@ export default function MultiCurrencyPage() {
   const totalRealizedGainLoss = transactions.reduce((sum, transaction) => sum + transaction.realizedGainLoss, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -410,7 +410,7 @@ export default function MultiCurrencyPage() {
                     <ArrowLeftRight className="h-6 w-6 text-gray-400" />
                   </div>
                   <div className="text-center mt-2">
-                    <div className="text-2xl font-bold">USD 272.11</div>
+                    <div className="text-xl sm:text-2xl font-bold">USD 272.11</div>
                     <div className="text-sm text-gray-600">Exchange Rate: 1 AED = 0.2721 USD</div>
                   </div>
                 </div>
@@ -520,7 +520,7 @@ export default function MultiCurrencyPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -529,7 +529,7 @@ export default function MultiCurrencyPage() {
             <Globe className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(totalEquivalentAED)}
             </div>
             <p className="text-xs text-blue-600 mt-1">
@@ -546,7 +546,7 @@ export default function MultiCurrencyPage() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totalUnrealizedGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${totalUnrealizedGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {totalUnrealizedGainLoss >= 0 ? '+' : ''}{formatAED(totalUnrealizedGainLoss)}
             </div>
             <p className="text-xs text-gray-600 mt-1">
@@ -563,7 +563,7 @@ export default function MultiCurrencyPage() {
             <Calculator className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totalRealizedGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${totalRealizedGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {totalRealizedGainLoss >= 0 ? '+' : ''}{formatAED(totalRealizedGainLoss)}
             </div>
             <p className="text-xs text-gray-600 mt-1">
@@ -580,7 +580,7 @@ export default function MultiCurrencyPage() {
             <LineChart className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               ±2.4%
             </div>
             <p className="text-xs text-orange-600 mt-1">
@@ -780,17 +780,17 @@ export default function MultiCurrencyPage() {
               <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-green-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-green-900">Strongest Currency</h3>
-                  <p className="text-2xl font-bold text-green-600">USD</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">USD</p>
                   <p className="text-sm text-green-700">+0.068% today</p>
                 </div>
                 <div className="bg-red-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-red-900">Weakest Currency</h3>
-                  <p className="text-2xl font-bold text-red-600">JPY</p>
+                  <p className="text-xl sm:text-2xl font-bold text-red-600">JPY</p>
                   <p className="text-sm text-red-700">-1.203% today</p>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-blue-900">Largest Exposure</h3>
-                  <p className="text-2xl font-bold text-blue-600">AED</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">AED</p>
                   <p className="text-sm text-blue-700">54.1% of total</p>
                 </div>
               </div>
@@ -999,7 +999,7 @@ export default function MultiCurrencyPage() {
                 </Table>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="bg-amber-50 p-6 rounded-lg border border-amber-200">
                   <h3 className="font-semibold text-amber-900 mb-4">Risk Management Recommendations</h3>
                   <ul className="space-y-2 text-sm text-amber-700">
@@ -1034,7 +1034,7 @@ export default function MultiCurrencyPage() {
 
         {/* FX Reporting Tab */}
         <TabsContent value="reporting">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -1064,7 +1064,7 @@ export default function MultiCurrencyPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">FX Efficiency Ratio</span>

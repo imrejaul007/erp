@@ -67,7 +67,7 @@ export default function ProfitabilityReportPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -104,13 +104,13 @@ export default function ProfitabilityReportPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               AED {profitSummary.totalRevenue?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-600 mt-1">Current period</p>
@@ -122,7 +122,7 @@ export default function ProfitabilityReportPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Gross Profit</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               AED {profitSummary.grossProfit?.toLocaleString() || "0"}
             </div>
             <p className="text-xs flex items-center gap-1 mt-1">
@@ -136,7 +136,7 @@ export default function ProfitabilityReportPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Net Profit</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               AED {profitSummary.netProfit?.toLocaleString() || "0"}
             </div>
             <p className="text-xs flex items-center gap-1 mt-1">
@@ -150,7 +150,7 @@ export default function ProfitabilityReportPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Trend</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600 flex items-center gap-2">
+            <div className="text-xl sm:text-2xl font-bold text-green-600 flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               +{profitSummary.trend}%
             </div>

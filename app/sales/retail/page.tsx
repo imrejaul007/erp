@@ -115,7 +115,7 @@ export default function RetailOrdersPage() {
   const pendingOrders = retailOrders.filter(order => order.status === 'Processing').length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -210,7 +210,7 @@ export default function RetailOrdersPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayOrders}</div>
+            <div className="text-xl sm:text-2xl font-bold">{todayOrders}</div>
             <p className="text-xs text-muted-foreground">
               +2 from yesterday
             </p>
@@ -223,7 +223,7 @@ export default function RetailOrdersPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               +15% from last week
             </p>
@@ -236,7 +236,7 @@ export default function RetailOrdersPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingOrders}</div>
+            <div className="text-xl sm:text-2xl font-bold">{pendingOrders}</div>
             <p className="text-xs text-muted-foreground">
               Awaiting processing
             </p>
@@ -249,7 +249,7 @@ export default function RetailOrdersPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">127</div>
+            <div className="text-xl sm:text-2xl font-bold">127</div>
             <p className="text-xs text-muted-foreground">
               Retail customers
             </p>

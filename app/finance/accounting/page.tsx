@@ -591,7 +591,7 @@ export default function FinanceAccountingPage() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
               <Calculator className="h-6 w-6 mr-2 text-green-600" />
               Finance & Accounting
             </h1>
@@ -697,13 +697,13 @@ export default function FinanceAccountingPage() {
 
       <div className="p-6">
         {/* Financial Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-green-600">AED {stats.totalRevenue?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">AED {stats.totalRevenue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">this month</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
@@ -716,7 +716,7 @@ export default function FinanceAccountingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Net Profit</p>
-                  <p className="text-2xl font-bold text-blue-600">AED {stats.netProfit?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">AED {stats.netProfit?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">{((stats.netProfit / stats.totalRevenue) * 100).toFixed(1)}% margin</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-blue-600" />
@@ -729,7 +729,7 @@ export default function FinanceAccountingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">VAT Due</p>
-                  <p className="text-2xl font-bold text-amber-600">AED {stats.vatDue?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-600">AED {stats.vatDue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">net payable</p>
                 </div>
                 <Receipt className="h-8 w-8 text-amber-600" />
@@ -742,7 +742,7 @@ export default function FinanceAccountingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Pending Invoices</p>
-                  <p className="text-2xl font-bold text-red-600">AED {stats.pendingInvoices?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-red-600">AED {stats.pendingInvoices?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">outstanding</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-600" />
@@ -763,7 +763,7 @@ export default function FinanceAccountingPage() {
           </TabsList>
 
           <TabsContent value="dashboard" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -1055,7 +1055,7 @@ export default function FinanceAccountingPage() {
           </TabsContent>
 
           <TabsContent value="vat" className="mt-6">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">UAE VAT Returns</h3>
                 <Button>
@@ -1092,7 +1092,7 @@ export default function FinanceAccountingPage() {
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {vatReturns.map(vatReturn => (
                   <Card key={vatReturn.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setSelectedVATReturn(vatReturn)}>
                     <CardHeader>
@@ -1148,7 +1148,7 @@ export default function FinanceAccountingPage() {
           </TabsContent>
 
           <TabsContent value="reports" className="mt-6">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Financial Reports</h3>
                 <div className="flex space-x-2">
@@ -1170,7 +1170,7 @@ export default function FinanceAccountingPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Profit & Loss Statement</CardTitle>
@@ -1311,7 +1311,7 @@ export default function FinanceAccountingPage() {
           </TabsContent>
 
           <TabsContent value="accounts" className="mt-6">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Chart of Accounts</h3>
                 <Button>
@@ -1357,7 +1357,7 @@ export default function FinanceAccountingPage() {
           </TabsContent>
 
           <TabsContent value="compliance" className="mt-6">
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -1366,7 +1366,7 @@ export default function FinanceAccountingPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <h4 className="font-semibold mb-3">VAT Registration Requirements</h4>
                       <div className="space-y-2 text-sm">
@@ -1410,7 +1410,7 @@ export default function FinanceAccountingPage() {
                 </CardContent>
               </Card>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Standard Rated (5%)</CardTitle>
@@ -1464,7 +1464,7 @@ export default function FinanceAccountingPage() {
                   <CardTitle>VAT Compliance Checklist</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <h4 className="font-semibold mb-3 text-green-600">✓ Completed</h4>
                       <div className="space-y-2 text-sm">
@@ -1537,7 +1537,7 @@ export default function FinanceAccountingPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <h4 className="font-semibold mb-3">Transaction Information</h4>
                 <div className="space-y-2 text-sm">
@@ -1666,8 +1666,8 @@ export default function FinanceAccountingPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <h4 className="font-semibold mb-3">Return Information</h4>
                   <div className="space-y-2 text-sm">
@@ -1730,7 +1730,7 @@ export default function FinanceAccountingPage() {
 
               <div>
                 <h4 className="font-semibold mb-3">Detailed Breakdown</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h5 className="font-medium mb-2 text-green-600">Sales (Output VAT)</h5>
                     <div className="space-y-2 text-sm">

@@ -329,9 +329,9 @@ const POSTerminal = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Products Section */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Search Bar */}
             <Card>
               <CardContent className="p-4">
@@ -461,7 +461,7 @@ const POSTerminal = () => {
           </div>
 
           {/* Cart Section */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Customer Selection */}
             <Card>
               <CardHeader className="pb-3">
@@ -841,7 +841,7 @@ const POSTerminal = () => {
                               {getText('Split', 'مقسم')}
                             </Button>
                           </div>
-                          <div className="text-center text-2xl font-bold">
+                          <div className="text-center text-xl sm:text-2xl font-bold">
                             AED {calculateTotal().toFixed(2)}
                           </div>
                         </div>

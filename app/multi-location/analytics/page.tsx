@@ -139,7 +139,7 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -173,13 +173,13 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">AED {(totalRevenue / 1000000).toFixed(2)}M</div>
+            <div className="text-xl sm:text-2xl font-bold">AED {(totalRevenue / 1000000).toFixed(2)}M</div>
             <p className={`text-xs flex items-center gap-1 ${getTrendColor(avgGrowth)}`}>
               {avgGrowth >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
               {Math.abs(avgGrowth).toFixed(1)}% vs last period
@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Avg Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${getPerformanceColor(avgPerformance)}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${getPerformanceColor(avgPerformance)}`}>
               {avgPerformance.toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground">Of target achieved</p>
@@ -260,7 +260,7 @@ export default function AnalyticsPage() {
               <CardDescription>Detailed revenue metrics and target achievement</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {locationPerformance.map((location) => (
                   <div key={location.id} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-4">
@@ -274,7 +274,7 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className={`text-2xl font-bold ${getPerformanceColor(location.performance)}`}>
+                        <div className={`text-xl sm:text-2xl font-bold ${getPerformanceColor(location.performance)}`}>
                           {location.performance}%
                         </div>
                         <div className={`text-sm flex items-center gap-1 justify-end ${getTrendColor(location.growth)}`}>
@@ -445,7 +445,7 @@ export default function AnalyticsPage() {
       </Tabs>
 
       {/* Top and Bottom Performers */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

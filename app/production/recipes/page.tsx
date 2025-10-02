@@ -198,7 +198,7 @@ export default function RecipesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -229,7 +229,7 @@ export default function RecipesPage() {
                   Create a new production recipe with detailed ingredients and instructions
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-6 py-4">
+              <div className="grid gap-4 sm:gap-6 py-4">
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -355,7 +355,7 @@ export default function RecipesPage() {
                 <Separator />
 
                 {/* Quality Control & Notes */}
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Quality Control Checks</h3>
                     <Textarea
@@ -397,7 +397,7 @@ export default function RecipesPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recipes.filter(r => r.status === 'Active').length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{recipes.filter(r => r.status === 'Active').length}</div>
             <p className="text-xs text-muted-foreground">
               Ready for production
             </p>
@@ -410,7 +410,7 @@ export default function RecipesPage() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recipes.filter(r => r.status === 'Under Review').length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{recipes.filter(r => r.status === 'Under Review').length}</div>
             <p className="text-xs text-muted-foreground">
               Pending approval
             </p>
@@ -423,7 +423,7 @@ export default function RecipesPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{recipes.filter(r => r.complexity === 'Expert').length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{recipes.filter(r => r.complexity === 'Expert').length}</div>
             <p className="text-xs text-muted-foreground">
               Master crafted recipes
             </p>
@@ -436,7 +436,7 @@ export default function RecipesPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {(recipes.reduce((acc, r) => acc + r.rating, 0) / recipes.length).toFixed(1)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -684,7 +684,7 @@ export default function RecipesPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Recipe Header Info */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
@@ -756,7 +756,7 @@ export default function RecipesPage() {
                 <Separator />
 
                 {/* Quality Checks & Notes */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Quality Control Checks</h3>
                     <ul className="space-y-2">

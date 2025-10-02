@@ -706,7 +706,7 @@ export default function ProductionManagementPage() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
               <Factory className="h-6 w-6 mr-2 text-orange-600" />
               Production Management
             </h1>
@@ -818,13 +818,13 @@ export default function ProductionManagementPage() {
 
       <div className="p-6">
         {/* Statistics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Active Batches</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.activeBatches}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-600">{stats.activeBatches}</p>
                   <p className="text-xs text-gray-500">of {stats.totalBatches} total</p>
                 </div>
                 <Activity className="h-8 w-8 text-orange-600" />
@@ -837,7 +837,7 @@ export default function ProductionManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Production Value</p>
-                  <p className="text-2xl font-bold text-green-600">AED {stats.totalValue?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">AED {stats.totalValue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">current batches</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600" />
@@ -850,7 +850,7 @@ export default function ProductionManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Average Quality</p>
-                  <p className="text-2xl font-bold text-amber-600">{stats.avgQualityScore.toFixed(1)}/10</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-600">{stats.avgQualityScore.toFixed(1)}/10</p>
                   <p className="text-xs text-gray-500">quality score</p>
                 </div>
                 <Award className="h-8 w-8 text-amber-600" />
@@ -863,7 +863,7 @@ export default function ProductionManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Active Facilities</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.activeFacilities}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.activeFacilities}</p>
                   <p className="text-xs text-gray-500">of {stats.totalFacilities} total</p>
                 </div>
                 <Building className="h-8 w-8 text-blue-600" />
@@ -882,7 +882,7 @@ export default function ProductionManagementPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -1163,7 +1163,7 @@ export default function ProductionManagementPage() {
               </TabsList>
 
               <TabsContent value="overview" className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h4 className="font-semibold mb-3">Recipe Information</h4>
                     <div className="space-y-2 text-sm">
@@ -1301,7 +1301,7 @@ export default function ProductionManagementPage() {
               </TabsContent>
 
               <TabsContent value="quality" className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h4 className="font-semibold mb-3">Quality Standards</h4>
                     <div className="space-y-2 text-sm">
@@ -1364,7 +1364,7 @@ export default function ProductionManagementPage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <h4 className="font-semibold mb-3">Batch Information</h4>
                 <div className="space-y-2 text-sm">

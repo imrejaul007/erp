@@ -200,7 +200,7 @@ const HRPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -224,13 +224,13 @@ const HRPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Employees</p>
-                <p className="text-2xl font-bold">{hrMetrics.totalEmployees}</p>
+                <p className="text-xl sm:text-2xl font-bold">{hrMetrics.totalEmployees}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(hrMetrics.trends.employees)}`}>
                   {getTrendIcon(hrMetrics.trends.employees)}
                   {Math.abs(hrMetrics.trends.employees)}% vs last period
@@ -246,7 +246,7 @@ const HRPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Average Salary</p>
-                <p className="text-2xl font-bold">AED {hrMetrics.avgSalary?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {hrMetrics.avgSalary?.toLocaleString() || "0"}</p>
                 <p className="text-xs text-green-600">Competitive package</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -259,7 +259,7 @@ const HRPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Attendance Rate</p>
-                <p className="text-2xl font-bold">{hrMetrics.attendanceRate}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{hrMetrics.attendanceRate}%</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(hrMetrics.trends.attendance)}`}>
                   {getTrendIcon(hrMetrics.trends.attendance)}
                   {Math.abs(hrMetrics.trends.attendance)}% vs last period
@@ -275,7 +275,7 @@ const HRPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Performance</p>
-                <p className="text-2xl font-bold">{hrMetrics.performanceScore}/5.0</p>
+                <p className="text-xl sm:text-2xl font-bold">{hrMetrics.performanceScore}/5.0</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(hrMetrics.trends.performance)}`}>
                   {getTrendIcon(hrMetrics.trends.performance)}
                   {Math.abs(hrMetrics.trends.performance)}% vs last period
@@ -421,7 +421,7 @@ const HRPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 sm:gap-6">
                   <div className="text-center">
                     <div className="font-medium">AED {dept.avgSalary?.toLocaleString() || "0"}</div>
                     <div className="text-xs text-gray-500">Avg Salary</div>
@@ -453,7 +453,7 @@ const HRPage = () => {
       </Card>
 
       {/* Upcoming Events & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Upcoming HR Events</CardTitle>

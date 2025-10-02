@@ -339,7 +339,7 @@ const PromotionsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -369,7 +369,7 @@ const PromotionsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Promotions</p>
-                <p className="text-2xl font-bold">{promotionAnalytics.activePromotions}</p>
+                <p className="text-xl sm:text-2xl font-bold">{promotionAnalytics.activePromotions}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(promotionAnalytics.trends.engagement)}`}>
                   {getTrendIcon(promotionAnalytics.trends.engagement)}
                   {Math.abs(promotionAnalytics.trends.engagement)}% engagement
@@ -385,7 +385,7 @@ const PromotionsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Promotion Revenue</p>
-                <p className="text-2xl font-bold">AED {(promotionAnalytics.totalRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(promotionAnalytics.totalRevenue / 1000).toFixed(0)}K</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(promotionAnalytics.trends.revenue)}`}>
                   {getTrendIcon(promotionAnalytics.trends.revenue)}
                   {Math.abs(promotionAnalytics.trends.revenue)}% vs last month
@@ -401,7 +401,7 @@ const PromotionsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{promotionAnalytics.totalOrders}</p>
+                <p className="text-xl sm:text-2xl font-bold">{promotionAnalytics.totalOrders}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(promotionAnalytics.trends.orders)}`}>
                   {getTrendIcon(promotionAnalytics.trends.orders)}
                   {Math.abs(promotionAnalytics.trends.orders)}% vs last month
@@ -417,7 +417,7 @@ const PromotionsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                <p className="text-2xl font-bold">{promotionAnalytics.conversionRate}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{promotionAnalytics.conversionRate}%</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(promotionAnalytics.trends.conversion)}`}>
                   {getTrendIcon(promotionAnalytics.trends.conversion)}
                   {Math.abs(promotionAnalytics.trends.conversion)}% vs last month
@@ -507,7 +507,7 @@ const PromotionsPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {filteredPromotions.filter(p => p.status === 'active').map((promotion) => (
                   <div key={promotion.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-4">
@@ -567,23 +567,23 @@ const PromotionsPage = () => {
                     {/* Promotion Metrics */}
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">{getDiscountDisplay(promotion)}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{getDiscountDisplay(promotion)}</div>
                         <div className="text-xs text-gray-500">Discount</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold">AED {promotion.revenue?.toLocaleString() || "0"}</div>
+                        <div className="text-xl sm:text-2xl font-bold">AED {promotion.revenue?.toLocaleString() || "0"}</div>
                         <div className="text-xs text-gray-500">Revenue Generated</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold">{promotion.orders}</div>
+                        <div className="text-xl sm:text-2xl font-bold">{promotion.orders}</div>
                         <div className="text-xs text-gray-500">Orders</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold">{promotion.usageCount}</div>
+                        <div className="text-xl sm:text-2xl font-bold">{promotion.usageCount}</div>
                         <div className="text-xs text-gray-500">Uses</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold">AED {Math.round(promotion.revenue / promotion.orders) || 0}</div>
+                        <div className="text-xl sm:text-2xl font-bold">AED {Math.round(promotion.revenue / promotion.orders) || 0}</div>
                         <div className="text-xs text-gray-500">Avg Order Value</div>
                       </div>
                     </div>
@@ -705,7 +705,7 @@ const PromotionsPage = () => {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Top Performing Promotions */}
             <Card>
               <CardHeader>

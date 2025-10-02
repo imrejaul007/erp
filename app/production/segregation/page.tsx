@@ -242,7 +242,7 @@ export default function SegregationPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -270,7 +270,7 @@ export default function SegregationPage() {
                 Select raw material batch to begin grade sorting and segregation
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-6 py-4">
+            <div className="grid gap-4 sm:gap-6 py-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Raw Material Selection & Source Cost</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -792,7 +792,7 @@ export default function SegregationPage() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Grand Total Cost Summary</h3>
 
-                <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
+                <div className="p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between pb-2">
                       <h4 className="font-bold text-lg">Cost Breakdown</h4>
@@ -821,7 +821,7 @@ export default function SegregationPage() {
 
                     <div className="flex justify-between p-4 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg border-2 border-green-300">
                       <span className="text-lg font-bold">GRAND TOTAL COST:</span>
-                      <span className="text-2xl font-bold text-green-700">
+                      <span className="text-xl sm:text-2xl font-bold text-green-700">
                         AED {calculateGrandTotalCost().toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                       </span>
                     </div>
@@ -1024,7 +1024,7 @@ export default function SegregationPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-primary group-hover:text-primary">{seg.progress}%</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary group-hover:text-primary">{seg.progress}%</p>
                         <p className="text-xs text-gray-600 group-hover:text-gray-700">Complete</p>
                       </div>
                     </div>
@@ -1066,7 +1066,7 @@ export default function SegregationPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">AED {seg.totalValue?.toLocaleString() || "0"}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">AED {seg.totalValue?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-muted-foreground">Total value</p>
                   </div>
                 </div>
@@ -1270,7 +1270,7 @@ export default function SegregationPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedSegregation && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">

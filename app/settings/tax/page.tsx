@@ -139,7 +139,7 @@ const TaxSettingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
@@ -180,7 +180,7 @@ const TaxSettingsPage = () => {
       </Card>
 
       {/* Tax Settings Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -201,7 +201,7 @@ const TaxSettingsPage = () => {
         </TabsList>
 
         {/* General VAT Settings */}
-        <TabsContent value="general" className="space-y-6">
+        <TabsContent value="general" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>VAT Registration Details</CardTitle>
@@ -332,7 +332,7 @@ const TaxSettingsPage = () => {
         </TabsContent>
 
         {/* Tax Categories */}
-        <TabsContent value="categories" className="space-y-6">
+        <TabsContent value="categories" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -388,7 +388,7 @@ const TaxSettingsPage = () => {
         </TabsContent>
 
         {/* VAT Returns */}
-        <TabsContent value="returns" className="space-y-6">
+        <TabsContent value="returns" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -477,13 +477,13 @@ const TaxSettingsPage = () => {
         </TabsContent>
 
         {/* Compliance */}
-        <TabsContent value="compliance" className="space-y-6">
+        <TabsContent value="compliance" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>UAE VAT Compliance</CardTitle>
               <CardDescription>Federal Tax Authority (FTA) compliance and regulations</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div>
                 <h3 className="font-medium mb-4">Invoice Requirements</h3>
                 <div className="space-y-3">

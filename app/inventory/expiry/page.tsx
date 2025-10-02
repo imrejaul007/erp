@@ -81,7 +81,7 @@ export default function ExpiryTrackingPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Expiry Tracking</h1>
@@ -101,7 +101,7 @@ export default function ExpiryTrackingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-800">Safe Stock</p>
-                <p className="text-2xl font-bold text-green-600">234</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">234</p>
                 <p className="text-xs text-green-700">&gt;6 months</p>
               </div>
               <Clock className="h-8 w-8 text-green-500" />
@@ -114,7 +114,7 @@ export default function ExpiryTrackingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-yellow-800">Warning</p>
-                <p className="text-2xl font-bold text-yellow-600">45</p>
+                <p className="text-xl sm:text-2xl font-bold text-yellow-600">45</p>
                 <p className="text-xs text-yellow-700">3-6 months</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-yellow-500" />
@@ -127,7 +127,7 @@ export default function ExpiryTrackingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-orange-800">Critical</p>
-                <p className="text-2xl font-bold text-orange-600">12</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-600">12</p>
                 <p className="text-xs text-orange-700">&lt;3 months</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-orange-500" />
@@ -140,7 +140,7 @@ export default function ExpiryTrackingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-red-800">Expired</p>
-                <p className="text-2xl font-bold text-red-600">3</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-600">3</p>
                 <p className="text-xs text-red-700">Action required</p>
               </div>
               <XCircle className="h-8 w-8 text-red-500" />

@@ -334,7 +334,7 @@ export default function MarketingCampaignsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -363,14 +363,14 @@ export default function MarketingCampaignsPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalCampaigns)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.totalCampaigns)}</div>
             <p className="text-xs text-muted-foreground">
               {stats.activeCampaigns} currently active
             </p>
@@ -383,7 +383,7 @@ export default function MarketingCampaignsPage() {
             <Send className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalSent)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.totalSent)}</div>
             <p className="text-xs text-muted-foreground">
               Across all channels
             </p>
@@ -396,7 +396,7 @@ export default function MarketingCampaignsPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatPercentage(stats.averageConversionRate)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatPercentage(stats.averageConversionRate)}</div>
             <p className="text-xs text-muted-foreground">
               Open: {formatPercentage(stats.averageOpenRate)} • Click: {formatPercentage(stats.averageClickRate)}
             </p>
@@ -409,7 +409,7 @@ export default function MarketingCampaignsPage() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               ROI: {formatPercentage(stats.totalROI)}
             </p>
@@ -426,7 +426,7 @@ export default function MarketingCampaignsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {stats.channelPerformance.map((channel) => (
               <div key={channel.channel} className="p-4 border rounded-lg">
                 <div className="flex items-center gap-3 mb-4">
@@ -495,7 +495,7 @@ export default function MarketingCampaignsPage() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="campaigns" className="space-y-6">
+      <Tabs defaultValue="campaigns" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="campaigns">Active Campaigns</TabsTrigger>
           <TabsTrigger value="templates">Message Templates</TabsTrigger>
@@ -504,7 +504,7 @@ export default function MarketingCampaignsPage() {
         </TabsList>
 
         {/* Active Campaigns Tab */}
-        <TabsContent value="campaigns" className="space-y-6">
+        <TabsContent value="campaigns" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -682,7 +682,7 @@ export default function MarketingCampaignsPage() {
         </TabsContent>
 
         {/* Message Templates Tab */}
-        <TabsContent value="templates" className="space-y-6">
+        <TabsContent value="templates" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -697,7 +697,7 @@ export default function MarketingCampaignsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {templates.map((template) => (
                   <Card key={template.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
@@ -779,7 +779,7 @@ export default function MarketingCampaignsPage() {
         </TabsContent>
 
         {/* Audience Insights Tab */}
-        <TabsContent value="audience" className="space-y-6">
+        <TabsContent value="audience" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -838,8 +838,8 @@ export default function MarketingCampaignsPage() {
         </TabsContent>
 
         {/* Performance Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -860,7 +860,7 @@ export default function MarketingCampaignsPage() {
                           />
                         </div>
                       </div>
-                      <div className="flex gap-6 text-sm">
+                      <div className="flex gap-4 sm:gap-6 text-sm">
                         <div>
                           <div className="text-gray-600">Campaigns</div>
                           <div className="font-semibold">{month.campaigns}</div>
@@ -935,7 +935,7 @@ export default function MarketingCampaignsPage() {
                 {selectedCampaign.name} - Campaign Details
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Campaign Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
@@ -997,25 +997,25 @@ export default function MarketingCampaignsPage() {
                 <Label className="text-lg">Performance Metrics</Label>
                 <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">
                       {formatNumber(selectedCampaign.metrics.sentCount)}
                     </div>
                     <div className="text-sm text-blue-700">Messages Sent</div>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">
                       {formatNumber(selectedCampaign.metrics.deliveredCount)}
                     </div>
                     <div className="text-sm text-green-700">Delivered</div>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">
                       {formatNumber(selectedCampaign.metrics.openedCount)}
                     </div>
                     <div className="text-sm text-purple-700">Opened</div>
                   </div>
                   <div className="text-center p-4 bg-orange-50 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="text-xl sm:text-2xl font-bold text-orange-600">
                       {formatNumber(selectedCampaign.metrics.convertedCount)}
                     </div>
                     <div className="text-sm text-orange-700">Converted</div>

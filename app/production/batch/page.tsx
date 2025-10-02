@@ -65,7 +65,7 @@ export default function StartBatchPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -86,8 +86,8 @@ export default function StartBatchPage() {
             <CardTitle>Batch Information</CardTitle>
             <CardDescription>Basic details about the production batch</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="productName">Product Name *</Label>
                 <Input
@@ -265,7 +265,7 @@ export default function StartBatchPage() {
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-lg">Total Material Cost</span>
-                  <span className="text-2xl font-bold text-green-600">
+                  <span className="text-xl sm:text-2xl font-bold text-green-600">
                     AED {calculateTotalCost()?.toLocaleString() || "0"}
                   </span>
                 </div>

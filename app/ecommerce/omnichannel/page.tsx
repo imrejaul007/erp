@@ -330,7 +330,7 @@ const EcommerceOmnichannel = () => {
   const totalMetrics = calculateTotalMetrics();
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -413,13 +413,13 @@ const EcommerceOmnichannel = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold">AED {(totalMetrics.totalRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(totalMetrics.totalRevenue / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-green-600">+12.5% vs last month</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -432,7 +432,7 @@ const EcommerceOmnichannel = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{totalMetrics.totalOrders}</p>
+                <p className="text-xl sm:text-2xl font-bold">{totalMetrics.totalOrders}</p>
                 <p className="text-xs text-blue-600">Across {channels.filter(ch => ch.status === 'active').length} channels</p>
               </div>
               <ShoppingCart className="h-8 w-8 text-blue-600" />
@@ -445,7 +445,7 @@ const EcommerceOmnichannel = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Visitors</p>
-                <p className="text-2xl font-bold">{(totalMetrics.totalVisitors / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">{(totalMetrics.totalVisitors / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-purple-600">Monthly traffic</p>
               </div>
               <Users className="h-8 w-8 text-purple-600" />
@@ -458,7 +458,7 @@ const EcommerceOmnichannel = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Conversion</p>
-                <p className="text-2xl font-bold">{totalMetrics.avgConversion.toFixed(1)}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{totalMetrics.avgConversion.toFixed(1)}%</p>
                 <p className="text-xs text-orange-600">All channels</p>
               </div>
               <TrendingUp className="h-8 w-8 text-orange-600" />
@@ -468,7 +468,7 @@ const EcommerceOmnichannel = () => {
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="channels">Channels</TabsTrigger>
@@ -480,8 +480,8 @@ const EcommerceOmnichannel = () => {
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Channel Performance */}
             <Card>
               <CardHeader>
@@ -617,7 +617,7 @@ const EcommerceOmnichannel = () => {
         </TabsContent>
 
         {/* Channels Tab */}
-        <TabsContent value="channels" className="space-y-6">
+        <TabsContent value="channels" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Channel Management</CardTitle>
@@ -725,7 +725,7 @@ const EcommerceOmnichannel = () => {
         </TabsContent>
 
         {/* Orders Tab */}
-        <TabsContent value="orders" className="space-y-6">
+        <TabsContent value="orders" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Omni-channel Orders</CardTitle>
@@ -836,8 +836,8 @@ const EcommerceOmnichannel = () => {
         </TabsContent>
 
         {/* Campaigns Tab */}
-        <TabsContent value="campaigns" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="campaigns" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Active Campaigns */}
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -981,7 +981,7 @@ const EcommerceOmnichannel = () => {
         </TabsContent>
 
         {/* Customer Journey Tab */}
-        <TabsContent value="journey" className="space-y-6">
+        <TabsContent value="journey" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -993,7 +993,7 @@ const EcommerceOmnichannel = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Journey Stages */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {customerJourney.map((stage, index) => (
@@ -1002,7 +1002,7 @@ const EcommerceOmnichannel = () => {
                         <CardContent className="p-4">
                           <div className="space-y-2">
                             <h4 className="font-medium">{stage.stage}</h4>
-                            <div className="text-2xl font-bold text-blue-600">
+                            <div className="text-xl sm:text-2xl font-bold text-blue-600">
                               {stage.touchpoints}
                             </div>
                             <div className="text-sm text-gray-500">Touchpoints</div>
@@ -1025,7 +1025,7 @@ const EcommerceOmnichannel = () => {
                 </div>
 
                 {/* Channel Contribution */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Channel Attribution</CardTitle>
@@ -1102,8 +1102,8 @@ const EcommerceOmnichannel = () => {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Revenue Analytics */}
             <Card>
               <CardHeader>
@@ -1147,25 +1147,25 @@ const EcommerceOmnichannel = () => {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">
                       AED {((totalMetrics.totalRevenue / totalMetrics.totalOrders) || 0).toFixed(0)}
                     </div>
                     <div className="text-sm text-gray-500">Average Order Value</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-xl sm:text-2xl font-bold text-blue-600">
                       {totalMetrics.avgConversion.toFixed(1)}%
                     </div>
                     <div className="text-sm text-gray-500">Overall Conversion</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-xl sm:text-2xl font-bold text-purple-600">
                       {(totalMetrics.totalVisitors / 1000).toFixed(0)}K
                     </div>
                     <div className="text-sm text-gray-500">Monthly Visitors</div>
                   </div>
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="text-xl sm:text-2xl font-bold text-orange-600">
                       {channels.filter(ch => ch.status === 'active').length}
                     </div>
                     <div className="text-sm text-gray-500">Active Channels</div>
@@ -1227,8 +1227,8 @@ const EcommerceOmnichannel = () => {
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="settings" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Integration Settings */}
             <Card>
               <CardHeader>

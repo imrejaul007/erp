@@ -181,7 +181,7 @@ export default function SamplingPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -198,7 +198,7 @@ export default function SamplingPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="hover-dark cursor-pointer transition-all">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -450,7 +450,7 @@ export default function SamplingPage() {
 
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-gray-900">Conversion Funnel</CardTitle>
@@ -500,7 +500,7 @@ export default function SamplingPage() {
                   </div>
                   <div className="flex justify-between items-center pt-3 border-t">
                     <span className="text-gray-900 font-medium">ROI</span>
-                    <span className="text-2xl font-bold text-blue-600">{conversionStats.roi}%</span>
+                    <span className="text-xl sm:text-2xl font-bold text-blue-600">{conversionStats.roi}%</span>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
                     For every AED 1 spent on testers, you earn AED {(conversionStats.roi / 100).toFixed(2)}

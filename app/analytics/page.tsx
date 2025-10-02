@@ -65,7 +65,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-oud-50 via-white to-oud-100/30">
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
         {/* Page Header */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-serif font-bold bg-gradient-to-r from-oud-800 to-oud-600 bg-clip-text text-transparent">
@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
         />
 
         {/* Main Dashboard Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           <TabsList className="grid w-full grid-cols-7 p-1 h-12 bg-white/70 backdrop-blur-sm border border-oud-200 rounded-xl shadow-lg">
             <TabsTrigger
               value="overview"
@@ -132,14 +132,14 @@ export default function AnalyticsPage() {
           </TabsList>
 
           {/* Overview - Owner Dashboard */}
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-oud-200/50">
               <OwnerDashboard {...dashboardProps} realTime={true} />
             </div>
           </TabsContent>
 
           {/* Sales Analytics */}
-          <TabsContent value="sales" className="space-y-6">
+          <TabsContent value="sales" className="space-y-4 sm:space-y-6">
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-oud-200/50">
               <SalesAnalytics
                 dateRange={filters.dateRange}
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           {/* Inventory Intelligence */}
-          <TabsContent value="inventory" className="space-y-6">
+          <TabsContent value="inventory" className="space-y-4 sm:space-y-6">
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-oud-200/50">
               <InventoryIntelligence
                 category={filters.categories?.[0]}
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           {/* Predictive Analytics */}
-          <TabsContent value="predictive" className="space-y-6">
+          <TabsContent value="predictive" className="space-y-4 sm:space-y-6">
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-oud-200/50">
               <PredictiveAnalytics
                 horizon={6}
@@ -172,7 +172,7 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           {/* Financial Intelligence */}
-          <TabsContent value="financial" className="space-y-6">
+          <TabsContent value="financial" className="space-y-4 sm:space-y-6">
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-oud-200/50">
               <FinancialIntelligence
                 period="monthly"
@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           {/* Operational Dashboard */}
-          <TabsContent value="operational" className="space-y-6">
+          <TabsContent value="operational" className="space-y-4 sm:space-y-6">
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-oud-200/50">
               <OperationalDashboard
                 dateRange={filters.dateRange}
@@ -194,7 +194,7 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           {/* Real-time Monitoring */}
-          <TabsContent value="realtime" className="space-y-6">
+          <TabsContent value="realtime" className="space-y-4 sm:space-y-6">
             <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-oud-200/50">
               <RealTimeMonitoring
                 wsUrl="ws://localhost:3001/ws"
@@ -208,22 +208,22 @@ export default function AnalyticsPage() {
         {/* Quick Stats Footer */}
         <Card className="bg-gradient-to-r from-oud-600 to-oud-700 text-white shadow-xl border-0">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 text-center">
               <div>
                 <p className="text-sm opacity-90">Total Revenue (YTD)</p>
-                <p className="text-2xl font-bold">AED 2.4M</p>
+                <p className="text-xl sm:text-2xl font-bold">AED 2.4M</p>
               </div>
               <div>
                 <p className="text-sm opacity-90">Active Products</p>
-                <p className="text-2xl font-bold">1,245</p>
+                <p className="text-xl sm:text-2xl font-bold">1,245</p>
               </div>
               <div>
                 <p className="text-sm opacity-90">Customer Satisfaction</p>
-                <p className="text-2xl font-bold">4.6/5.0</p>
+                <p className="text-xl sm:text-2xl font-bold">4.6/5.0</p>
               </div>
               <div>
                 <p className="text-sm opacity-90">System Health</p>
-                <p className="text-2xl font-bold">99.2%</p>
+                <p className="text-xl sm:text-2xl font-bold">99.2%</p>
               </div>
             </div>
           </CardContent>

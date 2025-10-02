@@ -1018,7 +1018,7 @@ export default function AddProductPage() {
     switch (currentStep) {
       case 1: // Basic Information
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name *</Label>
@@ -1163,7 +1163,7 @@ export default function AddProductPage() {
 
       case 2: // Physical Properties
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="size">Size/Volume *</Label>
@@ -1278,7 +1278,7 @@ export default function AddProductPage() {
 
       case 3: // Inventory & Storage
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="minimumStock">Minimum Stock *</Label>
@@ -1363,7 +1363,7 @@ export default function AddProductPage() {
 
       case 4: // Pricing
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="costPerUnit">Cost per Unit *</Label>
@@ -1481,7 +1481,7 @@ export default function AddProductPage() {
 
       case 5: // Composition & Compliance
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="space-y-4">
               <div>
                 <Label>Main Ingredients</Label>
@@ -1584,7 +1584,7 @@ export default function AddProductPage() {
 
       case 6: // Packaging & Final Details
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="packagingType">Packaging Type</Label>
@@ -1692,7 +1692,7 @@ export default function AddProductPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
@@ -1735,7 +1735,7 @@ export default function AddProductPage() {
         </TabsList>
 
         {/* Manual Entry Tab */}
-        <TabsContent value="manual" className="space-y-6">
+        <TabsContent value="manual" className="space-y-4 sm:space-y-6">
 
       {/* Progress Bar */}
       <Card className="border-amber-100">
@@ -1817,7 +1817,7 @@ export default function AddProductPage() {
         </TabsContent>
 
         {/* Bulk Upload Tab */}
-        <TabsContent value="bulk" className="space-y-6">
+        <TabsContent value="bulk" className="space-y-4 sm:space-y-6">
           <Card className="border-blue-100">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -1828,7 +1828,7 @@ export default function AddProductPage() {
                 Upload multiple products at once using an Excel/CSV file. Download the template to ensure proper formatting.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Template Download */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
@@ -2116,7 +2116,7 @@ export default function AddProductPage() {
         </TabsContent>
 
         {/* Web Scraping Tab */}
-        <TabsContent value="webscrape" className="space-y-6">
+        <TabsContent value="webscrape" className="space-y-4 sm:space-y-6">
           <Card className="border-purple-100">
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -2127,7 +2127,7 @@ export default function AddProductPage() {
                 Automatically extract product information from e-commerce websites and fill missing fields manually.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* URL Input */}
               <div className="space-y-2">
                 <Label htmlFor="scraping-url">Product URL</Label>

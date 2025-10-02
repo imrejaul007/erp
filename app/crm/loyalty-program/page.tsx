@@ -229,7 +229,7 @@ export default function LoyaltyProgramPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -249,14 +249,14 @@ export default function LoyaltyProgramPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Members</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalMembers)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.totalMembers)}</div>
             <p className="text-xs text-muted-foreground">
               {stats.activeMembers} active ({Math.round((stats.activeMembers / stats.totalMembers) * 100)}%)
             </p>
@@ -269,7 +269,7 @@ export default function LoyaltyProgramPage() {
             <Coins className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.pointsPending)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatNumber(stats.pointsPending)}</div>
             <p className="text-xs text-muted-foreground">
               Available for redemption
             </p>
@@ -282,7 +282,7 @@ export default function LoyaltyProgramPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.redemptionRate}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.redemptionRate}%</div>
             <p className="text-xs text-muted-foreground">
               Points redeemed vs earned
             </p>
@@ -295,7 +295,7 @@ export default function LoyaltyProgramPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.monthlyGrowth > 0 ? '+' : ''}{stats.monthlyGrowth}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{stats.monthlyGrowth > 0 ? '+' : ''}{stats.monthlyGrowth}%</div>
             <p className="text-xs text-muted-foreground">
               New member growth
             </p>
@@ -357,7 +357,7 @@ export default function LoyaltyProgramPage() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="members" className="space-y-6">
+      <Tabs defaultValue="members" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="rewards">Rewards</TabsTrigger>
@@ -366,7 +366,7 @@ export default function LoyaltyProgramPage() {
         </TabsList>
 
         {/* Members Tab */}
-        <TabsContent value="members" className="space-y-6">
+        <TabsContent value="members" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -495,7 +495,7 @@ export default function LoyaltyProgramPage() {
         </TabsContent>
 
         {/* Rewards Tab */}
-        <TabsContent value="rewards" className="space-y-6">
+        <TabsContent value="rewards" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -573,7 +573,7 @@ export default function LoyaltyProgramPage() {
         </TabsContent>
 
         {/* Transactions Tab */}
-        <TabsContent value="transactions" className="space-y-6">
+        <TabsContent value="transactions" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -638,8 +638,8 @@ export default function LoyaltyProgramPage() {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Top Performing Rewards</CardTitle>
@@ -671,7 +671,7 @@ export default function LoyaltyProgramPage() {
                 <CardTitle>Program Performance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Points Issued</span>
@@ -715,11 +715,11 @@ export default function LoyaltyProgramPage() {
                 {selectedMember.customerName} - Loyalty Profile
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Current Points</Label>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
                     {formatNumber(selectedMember.points)}
                   </div>
                 </div>

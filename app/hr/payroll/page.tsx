@@ -303,7 +303,7 @@ const PayrollPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -387,13 +387,13 @@ const PayrollPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Payroll</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.totalPayroll?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {payrollMetrics.totalPayroll?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(payrollMetrics.trends.payroll)}`}>
                   {getTrendIcon(payrollMetrics.trends.payroll)}
                   {Math.abs(payrollMetrics.trends.payroll)}% vs last month
@@ -409,7 +409,7 @@ const PayrollPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Salary</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.avgSalary?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {payrollMetrics.avgSalary?.toLocaleString() || "0"}</p>
                 <p className="text-xs text-blue-600">{payrollMetrics.totalEmployees} employees</p>
               </div>
               <Calculator className="h-8 w-8 text-blue-600" />
@@ -422,7 +422,7 @@ const PayrollPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Deductions</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.totalDeductions?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {payrollMetrics.totalDeductions?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(payrollMetrics.trends.deductions)}`}>
                   {getTrendIcon(payrollMetrics.trends.deductions)}
                   {Math.abs(payrollMetrics.trends.deductions)}% vs last month
@@ -438,7 +438,7 @@ const PayrollPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Overtime Pay</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.overtimePay?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {payrollMetrics.overtimePay?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(payrollMetrics.trends.overtime)}`}>
                   {getTrendIcon(payrollMetrics.trends.overtime)}
                   {Math.abs(payrollMetrics.trends.overtime)}% vs last month
@@ -450,7 +450,7 @@ const PayrollPage = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="payroll" className="space-y-6">
+      <Tabs defaultValue="payroll" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="payroll">Current Payroll</TabsTrigger>
           <TabsTrigger value="structures">Salary Structures</TabsTrigger>
@@ -459,7 +459,7 @@ const PayrollPage = () => {
         </TabsList>
 
         {/* Current Payroll Tab */}
-        <TabsContent value="payroll" className="space-y-6">
+        <TabsContent value="payroll" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -583,7 +583,7 @@ const PayrollPage = () => {
         </TabsContent>
 
         {/* Salary Structures Tab */}
-        <TabsContent value="structures" className="space-y-6">
+        <TabsContent value="structures" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -613,7 +613,7 @@ const PayrollPage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 sm:gap-6">
                       <div className="text-center">
                         <div className="font-medium">
                           AED {structure.basicSalary.min?.toLocaleString() || "0"} - {structure.basicSalary.max?.toLocaleString() || "0"}
@@ -653,7 +653,7 @@ const PayrollPage = () => {
         </TabsContent>
 
         {/* Deductions & Benefits Tab */}
-        <TabsContent value="deductions" className="space-y-6">
+        <TabsContent value="deductions" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -792,8 +792,8 @@ const PayrollPage = () => {
         </TabsContent>
 
         {/* Reports & Compliance Tab */}
-        <TabsContent value="reports" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="reports" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Payroll Summary</CardTitle>

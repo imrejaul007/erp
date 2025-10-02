@@ -78,7 +78,7 @@ export default function ComprehensiveCRMPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Comprehensive Customer Database</h1>
@@ -102,7 +102,7 @@ export default function ComprehensiveCRMPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Customers</p>
-                <p className="text-2xl font-bold">1,234</p>
+                <p className="text-xl sm:text-2xl font-bold">1,234</p>
               </div>
               <Users className="h-8 w-8 text-blue-500" />
             </div>
@@ -114,7 +114,7 @@ export default function ComprehensiveCRMPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">VIP Customers</p>
-                <p className="text-2xl font-bold text-purple-600">156</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-600">156</p>
               </div>
               <Crown className="h-8 w-8 text-purple-500" />
             </div>
@@ -126,7 +126,7 @@ export default function ComprehensiveCRMPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Loyalty Points</p>
-                <p className="text-2xl font-bold">2.5M</p>
+                <p className="text-xl sm:text-2xl font-bold">2.5M</p>
               </div>
               <Gift className="h-8 w-8 text-green-500" />
             </div>
@@ -138,7 +138,7 @@ export default function ComprehensiveCRMPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Avg Customer Value</p>
-                <p className="text-2xl font-bold">AED 8.5K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED 8.5K</p>
               </div>
               <TrendingUp className="h-8 w-8 text-orange-500" />
             </div>

@@ -240,7 +240,7 @@ export default function AddCustomerPage() {
         </Alert>
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic" className="flex items-center gap-2">
             <User className="w-4 h-4" />
@@ -269,9 +269,9 @@ export default function AddCustomerPage() {
                 Basic Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Customer Type & Segment */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="customerType">Customer Type *</Label>
                   <Select
@@ -308,7 +308,7 @@ export default function AddCustomerPage() {
               </div>
 
               {/* Name Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
@@ -336,7 +336,7 @@ export default function AddCustomerPage() {
               </div>
 
               {/* Contact Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number *</Label>
                   <Input
@@ -379,7 +379,7 @@ export default function AddCustomerPage() {
 
               {/* Personal Details */}
               <Separator />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="dateOfBirth">Date of Birth</Label>
                   <Input
@@ -427,7 +427,7 @@ export default function AddCustomerPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="language">Preferred Language</Label>
                   <Select
@@ -468,7 +468,7 @@ export default function AddCustomerPage() {
                 Business & Address Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Corporate Information */}
               {formData.customerType === CustomerType.CORPORATE && (
                 <>
@@ -486,7 +486,7 @@ export default function AddCustomerPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="tradeLicense">Trade License</Label>
                       <Input
@@ -522,13 +522,13 @@ export default function AddCustomerPage() {
               )}
 
               {/* Address Information */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
                   Address Information
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
                     <Textarea
@@ -553,7 +553,7 @@ export default function AddCustomerPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="emirate">Emirate</Label>
                     <Select
@@ -594,7 +594,7 @@ export default function AddCustomerPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="postalCode">Postal Code</Label>
                     <Input
@@ -629,7 +629,7 @@ export default function AddCustomerPage() {
                 Fragrance Preferences
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Fragrance Types */}
               <div className="space-y-3">
                 <Label>Preferred Fragrance Types</Label>
@@ -671,7 +671,7 @@ export default function AddCustomerPage() {
               {/* Price Range */}
               <div className="space-y-3">
                 <Label>Price Range (AED)</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="priceRangeMin">Minimum</Label>
                     <Input
@@ -757,7 +757,7 @@ export default function AddCustomerPage() {
                 Communication Preferences
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">

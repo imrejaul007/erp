@@ -77,7 +77,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -98,7 +98,7 @@ export default function ProfilePage() {
       {/* Profile Header */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-start gap-6">
+          <div className="flex items-start gap-4 sm:gap-6">
             <div className="relative">
               <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
                 {profileData.firstName[0]}{profileData.lastName[0]}
@@ -111,7 +111,7 @@ export default function ProfilePage() {
               </Button>
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold">{profileData.firstName} {profileData.lastName}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">{profileData.firstName} {profileData.lastName}</h2>
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Briefcase className="h-4 w-4" />
@@ -147,8 +147,8 @@ export default function ProfilePage() {
               <CardTitle>Personal Information</CardTitle>
               <CardDescription>Update your personal details</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
@@ -235,7 +235,7 @@ export default function ProfilePage() {
               </CardTitle>
               <CardDescription>Manage your password and security preferences</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword">Current Password</Label>

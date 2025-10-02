@@ -256,7 +256,7 @@ export default function CompetitorMonitoringPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -277,11 +277,11 @@ export default function CompetitorMonitoringPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <Eye className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{marketSummary.trackedCompetitors}</div>
+            <div className="text-xl sm:text-2xl font-bold">{marketSummary.trackedCompetitors}</div>
             <div className="text-sm text-gray-600">Competitors</div>
           </CardContent>
         </Card>
@@ -289,7 +289,7 @@ export default function CompetitorMonitoringPage() {
         <Card>
           <CardContent className="pt-6">
             <Package className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold">{marketSummary.trackedProducts}</div>
+            <div className="text-xl sm:text-2xl font-bold">{marketSummary.trackedProducts}</div>
             <div className="text-sm text-gray-600">Products</div>
           </CardContent>
         </Card>
@@ -297,7 +297,7 @@ export default function CompetitorMonitoringPage() {
         <Card>
           <CardContent className="pt-6">
             <DollarSign className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">+{marketSummary.avgPriceGap}%</div>
+            <div className="text-xl sm:text-2xl font-bold">+{marketSummary.avgPriceGap}%</div>
             <div className="text-sm text-gray-600">Price Advantage</div>
           </CardContent>
         </Card>
@@ -305,7 +305,7 @@ export default function CompetitorMonitoringPage() {
         <Card>
           <CardContent className="pt-6">
             <Target className="h-8 w-8 text-amber-600 mb-2" />
-            <div className="text-2xl font-bold">{marketSummary.marketShare}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{marketSummary.marketShare}%</div>
             <div className="text-sm text-gray-600">Market Share</div>
           </CardContent>
         </Card>
@@ -313,7 +313,7 @@ export default function CompetitorMonitoringPage() {
         <Card>
           <CardContent className="pt-6">
             <AlertTriangle className="h-8 w-8 text-red-600 mb-2" />
-            <div className="text-2xl font-bold">{marketSummary.priceAlerts}</div>
+            <div className="text-xl sm:text-2xl font-bold">{marketSummary.priceAlerts}</div>
             <div className="text-sm text-gray-600">Active Alerts</div>
           </CardContent>
         </Card>
@@ -321,7 +321,7 @@ export default function CompetitorMonitoringPage() {
         <Card>
           <CardContent className="pt-6">
             <RefreshCw className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold text-sm">{marketSummary.lastUpdate}</div>
+            <div className="text-xl sm:text-2xl font-bold text-sm">{marketSummary.lastUpdate}</div>
             <div className="text-sm text-gray-600">Last Update</div>
           </CardContent>
         </Card>
@@ -340,7 +340,7 @@ export default function CompetitorMonitoringPage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Market Position</CardTitle>
@@ -647,7 +647,7 @@ export default function CompetitorMonitoringPage() {
               <CardDescription>Strengths, weaknesses, and your advantages</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {strengthsWeaknesses.map((analysis, index) => (
                   <div key={index} className="border rounded-lg p-4">
                     <h3 className="font-semibold text-lg mb-4">{analysis.competitor}</h3>

@@ -80,7 +80,7 @@ export default function BankAccountsPage() {
   }, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -95,13 +95,13 @@ export default function BankAccountsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">Total Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">AED {totalBalance.toLocaleString('en-AE', { minimumFractionDigits: 2 })}</div>
+            <div className="text-xl sm:text-2xl font-bold">AED {totalBalance.toLocaleString('en-AE', { minimumFractionDigits: 2 })}</div>
             <p className="text-xs text-green-600 flex items-center mt-1">
               <TrendingUp className="h-3 w-3 mr-1" />
               +5.2% from last month
@@ -114,7 +114,7 @@ export default function BankAccountsPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Active Accounts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{accounts.filter(a => a.status === 'Active').length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{accounts.filter(a => a.status === 'Active').length}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Across {new Set(accounts.map(a => a.bank)).size} banks
             </p>
@@ -126,7 +126,7 @@ export default function BankAccountsPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Last Synced</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Today</div>
+            <div className="text-xl sm:text-2xl font-bold">Today</div>
             <p className="text-xs text-muted-foreground mt-1">
               14:30 PM
             </p>

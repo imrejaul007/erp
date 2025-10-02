@@ -211,7 +211,7 @@ const PerfumePage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -231,13 +231,13 @@ const PerfumePage = () => {
       </div>
 
       {/* Overview Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Products</p>
-                <p className="text-2xl font-bold">{perfumeMetrics.totalProducts}</p>
+                <p className="text-xl sm:text-2xl font-bold">{perfumeMetrics.totalProducts}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(perfumeMetrics.trends.products)}`}>
                   {getTrendIcon(perfumeMetrics.trends.products)}
                   {Math.abs(perfumeMetrics.trends.products)}% vs last month
@@ -253,7 +253,7 @@ const PerfumePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Premium Ouds</p>
-                <p className="text-2xl font-bold">{perfumeMetrics.premiumOuds}</p>
+                <p className="text-xl sm:text-2xl font-bold">{perfumeMetrics.premiumOuds}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(perfumeMetrics.trends.grade)}`}>
                   {getTrendIcon(perfumeMetrics.trends.grade)}
                   Grade improvement
@@ -269,7 +269,7 @@ const PerfumePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Average Grade</p>
-                <p className="text-2xl font-bold">{perfumeMetrics.averageGrade}/5</p>
+                <p className="text-xl sm:text-2xl font-bold">{perfumeMetrics.averageGrade}/5</p>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className={`h-3 w-3 ${i < perfumeMetrics.averageGrade ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
@@ -286,7 +286,7 @@ const PerfumePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Aging Programs</p>
-                <p className="text-2xl font-bold">{perfumeMetrics.agingProducts}</p>
+                <p className="text-xl sm:text-2xl font-bold">{perfumeMetrics.agingProducts}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(perfumeMetrics.trends.aging)}`}>
                   {getTrendIcon(perfumeMetrics.trends.aging)}
                   {Math.abs(perfumeMetrics.trends.aging)}% new entries
@@ -443,9 +443,9 @@ const PerfumePage = () => {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-6 text-center">
+          <CardContent className="p-4 sm:p-6 text-center">
             <Beaker className="h-12 w-12 mx-auto mb-4 text-blue-600" />
             <h3 className="font-medium mb-2">Distillation Tracking</h3>
             <p className="text-sm text-gray-600">Monitor distillation processes and batches</p>
@@ -453,7 +453,7 @@ const PerfumePage = () => {
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-6 text-center">
+          <CardContent className="p-4 sm:p-6 text-center">
             <Thermometer className="h-12 w-12 mx-auto mb-4 text-orange-600" />
             <h3 className="font-medium mb-2">Aging Programs</h3>
             <p className="text-sm text-gray-600">Manage long-term aging and maturation</p>
@@ -461,7 +461,7 @@ const PerfumePage = () => {
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-6 text-center">
+          <CardContent className="p-4 sm:p-6 text-center">
             <Award className="h-12 w-12 mx-auto mb-4 text-purple-600" />
             <h3 className="font-medium mb-2">Quality Grading</h3>
             <p className="text-sm text-gray-600">Professional grading and certification</p>
@@ -469,7 +469,7 @@ const PerfumePage = () => {
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-6 text-center">
+          <CardContent className="p-4 sm:p-6 text-center">
             <ChefHat className="h-12 w-12 mx-auto mb-4 text-green-600" />
             <h3 className="font-medium mb-2">Blending Lab</h3>
             <p className="text-sm text-gray-600">Create custom blends and formulations</p>

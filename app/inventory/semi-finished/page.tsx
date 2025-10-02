@@ -326,7 +326,7 @@ export default function SemiFinishedGoodsPage() {
   const totalBatches = semiFinishedGoods.length;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
@@ -348,14 +348,14 @@ export default function SemiFinishedGoodsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Total Batches</CardTitle>
             <Factory className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{totalBatches}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{totalBatches}</div>
             <p className="text-xs text-gray-500 mt-1">Active production batches</p>
           </CardContent>
         </Card>
@@ -366,7 +366,7 @@ export default function SemiFinishedGoodsPage() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               AED {totalValue?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-500 mt-1">Work-in-progress value</p>
@@ -379,7 +379,7 @@ export default function SemiFinishedGoodsPage() {
             <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{readyForPackaging}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{readyForPackaging}</div>
             <p className="text-xs text-gray-500 mt-1">Completed batches</p>
           </CardContent>
         </Card>
@@ -390,7 +390,7 @@ export default function SemiFinishedGoodsPage() {
             <FlaskConical className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{underTesting}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{underTesting}</div>
             <p className="text-xs text-gray-500 mt-1">Quality control phase</p>
           </CardContent>
         </Card>
@@ -586,7 +586,7 @@ export default function SemiFinishedGoodsPage() {
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-4 sm:gap-6">
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Production Batch</Label>
@@ -646,7 +646,7 @@ export default function SemiFinishedGoodsPage() {
               </TabsContent>
 
               <TabsContent value="formula" className="space-y-4">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <Label className="text-sm font-medium text-gray-600">Formula Details</Label>
                     <div className="mt-2 space-y-2">
@@ -746,7 +746,7 @@ export default function SemiFinishedGoodsPage() {
               </TabsContent>
 
               <TabsContent value="storage" className="space-y-4">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-4">
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Storage Location</Label>

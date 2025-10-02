@@ -162,7 +162,7 @@ export default function FeaturesPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <TrendingUp className="h-8 w-8 text-blue-600" />
@@ -174,16 +174,16 @@ export default function FeaturesPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">{featureModules.length}</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{featureModules.length}</div>
             <p className="text-sm text-gray-600">Total Modules</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {featureModules.filter(f => f.status === 'active').length}
             </div>
             <p className="text-sm text-gray-600">Active</p>
@@ -191,7 +191,7 @@ export default function FeaturesPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">
               {featureModules.reduce((sum, m) => sum + m.features.length, 0)}
             </div>
             <p className="text-sm text-gray-600">Total Features</p>
@@ -199,14 +199,14 @@ export default function FeaturesPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-amber-600">100%</div>
+            <div className="text-xl sm:text-2xl font-bold text-amber-600">100%</div>
             <p className="text-sm text-gray-600">Coverage</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Feature Modules */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {featureModules.map((module) => {
           const Icon = module.icon;
           return (

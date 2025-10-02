@@ -383,7 +383,7 @@ const StaffPerformancePage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -413,7 +413,7 @@ const StaffPerformancePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Staff</p>
-                <p className="text-2xl font-bold">{performanceAnalytics.totalStaff}</p>
+                <p className="text-xl sm:text-2xl font-bold">{performanceAnalytics.totalStaff}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(performanceAnalytics.trends.performance)}`}>
                   {getTrendIcon(performanceAnalytics.trends.performance)}
                   {Math.abs(performanceAnalytics.trends.performance)}% performance improvement
@@ -429,7 +429,7 @@ const StaffPerformancePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Performance</p>
-                <p className="text-2xl font-bold">{performanceAnalytics.avgPerformanceRating}/5.0</p>
+                <p className="text-xl sm:text-2xl font-bold">{performanceAnalytics.avgPerformanceRating}/5.0</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(performanceAnalytics.trends.satisfaction)}`}>
                   <Star className="h-3 w-3" />
                   {Math.abs(performanceAnalytics.trends.satisfaction)}% satisfaction
@@ -445,7 +445,7 @@ const StaffPerformancePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Top Performers</p>
-                <p className="text-2xl font-bold">{performanceAnalytics.topPerformers}</p>
+                <p className="text-xl sm:text-2xl font-bold">{performanceAnalytics.topPerformers}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(performanceAnalytics.trends.attendance)}`}>
                   {getTrendIcon(performanceAnalytics.trends.attendance)}
                   {Math.abs(performanceAnalytics.trends.attendance)}% attendance
@@ -461,7 +461,7 @@ const StaffPerformancePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold">AED {(performanceAnalytics.totalRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-xl sm:text-2xl font-bold">AED {(performanceAnalytics.totalRevenue / 1000).toFixed(0)}K</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(performanceAnalytics.trends.revenue)}`}>
                   {getTrendIcon(performanceAnalytics.trends.revenue)}
                   {Math.abs(performanceAnalytics.trends.revenue)}% vs last month
@@ -543,7 +543,7 @@ const StaffPerformancePage = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Performance Distribution */}
             <Card>
               <CardHeader>
@@ -695,7 +695,7 @@ const StaffPerformancePage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {filteredStaff.map((staff) => {
                   const performanceBadge = getPerformanceBadge(staff.performance.currentRating);
 
@@ -761,7 +761,7 @@ const StaffPerformancePage = () => {
                         </div>
 
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">
+                          <div className="text-xl sm:text-2xl font-bold text-green-600">
                             {staff.performance.salesPercentage.toFixed(1)}%
                           </div>
                           <div className="text-xs text-gray-500">Sales Target</div>
@@ -771,7 +771,7 @@ const StaffPerformancePage = () => {
                         </div>
 
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-purple-600">
+                          <div className="text-xl sm:text-2xl font-bold text-purple-600">
                             {staff.performance.attendanceRate.toFixed(1)}%
                           </div>
                           <div className="text-xs text-gray-500">Attendance Rate</div>
@@ -781,7 +781,7 @@ const StaffPerformancePage = () => {
                         </div>
 
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <div className="text-2xl font-bold text-orange-600">
+                          <div className="text-xl sm:text-2xl font-bold text-orange-600">
                             {staff.performance.customerSatisfaction.toFixed(1)}/5.0
                           </div>
                           <div className="text-xs text-gray-500">Customer Satisfaction</div>
@@ -792,7 +792,7 @@ const StaffPerformancePage = () => {
                       </div>
 
                       {/* Detailed Performance Breakdown */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                           <h4 className="font-medium mb-3">Skill Assessment</h4>
                           <div className="space-y-3">
@@ -888,7 +888,7 @@ const StaffPerformancePage = () => {
         </TabsContent>
 
         <TabsContent value="rankings" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Top Performers Leaderboard */}
             <Card>
               <CardHeader>
@@ -1048,7 +1048,7 @@ const StaffPerformancePage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {filteredStaff.map((staff) => (
                   <div key={staff.id} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-4">
@@ -1077,7 +1077,7 @@ const StaffPerformancePage = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <h4 className="font-medium mb-3 flex items-center gap-2">
                           <Target className="h-4 w-4" />

@@ -57,7 +57,7 @@ export default function EditStaffPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -77,8 +77,8 @@ export default function EditStaffPage() {
             <CardTitle>Personal Information</CardTitle>
             <CardDescription>Basic employee details</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name *</Label>
                 <Input
@@ -174,8 +174,8 @@ export default function EditStaffPage() {
             <CardTitle>Employment Details</CardTitle>
             <CardDescription>Job position and assignment</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="location">Location *</Label>
                 <Select value={formData.location} onValueChange={(value) => handleChange('location', value)}>
@@ -282,8 +282,8 @@ export default function EditStaffPage() {
             <CardTitle>Emergency Contact</CardTitle>
             <CardDescription>Emergency contact information</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="emergencyContact">Emergency Contact Name</Label>
                 <Input

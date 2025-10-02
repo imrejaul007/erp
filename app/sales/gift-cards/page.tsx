@@ -153,7 +153,7 @@ export default function GiftCardsPage() {
   const pendingRedemption = giftCardsData.reduce((sum, gc) => sum + gc.balance, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -296,7 +296,7 @@ export default function GiftCardsPage() {
             <Gift className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalIssued)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalIssued)}</div>
             <p className="text-xs text-muted-foreground">
               All time gift cards issued
             </p>
@@ -309,7 +309,7 @@ export default function GiftCardsPage() {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRedeemed)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalRedeemed)}</div>
             <p className="text-xs text-muted-foreground">
               Used gift card value
             </p>
@@ -322,7 +322,7 @@ export default function GiftCardsPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeCards}</div>
+            <div className="text-xl sm:text-2xl font-bold">{activeCards}</div>
             <p className="text-xs text-muted-foreground">
               Currently active
             </p>
@@ -335,7 +335,7 @@ export default function GiftCardsPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(pendingRedemption)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(pendingRedemption)}</div>
             <p className="text-xs text-muted-foreground">
               Outstanding balance
             </p>

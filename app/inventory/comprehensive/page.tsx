@@ -519,7 +519,7 @@ export default function ComprehensiveInventoryPage() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
               <Package className="h-6 w-6 mr-2 text-blue-600" />
               Comprehensive Inventory Management
             </h1>
@@ -592,13 +592,13 @@ export default function ComprehensiveInventoryPage() {
 
       <div className="p-6">
         {/* Statistics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Inventory Value</p>
-                  <p className="text-2xl font-bold text-green-600">AED {stats.totalValue?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">AED {stats.totalValue?.toLocaleString() || "0"}</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600" />
               </div>
@@ -610,7 +610,7 @@ export default function ComprehensiveInventoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Items</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.totalItems}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.totalItems}</p>
                   <p className="text-xs text-gray-500">
                     {stats.rawMaterialsCount} Raw, {stats.semiFinishedCount} Semi, {stats.finishedGoodsCount} Finished
                   </p>
@@ -625,7 +625,7 @@ export default function ComprehensiveInventoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Low Stock Alerts</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.lowStockCount}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-600">{stats.lowStockCount}</p>
                   <p className="text-xs text-gray-500">Items need reordering</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-orange-600" />
@@ -638,7 +638,7 @@ export default function ComprehensiveInventoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Out of Stock</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.outOfStockCount}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-red-600">{stats.outOfStockCount}</p>
                   <p className="text-xs text-gray-500">Items unavailable</p>
                 </div>
                 <Truck className="h-8 w-8 text-red-600" />
@@ -740,7 +740,7 @@ export default function ComprehensiveInventoryPage() {
                 {selectedItem.nameArabic} • {selectedItem.id}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <h4 className="font-semibold mb-3">Item Details</h4>
                 <div className="space-y-2 text-sm">

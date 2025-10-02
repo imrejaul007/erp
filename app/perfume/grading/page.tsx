@@ -266,7 +266,7 @@ const PerfumeGradingPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -297,7 +297,7 @@ const PerfumeGradingPage = () => {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Product Selection */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -412,7 +412,7 @@ const PerfumeGradingPage = () => {
                         <div className="text-sm text-gray-600">Final assessment result</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">
                           {calculateTotalScore()}/100
                         </div>
                         <Badge className={getGradeColor(getGradeFromScore(calculateTotalScore()))}>
@@ -440,13 +440,13 @@ const PerfumeGradingPage = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Products Graded</p>
-                <p className="text-2xl font-bold">{sampleProducts.filter(p => p.currentGrade !== 'TBD').length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{sampleProducts.filter(p => p.currentGrade !== 'TBD').length}</p>
                 <p className="text-xs text-green-600">+12% this month</p>
               </div>
               <Award className="h-8 w-8 text-blue-600" />
@@ -459,7 +459,7 @@ const PerfumeGradingPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Average Grade</p>
-                <p className="text-2xl font-bold">A+</p>
+                <p className="text-xl sm:text-2xl font-bold">A+</p>
                 <p className="text-xs text-purple-600">92.3 avg score</p>
               </div>
               <Star className="h-8 w-8 text-purple-600" />
@@ -472,7 +472,7 @@ const PerfumeGradingPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Museum Quality</p>
-                <p className="text-2xl font-bold">1</p>
+                <p className="text-xl sm:text-2xl font-bold">1</p>
                 <p className="text-xs text-yellow-600">Super A+ specimens</p>
               </div>
               <Crown className="h-8 w-8 text-yellow-600" />
@@ -485,7 +485,7 @@ const PerfumeGradingPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Grading</p>
-                <p className="text-2xl font-bold">{sampleProducts.filter(p => p.status === 'awaiting_grading').length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{sampleProducts.filter(p => p.status === 'awaiting_grading').length}</p>
                 <p className="text-xs text-orange-600">Awaiting assessment</p>
               </div>
               <Clock className="h-8 w-8 text-orange-600" />
@@ -495,7 +495,7 @@ const PerfumeGradingPage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="products" className="space-y-6">
+      <Tabs defaultValue="products" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="criteria">Grading Criteria</TabsTrigger>
@@ -504,7 +504,7 @@ const PerfumeGradingPage = () => {
         </TabsList>
 
         {/* Products Tab */}
-        <TabsContent value="products" className="space-y-6">
+        <TabsContent value="products" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Product Grading Status</CardTitle>
@@ -589,8 +589,8 @@ const PerfumeGradingPage = () => {
         </TabsContent>
 
         {/* Grading Criteria Tab */}
-        <TabsContent value="criteria" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="criteria" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Criteria Details */}
             <Card>
               <CardHeader>
@@ -664,14 +664,14 @@ const PerfumeGradingPage = () => {
         </TabsContent>
 
         {/* Certified Graders Tab */}
-        <TabsContent value="graders" className="space-y-6">
+        <TabsContent value="graders" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Certified Quality Assessors</CardTitle>
               <CardDescription>Professional graders authorized for quality assessment</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {certifiedGraders.map((grader) => (
                   <div key={grader.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex justify-between items-start">
@@ -721,8 +721,8 @@ const PerfumeGradingPage = () => {
         </TabsContent>
 
         {/* Reports Tab */}
-        <TabsContent value="reports" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="reports" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Grading Summary */}
             <Card>
               <CardHeader>

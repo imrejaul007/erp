@@ -242,7 +242,7 @@ export default function ProfitDeepDivePage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
@@ -259,7 +259,7 @@ export default function ProfitDeepDivePage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-2">
@@ -267,7 +267,7 @@ export default function ProfitDeepDivePage() {
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
             <div className="text-sm text-gray-600 mb-1">Total Revenue</div>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">
               AED {(profitSummary.totalRevenue / 1000000).toFixed(2)}M
             </div>
           </CardContent>
@@ -280,7 +280,7 @@ export default function ProfitDeepDivePage() {
               <Badge className="bg-green-100 text-green-800">{profitSummary.grossMargin}%</Badge>
             </div>
             <div className="text-sm text-gray-600 mb-1">Gross Profit</div>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               AED {(profitSummary.grossProfit / 1000000).toFixed(2)}M
             </div>
           </CardContent>
@@ -293,7 +293,7 @@ export default function ProfitDeepDivePage() {
               <Badge className="bg-purple-100 text-purple-800">{profitSummary.netMargin}%</Badge>
             </div>
             <div className="text-sm text-gray-600 mb-1">Net Profit</div>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">
               AED {(profitSummary.netProfit / 1000000).toFixed(2)}M
             </div>
           </CardContent>
@@ -306,7 +306,7 @@ export default function ProfitDeepDivePage() {
               <Badge className="bg-green-100 text-green-800">+{profitSummary.trend}%</Badge>
             </div>
             <div className="text-sm text-gray-600 mb-1">Growth</div>
-            <div className="text-2xl font-bold text-amber-600">
+            <div className="text-xl sm:text-2xl font-bold text-amber-600">
               vs Last Period
             </div>
           </CardContent>
@@ -326,7 +326,7 @@ export default function ProfitDeepDivePage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Profit Waterfall</CardTitle>

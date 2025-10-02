@@ -336,7 +336,7 @@ export default function AccountsPayablePage() {
     .reduce((sum, bill) => sum + bill.remainingAmount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -468,7 +468,7 @@ export default function AccountsPayablePage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -477,7 +477,7 @@ export default function AccountsPayablePage() {
             <DollarSign className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(totalOutstanding)}
             </div>
             <p className="text-xs text-red-600 mt-1">
@@ -494,7 +494,7 @@ export default function AccountsPayablePage() {
             <AlertTriangle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(totalDueToday)}
             </div>
             <p className="text-xs text-orange-600 mt-1">
@@ -511,7 +511,7 @@ export default function AccountsPayablePage() {
             <Clock className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(totalOverdue)}
             </div>
             <p className="text-xs text-red-600 mt-1">
@@ -528,7 +528,7 @@ export default function AccountsPayablePage() {
             <TrendingDown className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               28 days
             </div>
             <p className="text-xs text-green-600 mt-1">
@@ -822,7 +822,7 @@ export default function AccountsPayablePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {paymentSchedule.map((schedule, index) => (
                   <div key={index} className="border rounded-lg p-4">
                     <div className="flex justify-between items-center mb-4">
@@ -833,7 +833,7 @@ export default function AccountsPayablePage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-red-600">
+                        <div className="text-xl sm:text-2xl font-bold text-red-600">
                           {formatAED(schedule.totalAmount)}
                         </div>
                         <Button size="sm" className="mt-2">
@@ -860,7 +860,7 @@ export default function AccountsPayablePage() {
 
         {/* Cash Flow Analytics Tab */}
         <TabsContent value="analytics">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -890,7 +890,7 @@ export default function AccountsPayablePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">Payment Timeliness</span>

@@ -209,7 +209,7 @@ export default function WastageTrackingPage() {
   const avgWastagePercentage = wastageRecords.reduce((acc, record) => acc + record.wastagePercentage, 0) / wastageRecords.length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -391,7 +391,7 @@ export default function WastageTrackingPage() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">AED {totalWastageCost?.toLocaleString() || "0"}</div>
+            <div className="text-xl sm:text-2xl font-bold">AED {totalWastageCost?.toLocaleString() || "0"}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>
@@ -404,7 +404,7 @@ export default function WastageTrackingPage() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgWastagePercentage.toFixed(1)}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{avgWastagePercentage.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               Target: {wastageTargets.monthly.target}%
             </p>
@@ -417,7 +417,7 @@ export default function WastageTrackingPage() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {wastageRecords.filter(r => r.severity === 'High' || r.severity === 'Critical').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -432,7 +432,7 @@ export default function WastageTrackingPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {wastageRecords.filter(r => r.preventable).length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -685,7 +685,7 @@ export default function WastageTrackingPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="text-2xl font-bold">AED {totalWastageCost?.toLocaleString() || "0"}</div>
+                  <div className="text-xl sm:text-2xl font-bold">AED {totalWastageCost?.toLocaleString() || "0"}</div>
                   <p className="text-sm text-muted-foreground">Total wastage cost</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-red-500" />
@@ -770,7 +770,7 @@ export default function WastageTrackingPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Basic Information */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
@@ -798,19 +798,19 @@ export default function WastageTrackingPage() {
                   <h3 className="text-lg font-semibold mb-4">Quantity Analysis</h3>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
+                      <div className="text-xl sm:text-2xl font-bold text-blue-600">
                         {selectedWastage.plannedQuantity} {selectedWastage.unit}
                       </div>
                       <div className="text-sm text-muted-foreground">Planned</div>
                     </div>
                     <div className="text-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">
+                      <div className="text-xl sm:text-2xl font-bold text-green-600">
                         {selectedWastage.actualQuantity} {selectedWastage.unit}
                       </div>
                       <div className="text-sm text-muted-foreground">Actual</div>
                     </div>
                     <div className="text-center p-4 border rounded-lg border-red-200">
-                      <div className="text-2xl font-bold text-red-600">
+                      <div className="text-xl sm:text-2xl font-bold text-red-600">
                         {selectedWastage.wastageQuantity} {selectedWastage.unit}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -823,7 +823,7 @@ export default function WastageTrackingPage() {
                 <Separator />
 
                 {/* Classification */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Classification</h3>
                     <div className="space-y-3">

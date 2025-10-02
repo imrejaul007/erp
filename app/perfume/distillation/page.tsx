@@ -380,7 +380,7 @@ const DistillationPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -505,13 +505,13 @@ const DistillationPage = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Batches</p>
-                <p className="text-2xl font-bold">{distillationBatches.filter(b => b.status === 'in_progress').length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{distillationBatches.filter(b => b.status === 'in_progress').length}</p>
                 <p className="text-xs text-blue-600">Currently distilling</p>
               </div>
               <FlaskConical className="h-8 w-8 text-blue-600" />
@@ -524,7 +524,7 @@ const DistillationPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Yield</p>
-                <p className="text-2xl font-bold">273ml</p>
+                <p className="text-xl sm:text-2xl font-bold">273ml</p>
                 <p className="text-xs text-green-600">This month</p>
               </div>
               <Droplets className="h-8 w-8 text-green-600" />
@@ -537,7 +537,7 @@ const DistillationPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Efficiency</p>
-                <p className="text-2xl font-bold">89.1%</p>
+                <p className="text-xl sm:text-2xl font-bold">89.1%</p>
                 <p className="text-xs text-purple-600">Yield vs expected</p>
               </div>
               <Target className="h-8 w-8 text-purple-600" />
@@ -550,7 +550,7 @@ const DistillationPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Quality Grade</p>
-                <p className="text-2xl font-bold">A+</p>
+                <p className="text-xl sm:text-2xl font-bold">A+</p>
                 <p className="text-xs text-yellow-600">Average output</p>
               </div>
               <Award className="h-8 w-8 text-yellow-600" />
@@ -560,7 +560,7 @@ const DistillationPage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="batches" className="space-y-6">
+      <Tabs defaultValue="batches" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="batches">Active Batches</TabsTrigger>
           <TabsTrigger value="monitoring">Real-time Monitor</TabsTrigger>
@@ -570,8 +570,8 @@ const DistillationPage = () => {
         </TabsList>
 
         {/* Batches Tab */}
-        <TabsContent value="batches" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="batches" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {distillationBatches.map((batch) => {
               const stageProgress = getStageProgress(batch);
               const dayProgress = getDayProgress(batch);
@@ -706,8 +706,8 @@ const DistillationPage = () => {
         </TabsContent>
 
         {/* Real-time Monitoring Tab */}
-        <TabsContent value="monitoring" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="monitoring" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Real-time Conditions */}
             <Card>
               <CardHeader>
@@ -718,7 +718,7 @@ const DistillationPage = () => {
                 <CardDescription>Live conditions for active distillation batches</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {distillationBatches.filter(b => b.status === 'in_progress').map(batch => (
                     <div key={batch.id} className="border rounded-lg p-4 space-y-4">
                       <div className="flex justify-between items-center">
@@ -732,7 +732,7 @@ const DistillationPage = () => {
                             <Thermometer className="h-4 w-4 text-red-500" />
                             <span className="text-sm">Temperature</span>
                           </div>
-                          <div className="text-2xl font-bold">{batch.conditions.temperature}°C</div>
+                          <div className="text-xl sm:text-2xl font-bold">{batch.conditions.temperature}°C</div>
                           <div className="text-sm text-gray-500">Target: {batch.conditions.targetTemp}</div>
                           <Progress value={(batch.conditions.temperature / 100) * 100} className="h-2" />
                         </div>
@@ -742,7 +742,7 @@ const DistillationPage = () => {
                             <Scale className="h-4 w-4 text-blue-500" />
                             <span className="text-sm">Pressure</span>
                           </div>
-                          <div className="text-2xl font-bold">{batch.conditions.pressure} bar</div>
+                          <div className="text-xl sm:text-2xl font-bold">{batch.conditions.pressure} bar</div>
                           <div className="text-sm text-gray-500">Normal range</div>
                           <Progress value={(batch.conditions.pressure / 2) * 100} className="h-2" />
                         </div>
@@ -752,7 +752,7 @@ const DistillationPage = () => {
                             <Wind className="h-4 w-4 text-green-500" />
                             <span className="text-sm">Steam Flow</span>
                           </div>
-                          <div className="text-2xl font-bold">{batch.conditions.steamFlow} L/min</div>
+                          <div className="text-xl sm:text-2xl font-bold">{batch.conditions.steamFlow} L/min</div>
                           <div className="text-sm text-gray-500">Optimal flow</div>
                           <Progress value={(batch.conditions.steamFlow / 5) * 100} className="h-2" />
                         </div>
@@ -762,7 +762,7 @@ const DistillationPage = () => {
                             <Droplets className="h-4 w-4 text-blue-500" />
                             <span className="text-sm">Water Level</span>
                           </div>
-                          <div className="text-2xl font-bold">{batch.conditions.waterLevel}%</div>
+                          <div className="text-xl sm:text-2xl font-bold">{batch.conditions.waterLevel}%</div>
                           <div className="text-sm text-gray-500">Tank capacity</div>
                           <Progress value={batch.conditions.waterLevel} className="h-2" />
                         </div>
@@ -790,7 +790,7 @@ const DistillationPage = () => {
                 <CardTitle>Distillation Control Panel</CardTitle>
                 <CardDescription>Manual controls and automation settings</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 {/* Temperature Control */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
@@ -919,8 +919,8 @@ const DistillationPage = () => {
         </TabsContent>
 
         {/* Methods Tab */}
-        <TabsContent value="methods" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="methods" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {distillationMethods.map((method) => (
               <Card key={method.id}>
                 <CardHeader>
@@ -1005,8 +1005,8 @@ const DistillationPage = () => {
         </TabsContent>
 
         {/* Master Distillers Tab */}
-        <TabsContent value="distillers" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <TabsContent value="distillers" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {masterDistillers.map((distiller) => (
               <Card key={distiller.id}>
                 <CardHeader>
@@ -1091,8 +1091,8 @@ const DistillationPage = () => {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Production Analytics */}
             <Card>
               <CardHeader>

@@ -320,7 +320,7 @@ export default function BankReconciliationPage() {
   const unmatchedBookTransactions = bookTransactions.filter(t => t.status === 'Unmatched');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -488,7 +488,7 @@ export default function BankReconciliationPage() {
 
       {/* Current Account Summary */}
       {currentAccount && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <Card className="border-amber-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -497,7 +497,7 @@ export default function BankReconciliationPage() {
               <FileText className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-xl sm:text-2xl font-bold text-gray-900">
                 {formatCurrency(currentAccount.bookBalance, currentAccount.currency)}
               </div>
               <p className="text-xs text-gray-600 mt-1">
@@ -514,7 +514,7 @@ export default function BankReconciliationPage() {
               <Building className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-xl sm:text-2xl font-bold text-gray-900">
                 {formatCurrency(currentAccount.bankBalance, currentAccount.currency)}
               </div>
               <p className="text-xs text-gray-600 mt-1">
@@ -531,7 +531,7 @@ export default function BankReconciliationPage() {
               <AlertTriangle className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${
+              <div className={`text-xl sm:text-2xl font-bold ${
                 currentAccount.difference === 0
                   ? 'text-green-600'
                   : currentAccount.difference > 0
@@ -557,7 +557,7 @@ export default function BankReconciliationPage() {
               <Clock className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-xl sm:text-2xl font-bold text-gray-900">
                 {new Date(currentAccount.lastReconciled).toLocaleDateString()}
               </div>
               <p className="text-xs text-gray-600 mt-1">
@@ -591,7 +591,7 @@ export default function BankReconciliationPage() {
 
         {/* Reconciliation Tab */}
         <TabsContent value="reconcile">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -1005,7 +1005,7 @@ export default function BankReconciliationPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Adjustments Needed</h3>
 

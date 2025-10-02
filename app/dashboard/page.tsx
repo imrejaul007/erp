@@ -237,15 +237,15 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Dashboard Content */}
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-4 sm:space-y-6">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
-          <h2 className="text-xl sm:text-2xl font-bold mb-2">Welcome back! 👋</h2>
+          <h2 className="text-xl sm:text-xl sm:text-2xl font-bold mb-2">Welcome back! 👋</h2>
           <p className="text-sm sm:text-base opacity-90">Here's what's happening with your business today</p>
         </div>
 
         {/* KPI Cards Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-4 sm:gap-6">
           {/* Today's Sales */}
           <Card
             className="cursor-pointer hover:bg-blue-50 transition-colors group"
@@ -258,7 +258,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 group-hover:text-gray-800">Today's Sales</p>
-                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.todaysSales.amount?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.todaysSales.amount?.toLocaleString() || "0"}</p>
                   <p className="text-sm text-gray-600 group-hover:text-gray-700">{kpiData.todaysSales.orders} orders</p>
                   <div className={`text-xs flex items-center gap-1 ${getChangeColor(kpiData.todaysSales.change)}`}>
                     {getChangeIcon(kpiData.todaysSales.change)}
@@ -276,7 +276,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 group-hover:text-gray-800">Inventory Value</p>
-                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {(kpiData.inventoryValue.amount / 1000000).toFixed(1)}M</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {(kpiData.inventoryValue.amount / 1000000).toFixed(1)}M</p>
                   <div className={`text-xs flex items-center gap-1 ${getChangeColor(kpiData.inventoryValue.change)}`}>
                     {getChangeIcon(kpiData.inventoryValue.change)}
                     {Math.abs(kpiData.inventoryValue.change)}% this month
@@ -293,7 +293,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 group-hover:text-gray-800">New Customers</p>
-                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">{kpiData.newCustomers.count}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 group-hover:text-gray-900">{kpiData.newCustomers.count}</p>
                   <p className="text-sm text-gray-600 group-hover:text-gray-700">today</p>
                   <div className={`text-xs flex items-center gap-1 ${getChangeColor(kpiData.newCustomers.change)}`}>
                     {getChangeIcon(kpiData.newCustomers.change)}
@@ -311,7 +311,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 group-hover:text-gray-800">Daily Profit</p>
-                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.dailyProfit.amount?.toLocaleString() || "0"}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.dailyProfit.amount?.toLocaleString() || "0"}</p>
                   <p className="text-sm text-gray-600 group-hover:text-gray-700">{kpiData.dailyProfit.margin}% margin</p>
                   <div className={`text-xs flex items-center gap-1 ${getChangeColor(kpiData.dailyProfit.change)}`}>
                     {getChangeIcon(kpiData.dailyProfit.change)}
@@ -329,7 +329,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 group-hover:text-gray-800">Active Alerts</p>
-                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">{kpiData.alerts.lowStock + kpiData.alerts.expiring + kpiData.alerts.pendingOrders}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 group-hover:text-gray-900">{kpiData.alerts.lowStock + kpiData.alerts.expiring + kpiData.alerts.pendingOrders}</p>
                   <div className="text-xs text-gray-600 group-hover:text-gray-700 space-y-1">
                     <div>{kpiData.alerts.lowStock} low stock</div>
                     <div>{kpiData.alerts.expiring} expiring</div>
@@ -399,7 +399,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Sales & Inventory Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Sales Performance Chart */}
           <Card>
             <CardHeader>
@@ -492,7 +492,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Production & Customer Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Production Overview */}
           <Card>
             <CardHeader>
@@ -579,7 +579,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Finance & Alerts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Finance Overview */}
           <Card>
             <CardHeader>
@@ -723,7 +723,7 @@ export default function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedBatch && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Batch Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -804,7 +804,7 @@ export default function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedCustomer && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Customer Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -885,7 +885,7 @@ export default function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedStore && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Store Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -973,16 +973,16 @@ export default function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedDaySales && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Sales Summary */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Total Sales</div>
-                  <div className="text-2xl font-bold text-gray-900">AED {selectedDaySales.sales?.toLocaleString() || "0"}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">AED {selectedDaySales.sales?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Daily Target</div>
-                  <div className="text-2xl font-bold text-gray-900">AED {selectedDaySales.target?.toLocaleString() || "0"}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">AED {selectedDaySales.target?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Achievement</div>
@@ -1074,16 +1074,16 @@ export default function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedSale && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Sales Summary */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Total Sales</div>
-                  <div className="text-2xl font-bold text-gray-900">AED {selectedSale.amount?.toLocaleString() || "0"}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">AED {selectedSale.amount?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Total Orders</div>
-                  <div className="text-2xl font-bold text-gray-900">{selectedSale.orders}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">{selectedSale.orders}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Average Order Value</div>

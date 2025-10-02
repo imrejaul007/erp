@@ -57,7 +57,7 @@ export default function LockRegisterPage() {
           <CardTitle className="text-2xl">Register Locked</CardTitle>
           <p className="text-sm text-gray-600 mt-2">Enter your PIN to unlock the register</p>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           {/* Current User Info */}
           <div className="bg-gray-50 rounded-lg p-4 space-y-2">
             <div className="flex items-center gap-2 text-sm">

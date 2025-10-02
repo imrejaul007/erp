@@ -153,7 +153,7 @@ export default function SalesReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -239,7 +239,7 @@ export default function SalesReportsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
               {formatCurrency(salesOverview.totalRevenue)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -257,7 +257,7 @@ export default function SalesReportsPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{salesOverview.totalOrders?.toLocaleString() || "0"}</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{salesOverview.totalOrders?.toLocaleString() || "0"}</div>
             <p className="text-xs text-muted-foreground">
               AOV: {formatCurrency(salesOverview.averageOrderValue)}
             </p>
@@ -273,7 +273,7 @@ export default function SalesReportsPage() {
             <Percent className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{salesOverview.grossMargin}%</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">{salesOverview.grossMargin}%</div>
             <p className="text-xs text-muted-foreground">
               Net Margin: {salesOverview.netMargin}%
             </p>
@@ -287,7 +287,7 @@ export default function SalesReportsPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-oud-600">92.5</div>
+            <div className="text-xl sm:text-2xl font-bold text-oud-600">92.5</div>
             <p className="text-xs text-muted-foreground">
               Above target by 12.5%
             </p>
@@ -308,7 +308,7 @@ export default function SalesReportsPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Sales Performance Summary</CardTitle>
@@ -320,12 +320,12 @@ export default function SalesReportsPage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-4 border rounded-lg bg-gradient-to-br from-green-50 to-green-100">
-                      <div className="text-2xl font-bold text-green-600">{formatCurrency(salesOverview.totalRevenue)}</div>
+                      <div className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(salesOverview.totalRevenue)}</div>
                       <p className="text-sm text-muted-foreground">Total Revenue</p>
                       <Badge className="mt-1 bg-green-500 text-white">{formatPercentage(salesOverview.growthRate)}</Badge>
                     </div>
                     <div className="text-center p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-blue-100">
-                      <div className="text-2xl font-bold text-blue-600">{salesOverview.totalOrders}</div>
+                      <div className="text-xl sm:text-2xl font-bold text-blue-600">{salesOverview.totalOrders}</div>
                       <p className="text-sm text-muted-foreground">Orders Processed</p>
                       <Badge className="mt-1 bg-blue-500 text-white">+8.2%</Badge>
                     </div>
@@ -564,7 +564,7 @@ export default function SalesReportsPage() {
         </TabsContent>
 
         <TabsContent value="vat" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>UAE VAT Summary</CardTitle>
@@ -575,11 +575,11 @@ export default function SalesReportsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-4 border rounded-lg bg-gradient-to-br from-red-50 to-red-100">
-                    <div className="text-2xl font-bold text-red-600">{formatCurrency(vatAnalysis.totalVAT)}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-red-600">{formatCurrency(vatAnalysis.totalVAT)}</div>
                     <p className="text-sm text-muted-foreground">Total VAT Collected</p>
                   </div>
                   <div className="text-center p-4 border rounded-lg bg-gradient-to-br from-green-50 to-green-100">
-                    <div className="text-2xl font-bold text-green-600">{vatAnalysis.vatRate}%</div>
+                    <div className="text-xl sm:text-2xl font-bold text-green-600">{vatAnalysis.vatRate}%</div>
                     <p className="text-sm text-muted-foreground">VAT Rate Applied</p>
                   </div>
                 </div>

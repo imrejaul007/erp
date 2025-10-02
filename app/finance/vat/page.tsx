@@ -308,7 +308,7 @@ export default function VATPage() {
   const currentReturn = vatReturns.find(ret => ret.status === 'Draft');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -378,7 +378,7 @@ export default function VATPage() {
                       <div className="flex justify-between items-center">
                         <div>
                           <Label className="text-amber-700">Net VAT Payable</Label>
-                          <div className="text-2xl font-bold text-amber-900">
+                          <div className="text-xl sm:text-2xl font-bold text-amber-900">
                             {formatAED(currentReturn.netVAT)}
                           </div>
                         </div>
@@ -451,7 +451,7 @@ export default function VATPage() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -460,7 +460,7 @@ export default function VATPage() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(vatAnalysis.currentQuarter.outputVAT)}
             </div>
             <p className="text-xs text-green-600 mt-1">
@@ -477,7 +477,7 @@ export default function VATPage() {
             <DollarSign className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(vatAnalysis.currentQuarter.inputVAT)}
             </div>
             <p className="text-xs text-blue-600 mt-1">
@@ -494,7 +494,7 @@ export default function VATPage() {
             <Calculator className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {formatAED(vatAnalysis.currentQuarter.netVAT)}
             </div>
             <p className="text-xs text-amber-600 mt-1">
@@ -511,7 +511,7 @@ export default function VATPage() {
             <Clock className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">
               {vatAnalysis.currentQuarter.effectiveRate.toFixed(2)}%
             </div>
             <p className="text-xs text-purple-600 mt-1">
@@ -849,7 +849,7 @@ export default function VATPage() {
                 </Table>
               </div>
 
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="bg-green-50 p-6 rounded-lg border border-green-200">
                   <h3 className="font-semibold text-green-900 mb-4">Standard Rated Transactions</h3>
                   <div className="space-y-3">
@@ -892,7 +892,7 @@ export default function VATPage() {
 
         {/* Compliance Tab */}
         <TabsContent value="compliance">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -1025,7 +1025,7 @@ export default function VATPage() {
 
         {/* Reports Tab */}
         <TabsContent value="reports">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card className="border-amber-100">
               <CardHeader>
                 <CardTitle className="flex items-center">

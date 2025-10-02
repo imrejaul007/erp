@@ -262,7 +262,7 @@ const AttendancePage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -340,13 +340,13 @@ const AttendancePage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Present Today</p>
-                <p className="text-2xl font-bold">{attendanceMetrics.totalPresent}</p>
+                <p className="text-xl sm:text-2xl font-bold">{attendanceMetrics.totalPresent}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(attendanceMetrics.trends.attendance)}`}>
                   {getTrendIcon(attendanceMetrics.trends.attendance)}
                   {Math.abs(attendanceMetrics.trends.attendance)}% vs yesterday
@@ -362,7 +362,7 @@ const AttendancePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Absent Today</p>
-                <p className="text-2xl font-bold">{attendanceMetrics.totalAbsent}</p>
+                <p className="text-xl sm:text-2xl font-bold">{attendanceMetrics.totalAbsent}</p>
                 <p className="text-xs text-red-600">Including {attendanceMetrics.totalOnLeave} on leave</p>
               </div>
               <XCircle className="h-8 w-8 text-red-600" />
@@ -375,7 +375,7 @@ const AttendancePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Attendance Rate</p>
-                <p className="text-2xl font-bold">{attendanceMetrics.attendanceRate}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{attendanceMetrics.attendanceRate}%</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(attendanceMetrics.trends.punctuality)}`}>
                   {getTrendIcon(attendanceMetrics.trends.punctuality)}
                   Punctuality {Math.abs(attendanceMetrics.trends.punctuality)}%
@@ -391,7 +391,7 @@ const AttendancePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Overtime Hours</p>
-                <p className="text-2xl font-bold">{attendanceMetrics.overtimeHours}h</p>
+                <p className="text-xl sm:text-2xl font-bold">{attendanceMetrics.overtimeHours}h</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(attendanceMetrics.trends.overtime)}`}>
                   {getTrendIcon(attendanceMetrics.trends.overtime)}
                   {Math.abs(attendanceMetrics.trends.overtime)}% vs last week
@@ -403,7 +403,7 @@ const AttendancePage = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="attendance" className="space-y-6">
+      <Tabs defaultValue="attendance" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="attendance">Today's Attendance</TabsTrigger>
           <TabsTrigger value="shifts">Shift Management</TabsTrigger>
@@ -412,7 +412,7 @@ const AttendancePage = () => {
         </TabsList>
 
         {/* Today's Attendance Tab */}
-        <TabsContent value="attendance" className="space-y-6">
+        <TabsContent value="attendance" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -531,7 +531,7 @@ const AttendancePage = () => {
         </TabsContent>
 
         {/* Shift Management Tab */}
-        <TabsContent value="shifts" className="space-y-6">
+        <TabsContent value="shifts" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -626,7 +626,7 @@ const AttendancePage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 sm:gap-6">
                       <div className="text-center">
                         <div className="font-medium">{shift.breakDuration}min</div>
                         <div className="text-xs text-gray-500">Break</div>
@@ -660,7 +660,7 @@ const AttendancePage = () => {
         </TabsContent>
 
         {/* Leave Requests Tab */}
-        <TabsContent value="leaves" className="space-y-6">
+        <TabsContent value="leaves" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -742,8 +742,8 @@ const AttendancePage = () => {
         </TabsContent>
 
         {/* Reports & Analytics Tab */}
-        <TabsContent value="reports" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="reports" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Attendance Analytics</CardTitle>

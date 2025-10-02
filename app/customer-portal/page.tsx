@@ -85,7 +85,7 @@ export default function CustomerPortalPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
           <div className="flex items-center justify-between">
@@ -119,7 +119,7 @@ export default function CustomerPortalPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Orders</p>
-                  <p className="text-2xl font-bold">{customer.orders}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{customer.orders}</p>
                 </div>
                 <ShoppingBag className="h-8 w-8 text-blue-500" />
               </div>
@@ -131,7 +131,7 @@ export default function CustomerPortalPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Spent</p>
-                  <p className="text-2xl font-bold">AED {(customer.totalSpent / 1000).toFixed(1)}K</p>
+                  <p className="text-xl sm:text-2xl font-bold">AED {(customer.totalSpent / 1000).toFixed(1)}K</p>
                 </div>
                 <Star className="h-8 w-8 text-yellow-500" />
               </div>
@@ -143,7 +143,7 @@ export default function CustomerPortalPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Member Since</p>
-                  <p className="text-2xl font-bold">{new Date(customer.joinDate).getFullYear()}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{new Date(customer.joinDate).getFullYear()}</p>
                 </div>
                 <Calendar className="h-8 w-8 text-green-500" />
               </div>
@@ -155,7 +155,7 @@ export default function CustomerPortalPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">VIP Status</p>
-                  <p className="text-2xl font-bold">{customer.tier}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{customer.tier}</p>
                 </div>
                 <Crown className="h-8 w-8 text-purple-500" />
               </div>

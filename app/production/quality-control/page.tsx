@@ -247,7 +247,7 @@ export default function QualityControlPage() {
     acc + (record.overallScore || 0), 0) / qualityRecords.filter(r => r.overallScore > 0).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -278,7 +278,7 @@ export default function QualityControlPage() {
                   Set up comprehensive quality control testing for production batch
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-6 py-4">
+              <div className="grid gap-4 sm:gap-6 py-4">
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Test Information</h3>
@@ -438,7 +438,7 @@ export default function QualityControlPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{((passedTests / totalTests) * 100).toFixed(1)}%</div>
+            <div className="text-xl sm:text-2xl font-bold">{((passedTests / totalTests) * 100).toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
               {passedTests}/{totalTests} tests passed
             </p>
@@ -451,7 +451,7 @@ export default function QualityControlPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgScore.toFixed(1)}/10</div>
+            <div className="text-xl sm:text-2xl font-bold">{avgScore.toFixed(1)}/10</div>
             <p className="text-xs text-muted-foreground">
               Based on completed tests
             </p>
@@ -464,7 +464,7 @@ export default function QualityControlPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {qualityRecords.filter(r => r.status === 'In Progress' || r.status === 'Pending').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -479,7 +479,7 @@ export default function QualityControlPage() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {qualityRecords.filter(r => r.overallGrade === 'A+').length}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -801,7 +801,7 @@ export default function QualityControlPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Test Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
@@ -867,7 +867,7 @@ export default function QualityControlPage() {
                 <Separator />
 
                 {/* Compliance Status */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Compliance Status</h3>
                     <div className="space-y-3">

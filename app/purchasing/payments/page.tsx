@@ -256,7 +256,7 @@ const VendorPaymentPage = () => {
     : payments.filter(payment => payment.status === selectedStatus);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -280,13 +280,13 @@ const VendorPaymentPage = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Payments</p>
-                <p className="text-2xl font-bold">USD ${(totals.pending + totals.scheduled)?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">USD ${(totals.pending + totals.scheduled)?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-yellow-600 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {payments.filter(p => p.status === 'pending_approval' || p.status === 'scheduled').length} payments
@@ -302,7 +302,7 @@ const VendorPaymentPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Processing</p>
-                <p className="text-2xl font-bold">USD ${totals.processing?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">USD ${totals.processing?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-blue-600 flex items-center gap-1">
                   <Activity className="h-3 w-3" />
                   In progress
@@ -318,7 +318,7 @@ const VendorPaymentPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Completed Today</p>
-                <p className="text-2xl font-bold">USD ${totals.completed?.toLocaleString() || "0"}</p>
+                <p className="text-xl sm:text-2xl font-bold">USD ${totals.completed?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   +15.2% from yesterday
@@ -334,7 +334,7 @@ const VendorPaymentPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Available Balance</p>
-                <p className="text-2xl font-bold">AED 2.85M</p>
+                <p className="text-xl sm:text-2xl font-bold">AED 2.85M</p>
                 <div className="text-xs text-gray-600 flex items-center gap-1">
                   <Wallet className="h-3 w-3" />
                   Multiple currencies
@@ -346,7 +346,7 @@ const VendorPaymentPage = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Main Payments Table */}
         <div className="lg:col-span-2">
           <Card>
@@ -479,7 +479,7 @@ const VendorPaymentPage = () => {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Bank Accounts */}
           <Card>
             <CardHeader>

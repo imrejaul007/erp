@@ -265,7 +265,7 @@ export default function PackagingPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -293,7 +293,7 @@ export default function PackagingPage() {
                 Create multi-packaging variants from production batch with different pricing tiers
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-6 py-4">
+            <div className="grid gap-4 sm:gap-6 py-4">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Source Batch</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -513,7 +513,7 @@ export default function PackagingPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-primary group-hover:text-primary">{pkg.progress}%</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary group-hover:text-primary">{pkg.progress}%</p>
                     <p className="text-xs text-gray-600 group-hover:text-gray-700">Progress</p>
                   </div>
                 </div>
@@ -623,7 +623,7 @@ export default function PackagingPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">
                       {bundle.margin.toFixed(1)}%
                     </p>
                     <p className="text-xs text-muted-foreground">Margin</p>
@@ -737,7 +737,7 @@ export default function PackagingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {packagingTypes.map((pkgType, idx) => {
                   const Icon = pkgType.icon;
                   return (
@@ -893,7 +893,7 @@ export default function PackagingPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedPackaging && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">

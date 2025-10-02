@@ -155,7 +155,7 @@ export default function ReturnsPage() {
     .reduce((sum, item) => sum + item.refundAmount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -280,7 +280,7 @@ export default function ReturnsPage() {
             <RotateCcw className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalReturns}</div>
+            <div className="text-xl sm:text-2xl font-bold">{totalReturns}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>
@@ -293,7 +293,7 @@ export default function ReturnsPage() {
             <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalExchanges}</div>
+            <div className="text-xl sm:text-2xl font-bold">{totalExchanges}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>
@@ -306,7 +306,7 @@ export default function ReturnsPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingApprovals}</div>
+            <div className="text-xl sm:text-2xl font-bold">{pendingApprovals}</div>
             <p className="text-xs text-muted-foreground">
               Awaiting approval
             </p>
@@ -319,7 +319,7 @@ export default function ReturnsPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRefundAmount)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(totalRefundAmount)}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>

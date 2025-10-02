@@ -239,7 +239,7 @@ const PricingManagementPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -269,7 +269,7 @@ const PricingManagementPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Products</p>
-                <p className="text-2xl font-bold">{pricingAnalytics.totalProducts}</p>
+                <p className="text-xl sm:text-2xl font-bold">{pricingAnalytics.totalProducts}</p>
               </div>
               <Package className="h-8 w-8 text-blue-600" />
             </div>
@@ -281,7 +281,7 @@ const PricingManagementPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Margin</p>
-                <p className="text-2xl font-bold">{pricingAnalytics.avgMargin}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{pricingAnalytics.avgMargin}%</p>
               </div>
               <Percent className="h-8 w-8 text-green-600" />
             </div>
@@ -293,7 +293,7 @@ const PricingManagementPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Price Consistency</p>
-                <p className="text-2xl font-bold">{pricingAnalytics.priceConsistency}%</p>
+                <p className="text-xl sm:text-2xl font-bold">{pricingAnalytics.priceConsistency}%</p>
               </div>
               <BarChart3 className="h-8 w-8 text-purple-600" />
             </div>
@@ -305,7 +305,7 @@ const PricingManagementPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Revenue Impact</p>
-                <p className="text-2xl font-bold">+{pricingAnalytics.revenueImpact}%</p>
+                <p className="text-xl sm:text-2xl font-bold">+{pricingAnalytics.revenueImpact}%</p>
               </div>
               <TrendingUp className="h-8 w-8 text-emerald-600" />
             </div>
@@ -317,7 +317,7 @@ const PricingManagementPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Updates</p>
-                <p className="text-2xl font-bold">{pricingAnalytics.pendingUpdates}</p>
+                <p className="text-xl sm:text-2xl font-bold">{pricingAnalytics.pendingUpdates}</p>
               </div>
               <Clock className="h-8 w-8 text-orange-600" />
             </div>
@@ -486,7 +486,7 @@ const PricingManagementPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {filteredProducts.map((product) => (
                   <div key={product.id} className="border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-4">

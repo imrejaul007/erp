@@ -338,7 +338,7 @@ export default function AIAutomationPage() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -499,7 +499,7 @@ export default function AIAutomationPage() {
                           {workflow.status}
                         </Badge>
                       </div>
-                      <div className="flex gap-6 text-sm text-muted-foreground">
+                      <div className="flex gap-4 sm:gap-6 text-sm text-muted-foreground">
                         <span>Executions: {workflow.executions?.toLocaleString() || "0"}</span>
                         <span>Success: {workflow.success}%</span>
                         <span>Time Saved: {workflow.timeSaved}h</span>
@@ -533,7 +533,7 @@ export default function AIAutomationPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-green-600">{model.accuracy}%</p>
+                        <p className="text-xl sm:text-2xl font-bold text-green-600">{model.accuracy}%</p>
                         <p className="text-xs text-muted-foreground">Accuracy</p>
                       </div>
                     </div>

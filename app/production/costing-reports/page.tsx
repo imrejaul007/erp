@@ -286,7 +286,7 @@ export default function CostingReportsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -390,7 +390,7 @@ export default function CostingReportsPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600 group-hover:text-green-700">
+                    <p className="text-xl sm:text-2xl font-bold text-green-600 group-hover:text-green-700">
                       {batch.profitMargin.toFixed(1)}%
                     </p>
                     <p className="text-xs text-gray-600 group-hover:text-gray-700">Profit Margin</p>
@@ -824,7 +824,7 @@ export default function CostingReportsPage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-white rounded-lg border-2 border-purple-200">
                   <div className="flex items-center justify-between mb-3">
@@ -1026,7 +1026,7 @@ export default function CostingReportsPage() {
             </DialogDescription>
           </DialogHeader>
           {selectedBatch && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4">
@@ -1131,7 +1131,7 @@ export default function CostingReportsPage() {
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-gray-900">Total Production Cost:</span>
-                    <span className="text-2xl font-bold text-primary">AED {selectedBatch.costs.total?.toLocaleString() || "0"}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-primary">AED {selectedBatch.costs.total?.toLocaleString() || "0"}</span>
                   </div>
                 </div>
               </Card>

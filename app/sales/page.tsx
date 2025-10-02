@@ -192,7 +192,7 @@ export default function SalesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -232,7 +232,7 @@ export default function SalesPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(2460.00)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(2460.00)}</div>
             <p className="text-xs text-muted-foreground">
               +12% from yesterday
             </p>
@@ -245,7 +245,7 @@ export default function SalesPage() {
             <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-xl sm:text-2xl font-bold">12</div>
             <p className="text-xs text-muted-foreground">
               3 pending processing
             </p>
@@ -258,7 +258,7 @@ export default function SalesPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">245</div>
+            <div className="text-xl sm:text-2xl font-bold">245</div>
             <p className="text-xs text-muted-foreground">
               8 new this week
             </p>
@@ -271,7 +271,7 @@ export default function SalesPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">34</div>
+            <div className="text-xl sm:text-2xl font-bold">34</div>
             <p className="text-xs text-muted-foreground">
               Across 6 categories
             </p>
@@ -281,7 +281,7 @@ export default function SalesPage() {
 
       {isPOSMode ? (
         /* POS Interface */
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Product Selection */}
           <div className="lg:col-span-2 space-y-4">
             <Card>

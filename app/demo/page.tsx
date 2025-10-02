@@ -191,31 +191,31 @@ const DemoPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="text-center">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{systemStats.totalPages}</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{systemStats.totalPages}</div>
             <div className="text-sm text-gray-600">Total Pages</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{systemStats.modules}</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{systemStats.modules}</div>
             <div className="text-sm text-gray-600">Main Modules</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{systemStats.userRoles}</div>
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">{systemStats.userRoles}</div>
             <div className="text-sm text-gray-600">User Roles</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-600">{systemStats.features}</div>
+            <div className="text-xl sm:text-2xl font-bold text-orange-600">{systemStats.features}</div>
             <div className="text-sm text-gray-600">Features</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{systemStats.integrations}</div>
+            <div className="text-xl sm:text-2xl font-bold text-red-600">{systemStats.integrations}</div>
             <div className="text-sm text-gray-600">Integrations</div>
           </CardContent>
         </Card>
@@ -258,7 +258,7 @@ const DemoPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {completedModules.map((module) => (
               <div key={module.name} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-3">
@@ -326,10 +326,10 @@ const DemoPage = () => {
 
       {/* System Status */}
       <Card className="bg-green-50 border-green-200">
-        <CardContent className="p-6 text-center">
+        <CardContent className="p-4 sm:p-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <CheckCircle className="h-8 w-8 text-green-600" />
-            <h2 className="text-2xl font-bold text-green-800">System Complete & Ready</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-green-800">System Complete & Ready</h2>
           </div>
           <p className="text-green-700 mb-4">
             🎉 All 120+ pages have been successfully implemented across 13 main modules

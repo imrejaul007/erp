@@ -470,7 +470,7 @@ const BlendingLaboratoryPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -501,7 +501,7 @@ const BlendingLaboratoryPage = () => {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 gap-4 sm:gap-6">
                 {/* Ingredient Library */}
                 <div className="space-y-4">
                   <h3 className="font-medium">Ingredient Library</h3>
@@ -777,13 +777,13 @@ const BlendingLaboratoryPage = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Formulas</p>
-                <p className="text-2xl font-bold">{blendFormulas.filter(f => f.status === 'active').length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{blendFormulas.filter(f => f.status === 'active').length}</p>
                 <p className="text-xs text-green-600">Ready for production</p>
               </div>
               <ChefHat className="h-8 w-8 text-blue-600" />
@@ -796,7 +796,7 @@ const BlendingLaboratoryPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Rating</p>
-                <p className="text-2xl font-bold">4.7</p>
+                <p className="text-xl sm:text-2xl font-bold">4.7</p>
                 <p className="text-xs text-purple-600">Customer satisfaction</p>
               </div>
               <Star className="h-8 w-8 text-purple-600" />
@@ -809,7 +809,7 @@ const BlendingLaboratoryPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                <p className="text-2xl font-bold">91%</p>
+                <p className="text-xl sm:text-2xl font-bold">91%</p>
                 <p className="text-xs text-green-600">Formula acceptance</p>
               </div>
               <Target className="h-8 w-8 text-green-600" />
@@ -822,7 +822,7 @@ const BlendingLaboratoryPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Ingredients</p>
-                <p className="text-2xl font-bold">{ingredientLibrary.length}</p>
+                <p className="text-xl sm:text-2xl font-bold">{ingredientLibrary.length}</p>
                 <p className="text-xs text-orange-600">In library</p>
               </div>
               <Beaker className="h-8 w-8 text-orange-600" />
@@ -832,7 +832,7 @@ const BlendingLaboratoryPage = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="formulas" className="space-y-6">
+      <Tabs defaultValue="formulas" className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="formulas">Formulas</TabsTrigger>
           <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
@@ -842,8 +842,8 @@ const BlendingLaboratoryPage = () => {
         </TabsList>
 
         {/* Formulas Tab */}
-        <TabsContent value="formulas" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="formulas" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {blendFormulas.map((formula) => (
               <Card key={formula.id}>
                 <CardHeader className="pb-3">
@@ -1004,7 +1004,7 @@ const BlendingLaboratoryPage = () => {
         </TabsContent>
 
         {/* Ingredients Tab */}
-        <TabsContent value="ingredients" className="space-y-6">
+        <TabsContent value="ingredients" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Ingredient Library</CardTitle>
@@ -1082,8 +1082,8 @@ const BlendingLaboratoryPage = () => {
         </TabsContent>
 
         {/* Master Blenders Tab */}
-        <TabsContent value="blenders" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <TabsContent value="blenders" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {masterBlenders.map((blender) => (
               <Card key={blender.id}>
                 <CardHeader>
@@ -1167,8 +1167,8 @@ const BlendingLaboratoryPage = () => {
         </TabsContent>
 
         {/* Equipment Tab */}
-        <TabsContent value="equipment" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TabsContent value="equipment" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {blendingEquipment.map((equipment) => (
               <Card key={equipment.id}>
                 <CardHeader>
@@ -1269,8 +1269,8 @@ const BlendingLaboratoryPage = () => {
         </TabsContent>
 
         {/* Analytics Tab */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="analytics" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Formula Performance */}
             <Card>
               <CardHeader>
