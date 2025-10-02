@@ -233,7 +233,7 @@ export default function AnalyticsPage() {
         <div className="text-center text-sm text-oud-600 border-t border-oud-200 pt-6">
           <p>
             Business Intelligence Dashboard powered by AI •
-            Last updated: {new Date().toLocaleString()} •
+            Last updated: {new Date()?.toLocaleString() || "0"} •
             <span className="text-green-600">All systems operational</span>
           </p>
         </div>

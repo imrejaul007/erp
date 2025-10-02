@@ -347,7 +347,7 @@ export default function MarketingLoyaltyPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Reach</CardDescription>
-            <CardTitle className="text-3xl">{marketingSummary.totalReach.toLocaleString()}</CardTitle>
+            <CardTitle className="text-3xl">{marketingSummary.totalReach?.toLocaleString() || "0"}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-green-600">
@@ -358,7 +358,7 @@ export default function MarketingLoyaltyPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Loyalty Members</CardDescription>
-            <CardTitle className="text-3xl">{marketingSummary.loyaltyMembers.toLocaleString()}</CardTitle>
+            <CardTitle className="text-3xl">{marketingSummary.loyaltyMembers?.toLocaleString() || "0"}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -437,7 +437,7 @@ export default function MarketingLoyaltyPage() {
                         <div key={key}>
                           <p className="text-xs text-muted-foreground capitalize">{key}</p>
                           <p className="text-lg font-semibold">
-                            {typeof value === 'number' && value > 100 ? value.toLocaleString() : value}
+                            {typeof value === 'number' && value > 100 ? value?.toLocaleString() || "0" : value}
                             {key.includes('Rate') ? '%' : ''}
                           </p>
                         </div>
@@ -471,7 +471,7 @@ export default function MarketingLoyaltyPage() {
                         </Badge>
                       </div>
                       <div className="flex gap-6 text-sm text-muted-foreground">
-                        <span>Reach: {campaign.reach.toLocaleString()}</span>
+                        <span>Reach: {campaign.reach?.toLocaleString() || "0"}</span>
                         <span>Engagement: {campaign.engagement}%</span>
                         <span>Conversion: {campaign.conversion}%</span>
                       </div>
@@ -501,11 +501,11 @@ export default function MarketingLoyaltyPage() {
                       <div>
                         <h3 className="font-semibold">{channel.channel}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Reach: {channel.reach.toLocaleString()} | Engagement: {channel.engagement}% | Conversion: {channel.conversion}%
+                          Reach: {channel.reach?.toLocaleString() || "0"} | Engagement: {channel.engagement}% | Conversion: {channel.conversion}%
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">AED {channel.cost.toLocaleString()}</p>
+                        <p className="text-sm font-semibold">AED {channel.cost?.toLocaleString() || "0"}</p>
                         <p className="text-xs text-muted-foreground">Cost</p>
                       </div>
                     </div>

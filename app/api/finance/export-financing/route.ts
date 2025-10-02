@@ -231,7 +231,7 @@ async function createLetterOfCredit(requestData: any) {
   // Generate LC documentation
   const lcDocumentation = {
     lcNumber: validatedData.lcNumber,
-    amount: `${validatedData.currency} ${validatedData.amount.toLocaleString()}`,
+    amount: `${validatedData.currency} ${validatedData.amount?.toLocaleString() || "0"}`,
     issuingBank: validatedData.issuingBank,
     beneficiary: validatedData.beneficiary,
     applicant: validatedData.applicant,
@@ -284,7 +284,7 @@ async function generateInsuranceCertificate(requestData: any) {
     certificateNumber: `INS-${certificate.id}`,
     policyNumber: validatedData.policyNumber,
     insuranceCompany: validatedData.insuranceCompany,
-    insuredAmount: `${validatedData.currency} ${validatedData.insuredAmount.toLocaleString()}`,
+    insuredAmount: `${validatedData.currency} ${validatedData.insuredAmount?.toLocaleString() || "0"}`,
     coverage: validatedData.coverage,
     voyage: validatedData.voyage,
     terms: {
@@ -336,7 +336,7 @@ async function trackFinancingStatus(requestData: any) {
       trackingData.letterOfCredit = {
         number: lcNumber,
         status: lc.status,
-        amount: `${lc.currency} ${Number(lc.amount).toLocaleString()}`,
+        amount: `${lc.currency} ${Number(lc.amount)?.toLocaleString() || "0"}`,
         expiryDate: lc.expiry_date,
         daysToExpiry: Math.ceil((lc.expiry_date.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
       };
@@ -592,7 +592,7 @@ async function generateDefaultInsuranceCertificate(shipment: any, currency: stri
     certificateNumber: `INS-${Date.now()}`,
     policyNumber: 'MC-2024-001',
     insuranceCompany: 'Dubai Islamic Insurance Company',
-    insuredAmount: `${currency} ${(shipment.totalValue * 1.1).toLocaleString()}`, // 110% of shipment value
+    insuredAmount: `${currency} ${(shipment.totalValue * 1.1)?.toLocaleString() || "0"}`, // 110% of shipment value
     coverage: ['marine_cargo', 'theft_pilferage', 'general_average'],
     voyage: {
       from: 'Dubai, UAE',

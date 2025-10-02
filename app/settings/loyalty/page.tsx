@@ -315,7 +315,7 @@ const LoyaltySettingsPage = () => {
             <div>
               <p className="font-medium text-green-900">Loyalty Program Active</p>
               <p className="text-sm text-green-700">
-                {programStats.totalMembers.toLocaleString()} total members • {programStats.activeMembers.toLocaleString()} active members •
+                {programStats.totalMembers?.toLocaleString() || "0"} total members • {programStats.activeMembers?.toLocaleString() || "0"} active members •
                 {programStats.redemptionRate}% redemption rate
               </p>
             </div>
@@ -570,15 +570,15 @@ const LoyaltySettingsPage = () => {
                             <div>
                               <h4 className="font-medium mb-2">Requirements</h4>
                               <div className="text-sm text-gray-600 space-y-1">
-                                <div>Minimum Spend: AED {tier.minimumSpend.toLocaleString()}</div>
-                                <div>Minimum Points: {tier.minimumPoints.toLocaleString()}</div>
+                                <div>Minimum Spend: AED {tier.minimumSpend?.toLocaleString() || "0"}</div>
+                                <div>Minimum Points: {tier.minimumPoints?.toLocaleString() || "0"}</div>
                                 <div>Points Multiplier: {tier.pointsMultiplier}x</div>
                               </div>
                             </div>
                             <div>
                               <h4 className="font-medium mb-2">Statistics</h4>
                               <div className="text-sm text-gray-600 space-y-1">
-                                <div>Members: {tier.memberCount.toLocaleString()}</div>
+                                <div>Members: {tier.memberCount?.toLocaleString() || "0"}</div>
                                 <div>Percentage: {((tier.memberCount / programStats.totalMembers) * 100).toFixed(1)}%</div>
                               </div>
                             </div>
@@ -700,7 +700,7 @@ const LoyaltySettingsPage = () => {
                   <Users className="h-5 w-5 text-blue-600" />
                   <h3 className="font-medium">Total Members</h3>
                 </div>
-                <p className="text-2xl font-bold">{programStats.totalMembers.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{programStats.totalMembers?.toLocaleString() || "0"}</p>
                 <p className="text-sm text-green-600 flex items-center gap-1">
                   <TrendingUp className="h-4 w-4" />
                   +{programStats.monthlyGrowth}% this month
@@ -713,7 +713,7 @@ const LoyaltySettingsPage = () => {
                   <Star className="h-5 w-5 text-yellow-600" />
                   <h3 className="font-medium">Points Issued</h3>
                 </div>
-                <p className="text-2xl font-bold">{programStats.pointsIssued.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{programStats.pointsIssued?.toLocaleString() || "0"}</p>
                 <p className="text-sm text-gray-600">Total lifetime</p>
               </CardContent>
             </Card>
@@ -724,7 +724,7 @@ const LoyaltySettingsPage = () => {
                   <h3 className="font-medium">Redemption Rate</h3>
                 </div>
                 <p className="text-2xl font-bold">{programStats.redemptionRate}%</p>
-                <p className="text-sm text-gray-600">{programStats.pointsRedeemed.toLocaleString()} points redeemed</p>
+                <p className="text-sm text-gray-600">{programStats.pointsRedeemed?.toLocaleString() || "0"} points redeemed</p>
               </CardContent>
             </Card>
             <Card>
@@ -758,7 +758,7 @@ const LoyaltySettingsPage = () => {
                         <Progress value={percentage} className="h-3" />
                       </div>
                       <div className="w-20 text-right">
-                        <div className="font-medium">{tier.memberCount.toLocaleString()}</div>
+                        <div className="font-medium">{tier.memberCount?.toLocaleString() || "0"}</div>
                         <div className="text-sm text-gray-600">{percentage.toFixed(1)}%</div>
                       </div>
                     </div>

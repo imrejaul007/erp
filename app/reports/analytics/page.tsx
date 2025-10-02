@@ -435,7 +435,7 @@ const ReportsAnalytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{kpiMetrics.totalOrders.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{kpiMetrics.totalOrders?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(kpiMetrics.trends.orders)}`}>
                   {getTrendIcon(kpiMetrics.trends.orders)}
                   {Math.abs(kpiMetrics.trends.orders)}% vs last period
@@ -451,7 +451,7 @@ const ReportsAnalytics = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                <p className="text-2xl font-bold">{kpiMetrics.totalCustomers.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{kpiMetrics.totalCustomers?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(kpiMetrics.trends.customers)}`}>
                   {getTrendIcon(kpiMetrics.trends.customers)}
                   {Math.abs(kpiMetrics.trends.customers)}% vs last period
@@ -854,13 +854,13 @@ const ReportsAnalytics = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">
-                    {customerAnalytics.loyaltyMetrics.totalMembers.toLocaleString()}
+                    {customerAnalytics.loyaltyMetrics.totalMembers?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Total Members</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-green-600">
-                    {customerAnalytics.loyaltyMetrics.activeMembers.toLocaleString()}
+                    {customerAnalytics.loyaltyMetrics.activeMembers?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Active Members</div>
                   <div className="text-xs text-gray-400">
@@ -869,13 +869,13 @@ const ReportsAnalytics = () => {
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-purple-600">
-                    {customerAnalytics.loyaltyMetrics.pointsEarned.toLocaleString()}
+                    {customerAnalytics.loyaltyMetrics.pointsEarned?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Points Earned</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-orange-600">
-                    {customerAnalytics.loyaltyMetrics.pointsRedeemed.toLocaleString()}
+                    {customerAnalytics.loyaltyMetrics.pointsRedeemed?.toLocaleString() || "0"}
                   </div>
                   <div className="text-sm text-gray-500">Points Redeemed</div>
                 </div>
@@ -984,7 +984,7 @@ const ReportsAnalytics = () => {
                   </div>
                   <div className="mt-2 text-center">
                     <div className="font-medium text-red-600">
-                      Total Loss: AED {inventoryAnalytics.wasteage.value.toLocaleString()}
+                      Total Loss: AED {inventoryAnalytics.wasteage.value?.toLocaleString() || "0"}
                     </div>
                   </div>
                 </div>
@@ -1220,8 +1220,8 @@ const ReportsAnalytics = () => {
                     <TableRow key={location.name}>
                       <TableCell className="font-medium">{location.name}</TableCell>
                       <TableCell>{formatCurrency(location.revenue)}</TableCell>
-                      <TableCell>{location.orders.toLocaleString()}</TableCell>
-                      <TableCell>{location.footfall.toLocaleString()}</TableCell>
+                      <TableCell>{location.orders?.toLocaleString() || "0"}</TableCell>
+                      <TableCell>{location.footfall?.toLocaleString() || "0"}</TableCell>
                       <TableCell>{location.conversion}%</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -1267,11 +1267,11 @@ const ReportsAnalytics = () => {
                       </div>
                       <div className="flex justify-between">
                         <span>Orders</span>
-                        <span className="font-medium">{location.orders.toLocaleString()}</span>
+                        <span className="font-medium">{location.orders?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Footfall</span>
-                        <span className="font-medium">{location.footfall.toLocaleString()}</span>
+                        <span className="font-medium">{location.footfall?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Conversion</span>

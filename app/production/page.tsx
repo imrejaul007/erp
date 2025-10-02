@@ -383,7 +383,7 @@ export default function ProductionPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Raw Material Stock</CardDescription>
-            <CardTitle className="text-3xl">{productionSummary.rawMaterialStock.toLocaleString()} kg</CardTitle>
+            <CardTitle className="text-3xl">{productionSummary.rawMaterialStock?.toLocaleString() || "0"} kg</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -565,7 +565,7 @@ export default function ProductionPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-green-600">AED {item.value.toLocaleString()}</p>
+                      <p className="text-xl font-bold text-green-600">AED {item.value?.toLocaleString() || "0"}</p>
                       <p className="text-xs text-muted-foreground">Est. value</p>
                     </div>
                   </div>

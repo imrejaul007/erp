@@ -857,15 +857,15 @@ const MarketplacePage = () => {
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
                             <div className="text-gray-500">Gross Revenue</div>
-                            <div className="font-medium">AED {marketplace.revenue.toLocaleString()}</div>
+                            <div className="font-medium">AED {marketplace.revenue?.toLocaleString() || "0"}</div>
                           </div>
                           <div>
                             <div className="text-gray-500">Commission</div>
-                            <div className="font-medium text-red-600">-AED {commissionAmount.toLocaleString()}</div>
+                            <div className="font-medium text-red-600">-AED {commissionAmount?.toLocaleString() || "0"}</div>
                           </div>
                           <div className="col-span-2 pt-2 border-t">
                             <div className="text-gray-500">Net Revenue</div>
-                            <div className="font-medium text-green-600">AED {netRevenue.toLocaleString()}</div>
+                            <div className="font-medium text-green-600">AED {netRevenue?.toLocaleString() || "0"}</div>
                           </div>
                         </div>
                       </div>

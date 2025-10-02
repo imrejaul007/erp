@@ -193,7 +193,7 @@ export default function PerformanceDashboardPage() {
         <Card>
           <CardContent className="pt-6">
             <DollarSign className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold text-green-600">AED {realtimeMetrics.todaySales.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-green-600">AED {realtimeMetrics.todaySales?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Sales Today</div>
             <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
               <TrendingUp className="h-3 w-3" />
@@ -269,7 +269,7 @@ export default function PerformanceDashboardPage() {
                       <div className="grid grid-cols-3 gap-2 text-sm">
                         <div>
                           <div className="text-xs text-gray-600">Sales</div>
-                          <div className="font-bold text-green-600">AED {data.sales.toLocaleString()}</div>
+                          <div className="font-bold text-green-600">AED {data.sales?.toLocaleString() || "0"}</div>
                         </div>
                         <div>
                           <div className="text-xs text-gray-600">Customers</div>
@@ -410,7 +410,7 @@ export default function PerformanceDashboardPage() {
                         <div className="text-sm text-gray-600">{product.sold} units sold</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-green-600">AED {product.revenue.toLocaleString()}</div>
+                        <div className="font-bold text-green-600">AED {product.revenue?.toLocaleString() || "0"}</div>
                         <Badge variant="outline" className="mt-1">
                           Stock: {product.stock}
                         </Badge>
@@ -466,7 +466,7 @@ export default function PerformanceDashboardPage() {
                     <div className="grid grid-cols-3 gap-4 mb-3">
                       <div>
                         <div className="text-sm text-gray-600">Sales</div>
-                        <div className="text-lg font-bold text-green-600">AED {loc.sales.toLocaleString()}</div>
+                        <div className="text-lg font-bold text-green-600">AED {loc.sales?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Orders</div>
@@ -511,7 +511,7 @@ export default function PerformanceDashboardPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-green-600">AED {staff.sales.toLocaleString()}</div>
+                        <div className="font-bold text-green-600">AED {staff.sales?.toLocaleString() || "0"}</div>
                         <div className="text-sm text-gray-600">{staff.orders} orders</div>
                       </div>
                     </div>

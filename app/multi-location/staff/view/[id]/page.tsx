@@ -198,7 +198,7 @@ export default function ViewStaffPage() {
                   <DollarSign className="h-4 w-4 text-gray-400" />
                   <div>
                     <div className="text-sm text-gray-600">Salary</div>
-                    <div className="font-medium">AED {staff.salary.toLocaleString()}/month</div>
+                    <div className="font-medium">AED {staff.salary?.toLocaleString() || "0"}/month</div>
                   </div>
                 </div>
               </div>

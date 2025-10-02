@@ -343,7 +343,7 @@ export default function StockAdjustmentsPage() {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${totalCostImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              AED {Math.abs(totalCostImpact).toLocaleString()}
+              AED {Math.abs(totalCostImpact)?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-500 mt-1">{totalCostImpact >= 0 ? 'Positive' : 'Negative'} impact</p>
           </CardContent>
@@ -475,7 +475,7 @@ export default function StockAdjustmentsPage() {
                       <div className={`font-medium ${
                         adjustment.costImpact >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {adjustment.costImpact >= 0 ? '+' : ''}{adjustment.costImpact.toLocaleString()} {adjustment.currency}
+                        {adjustment.costImpact >= 0 ? '+' : ''}{adjustment.costImpact?.toLocaleString() || "0"} {adjustment.currency}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -565,7 +565,7 @@ export default function StockAdjustmentsPage() {
                   <div className={`text-lg font-semibold mt-1 ${
                     selectedAdjustment.costImpact >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {selectedAdjustment.costImpact >= 0 ? '+' : ''}{selectedAdjustment.costImpact.toLocaleString()} {selectedAdjustment.currency}
+                    {selectedAdjustment.costImpact >= 0 ? '+' : ''}{selectedAdjustment.costImpact?.toLocaleString() || "0"} {selectedAdjustment.currency}
                   </div>
                 </div>
               </div>

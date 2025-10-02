@@ -408,7 +408,7 @@ export default function IntegrationsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Data Synced</CardDescription>
-            <CardTitle className="text-3xl">{integrationSummary.dataSync.toLocaleString()}</CardTitle>
+            <CardTitle className="text-3xl">{integrationSummary.dataSync?.toLocaleString() || "0"}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -486,7 +486,7 @@ export default function IntegrationsPage() {
                         <div key={key}>
                           <p className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
                           <p className="text-lg font-semibold">
-                            {typeof value === 'number' && value > 100 ? value.toLocaleString() : value}
+                            {typeof value === 'number' && value > 100 ? value?.toLocaleString() || "0" : value}
                             {key.includes('Rate') || key.includes('success') || key.includes('accuracy') || key.includes('reconciled') || key.includes('onTime') || key.includes('syncRate') || key.includes('delivered') || key.includes('response') || key.includes('engagement') ? '%' : ''}
                             {key.includes('avgDelivery') ? ' days' : ''}
                           </p>
@@ -530,7 +530,7 @@ export default function IntegrationsPage() {
                         <Badge variant="outline">{sync.type}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Last sync: {sync.lastSync} • {sync.records.toLocaleString()} records • Next: {sync.nextSync}
+                        Last sync: {sync.lastSync} • {sync.records?.toLocaleString() || "0"} records • Next: {sync.nextSync}
                       </p>
                     </div>
                     <div>

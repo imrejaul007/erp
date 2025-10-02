@@ -1204,7 +1204,7 @@ const EcommerceOmnichannel = () => {
                             <span className="font-medium">{channel.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{channel.monthlyVisitors.toLocaleString()}</TableCell>
+                        <TableCell>{channel.monthlyVisitors?.toLocaleString() || "0"}</TableCell>
                         <TableCell>{channel.orders}</TableCell>
                         <TableCell>{channel.conversionRate}%</TableCell>
                         <TableCell>AED {channel.avgOrderValue}</TableCell>

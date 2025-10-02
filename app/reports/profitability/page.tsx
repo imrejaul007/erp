@@ -111,7 +111,7 @@ export default function ProfitabilityReportPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              AED {profitSummary.totalRevenue.toLocaleString()}
+              AED {profitSummary.totalRevenue?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-600 mt-1">Current period</p>
           </CardContent>
@@ -123,7 +123,7 @@ export default function ProfitabilityReportPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              AED {profitSummary.grossProfit.toLocaleString()}
+              AED {profitSummary.grossProfit?.toLocaleString() || "0"}
             </div>
             <p className="text-xs flex items-center gap-1 mt-1">
               <Badge variant="outline">{profitSummary.grossMargin}% margin</Badge>
@@ -137,7 +137,7 @@ export default function ProfitabilityReportPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              AED {profitSummary.netProfit.toLocaleString()}
+              AED {profitSummary.netProfit?.toLocaleString() || "0"}
             </div>
             <p className="text-xs flex items-center gap-1 mt-1">
               <Badge variant="outline">{profitSummary.netMargin}% margin</Badge>
@@ -198,7 +198,7 @@ export default function ProfitabilityReportPage() {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h3 className="font-semibold">{cat.category}</h3>
-                        <p className="text-sm text-gray-600">Revenue: AED {cat.revenue.toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">Revenue: AED {cat.revenue?.toLocaleString() || "0"}</p>
                       </div>
                       <div className="text-right">
                         <div className={`text-xl font-bold ${getMarginColor(cat.margin)}`}>
@@ -210,11 +210,11 @@ export default function ProfitabilityReportPage() {
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <div className="text-gray-600">Cost</div>
-                        <div className="font-semibold">AED {cat.cost.toLocaleString()}</div>
+                        <div className="font-semibold">AED {cat.cost?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-gray-600">Profit</div>
-                        <div className="font-semibold text-green-600">AED {cat.profit.toLocaleString()}</div>
+                        <div className="font-semibold text-green-600">AED {cat.profit?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-gray-600">Contribution</div>
@@ -243,7 +243,7 @@ export default function ProfitabilityReportPage() {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h3 className="font-semibold">{loc.location}</h3>
-                        <p className="text-sm text-gray-600">Revenue: AED {loc.revenue.toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">Revenue: AED {loc.revenue?.toLocaleString() || "0"}</p>
                       </div>
                       <div className="text-right">
                         <div className={`text-xl font-bold ${getMarginColor(loc.margin)}`}>
@@ -255,7 +255,7 @@ export default function ProfitabilityReportPage() {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <div className="text-gray-600">Profit</div>
-                        <div className="font-semibold text-green-600">AED {loc.profit.toLocaleString()}</div>
+                        <div className="font-semibold text-green-600">AED {loc.profit?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-gray-600">Contribution</div>
@@ -292,7 +292,7 @@ export default function ProfitabilityReportPage() {
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-green-600">
-                        AED {product.profit.toLocaleString()}
+                        AED {product.profit?.toLocaleString() || "0"}
                       </div>
                       <div className="text-sm text-gray-600">
                         {product.margin}% margin

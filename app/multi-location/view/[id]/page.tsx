@@ -255,7 +255,7 @@ export default function ViewLocationPage() {
             <CardTitle className="text-sm font-medium text-gray-600">Footfall</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{location.footfall.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{location.footfall?.toLocaleString() || "0"}</div>
             <p className="text-xs text-muted-foreground mt-2">
               {location.conversionRate}% conversion rate
             </p>
@@ -302,7 +302,7 @@ export default function ViewLocationPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-green-600">AED {sale.amount.toLocaleString()}</div>
+                      <div className="font-bold text-green-600">AED {sale.amount?.toLocaleString() || "0"}</div>
                       <Badge className="bg-green-100 text-green-800 text-xs">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         {sale.status}

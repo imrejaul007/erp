@@ -388,7 +388,7 @@ export default function BulkOrderPage() {
                                 </TableCell>
                                 <TableCell>
                                   <div className="text-right font-medium">
-                                    AED {item.totalCost.toLocaleString()}
+                                    AED {item.totalCost?.toLocaleString() || "0"}
                                   </div>
                                 </TableCell>
                                 <TableCell>
@@ -424,7 +424,7 @@ export default function BulkOrderPage() {
                             </div>
                             <div className="text-right">
                               <p className="text-2xl font-bold text-green-600">
-                                AED {calculateOrderTotal().toLocaleString()}
+                                AED {calculateOrderTotal()?.toLocaleString() || "0"}
                               </p>
                               <p className="text-sm text-gray-500">Total Order Value</p>
                             </div>
@@ -528,7 +528,7 @@ export default function BulkOrderPage() {
                     <TableCell>
                       <div className="text-right">
                         <div className="font-medium">
-                          {order.currency} {order.totalCost.toLocaleString()}
+                          {order.currency} {order.totalCost?.toLocaleString() || "0"}
                         </div>
                       </div>
                     </TableCell>

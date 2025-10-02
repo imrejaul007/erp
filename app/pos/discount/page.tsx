@@ -212,7 +212,7 @@ export default function DiscountLoyaltyPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <Label className="text-muted-foreground">Loyalty Points</Label>
-                  <p className="font-semibold text-oud-600">{mockCustomer.loyaltyPoints.toLocaleString()}</p>
+                  <p className="font-semibold text-oud-600">{mockCustomer.loyaltyPoints?.toLocaleString() || "0"}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Total Spent</Label>
@@ -366,11 +366,11 @@ export default function DiscountLoyaltyPage() {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium">Available Points:</span>
                   <span className="text-2xl font-bold text-oud-600">
-                    {mockCustomer.loyaltyPoints.toLocaleString()}
+                    {mockCustomer.loyaltyPoints?.toLocaleString() || "0"}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Maximum usable: {maxLoyaltyPoints.toLocaleString()} points (50% of cart)
+                  Maximum usable: {maxLoyaltyPoints?.toLocaleString() || "0"} points (50% of cart)
                 </p>
               </div>
 
@@ -400,11 +400,11 @@ export default function DiscountLoyaltyPage() {
               {loyaltyPointsToUse > 0 && (
                 <div className="bg-green-50 p-3 rounded border border-green-200">
                   <p className="text-sm">
-                    Using <strong>{loyaltyPointsToUse.toLocaleString()}</strong> points
+                    Using <strong>{loyaltyPointsToUse?.toLocaleString() || "0"}</strong> points
                     = <strong>{formatCurrency(loyaltyPointsToUse)}</strong> discount
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Remaining points: {(mockCustomer.loyaltyPoints - loyaltyPointsToUse).toLocaleString()}
+                    Remaining points: {(mockCustomer.loyaltyPoints - loyaltyPointsToUse)?.toLocaleString() || "0"}
                   </p>
                 </div>
               )}

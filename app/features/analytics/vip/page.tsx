@@ -496,7 +496,7 @@ export default function VIPCustomerAnalyticsPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-green-600">AED {customer.totalSpent.toLocaleString()}</div>
+                        <div className="font-bold text-green-600">AED {customer.totalSpent?.toLocaleString() || "0"}</div>
                         <div className="text-sm text-gray-600">Total Spent</div>
                       </div>
                     </div>
@@ -507,7 +507,7 @@ export default function VIPCustomerAnalyticsPage() {
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Avg Order</div>
-                        <div className="font-semibold">AED {customer.avgOrder.toLocaleString()}</div>
+                        <div className="font-semibold">AED {customer.avgOrder?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Last Visit</div>
@@ -556,7 +556,7 @@ export default function VIPCustomerAnalyticsPage() {
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Avg Spend</div>
-                        <div className="text-lg font-bold text-green-600">AED {pref.avgSpend.toLocaleString()}</div>
+                        <div className="text-lg font-bold text-green-600">AED {pref.avgSpend?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Frequency</div>
@@ -640,7 +640,7 @@ export default function VIPCustomerAnalyticsPage() {
                     <div className="grid grid-cols-3 gap-4 mb-3">
                       <div>
                         <div className="text-sm text-gray-600">Total Spent</div>
-                        <div className="font-bold">AED {vip.totalSpent.toLocaleString()}</div>
+                        <div className="font-bold">AED {vip.totalSpent?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Days Inactive</div>

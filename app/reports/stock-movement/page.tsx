@@ -392,7 +392,7 @@ export default function StockMovementReportsPage() {
               {formatCurrency(movementOverview.totalValueIn)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {movementOverview.inboundTransactions.toLocaleString()} transactions
+              {movementOverview.inboundTransactions?.toLocaleString() || "0"} transactions
             </p>
             <div className="mt-2 text-xs text-muted-foreground">
               {movementAnalytics.inboundRate.toFixed(1)}% of total movements
@@ -410,7 +410,7 @@ export default function StockMovementReportsPage() {
               {formatCurrency(movementOverview.totalValueOut)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {movementOverview.outboundTransactions.toLocaleString()} transactions
+              {movementOverview.outboundTransactions?.toLocaleString() || "0"} transactions
             </p>
             <div className="mt-2 text-xs text-muted-foreground">
               {movementAnalytics.outboundRate.toFixed(1)}% of total movements
@@ -446,7 +446,7 @@ export default function StockMovementReportsPage() {
               {formatCurrency(movementOverview.averageTransactionValue)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {movementOverview.totalTransactions.toLocaleString()} total transactions
+              {movementOverview.totalTransactions?.toLocaleString() || "0"} total transactions
             </p>
             <div className="mt-2 text-xs text-muted-foreground">
               {movementOverview.transferTransactions} inter-location transfers

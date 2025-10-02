@@ -468,8 +468,8 @@ export default function SegregationPage() {
                         <div className="col-span-2 p-2 bg-white rounded">
                           <p className="text-sm font-semibold">
                             Employee Cost: AED {emp.type === 'hourly'
-                              ? ((parseFloat(emp.hours) || 0) * (parseFloat(emp.rate) || 0)).toLocaleString()
-                              : (parseFloat(emp.fixedAmount) || 0).toLocaleString()}
+                              ? ((parseFloat(emp.hours) || 0) * (parseFloat(emp.rate) || 0))?.toLocaleString() || "0"
+                              : (parseFloat(emp.fixedAmount) || 0)?.toLocaleString() || "0"}
                           </p>
                         </div>
                       </div>
@@ -479,7 +479,7 @@ export default function SegregationPage() {
 
                 <div className="p-3 bg-amber-100 rounded-lg">
                   <p className="text-sm font-semibold">
-                    Total Employee Cost: AED {calculateEmployeeCost().toLocaleString()}
+                    Total Employee Cost: AED {calculateEmployeeCost()?.toLocaleString() || "0"}
                   </p>
                 </div>
               </div>
@@ -600,7 +600,7 @@ export default function SegregationPage() {
 
                 <div className="p-3 bg-green-100 rounded-lg">
                   <p className="text-sm font-semibold">
-                    Total Task Costs: AED {calculateTaskCosts().toLocaleString()}
+                    Total Task Costs: AED {calculateTaskCosts()?.toLocaleString() || "0"}
                   </p>
                 </div>
               </div>
@@ -801,19 +801,19 @@ export default function SegregationPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex justify-between p-3 bg-white rounded">
                         <span className="text-sm font-medium">Source Lot Cost:</span>
-                        <span className="text-sm font-bold">AED {(parseFloat(sourceLotCost) || 0).toLocaleString()}</span>
+                        <span className="text-sm font-bold">AED {(parseFloat(sourceLotCost) || 0)?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between p-3 bg-amber-100 rounded">
                         <span className="text-sm font-medium">Employee Costs:</span>
-                        <span className="text-sm font-bold">AED {calculateEmployeeCost().toLocaleString()}</span>
+                        <span className="text-sm font-bold">AED {calculateEmployeeCost()?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between p-3 bg-green-100 rounded">
                         <span className="text-sm font-medium">Task Costs:</span>
-                        <span className="text-sm font-bold">AED {calculateTaskCosts().toLocaleString()}</span>
+                        <span className="text-sm font-bold">AED {calculateTaskCosts()?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between p-3 bg-gray-100 rounded">
                         <span className="text-sm font-medium">Segregation Total:</span>
-                        <span className="text-sm font-bold">AED {calculateTotalSegregationCost().toLocaleString()}</span>
+                        <span className="text-sm font-bold">AED {calculateTotalSegregationCost()?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
 
@@ -901,7 +901,7 @@ export default function SegregationPage() {
                         <div className="text-sm text-blue-900">
                           <p className="font-semibold">Example:</p>
                           <p className="mt-1">
-                            If total cost is AED {calculateGrandTotalCost().toLocaleString()} and total weight is {outputCategories.reduce((sum, cat) => sum + (parseFloat(cat.weight) || 0), 0).toFixed(2)}kg,
+                            If total cost is AED {calculateGrandTotalCost()?.toLocaleString() || "0"} and total weight is {outputCategories.reduce((sum, cat) => sum + (parseFloat(cat.weight) || 0), 0).toFixed(2)}kg,
                             then each kg costs AED {calculateCostPerKg().toLocaleString(undefined, {minimumFractionDigits: 2})}.
                             This cost is distributed proportionally across all outputs based on weight.
                           </p>
@@ -1066,7 +1066,7 @@ export default function SegregationPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">AED {seg.totalValue.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-green-600">AED {seg.totalValue?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-muted-foreground">Total value</p>
                   </div>
                 </div>
@@ -1132,7 +1132,7 @@ export default function SegregationPage() {
                               </div>
                             </TableCell>
                             <TableCell className="font-semibold text-green-600">
-                              AED {output.value.toLocaleString()}
+                              AED {output.value?.toLocaleString() || "0"}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1367,7 +1367,7 @@ export default function SegregationPage() {
                             {((output.weight / selectedSegregation.inputWeight) * 100).toFixed(1)}%
                           </TableCell>
                           <TableCell className="font-semibold text-green-600 group-hover:text-green-700">
-                            AED {output.value.toLocaleString()}
+                            AED {output.value?.toLocaleString() || "0"}
                           </TableCell>
                         </TableRow>
                       ))}

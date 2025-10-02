@@ -393,7 +393,7 @@ const PayrollPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Payroll</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.totalPayroll.toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {payrollMetrics.totalPayroll?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(payrollMetrics.trends.payroll)}`}>
                   {getTrendIcon(payrollMetrics.trends.payroll)}
                   {Math.abs(payrollMetrics.trends.payroll)}% vs last month
@@ -409,7 +409,7 @@ const PayrollPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Salary</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.avgSalary.toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {payrollMetrics.avgSalary?.toLocaleString() || "0"}</p>
                 <p className="text-xs text-blue-600">{payrollMetrics.totalEmployees} employees</p>
               </div>
               <Calculator className="h-8 w-8 text-blue-600" />
@@ -422,7 +422,7 @@ const PayrollPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Deductions</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.totalDeductions.toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {payrollMetrics.totalDeductions?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(payrollMetrics.trends.deductions)}`}>
                   {getTrendIcon(payrollMetrics.trends.deductions)}
                   {Math.abs(payrollMetrics.trends.deductions)}% vs last month
@@ -438,7 +438,7 @@ const PayrollPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Overtime Pay</p>
-                <p className="text-2xl font-bold">AED {payrollMetrics.overtimePay.toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {payrollMetrics.overtimePay?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(payrollMetrics.trends.overtime)}`}>
                   {getTrendIcon(payrollMetrics.trends.overtime)}
                   {Math.abs(payrollMetrics.trends.overtime)}% vs last month
@@ -526,17 +526,17 @@ const PayrollPage = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">AED {record.basicSalary.toLocaleString()}</div>
+                        <div className="font-medium">AED {record.basicSalary?.toLocaleString() || "0"}</div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div>Housing: AED {record.housingAllowance.toLocaleString()}</div>
-                          <div>Transport: AED {record.transportAllowance.toLocaleString()}</div>
+                          <div>Housing: AED {record.housingAllowance?.toLocaleString() || "0"}</div>
+                          <div>Transport: AED {record.transportAllowance?.toLocaleString() || "0"}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-medium text-green-600">
-                          AED {record.commission.toLocaleString()}
+                          AED {record.commission?.toLocaleString() || "0"}
                         </div>
                         <div className="text-xs text-gray-500">
                           + AED {record.overtime} OT
@@ -544,7 +544,7 @@ const PayrollPage = () => {
                       </TableCell>
                       <TableCell>
                         <div className="font-medium text-red-600">
-                          AED {record.totalDeductions.toLocaleString()}
+                          AED {record.totalDeductions?.toLocaleString() || "0"}
                         </div>
                         <div className="text-xs text-gray-500">
                           SI + HI + Others
@@ -552,7 +552,7 @@ const PayrollPage = () => {
                       </TableCell>
                       <TableCell>
                         <div className="font-bold text-green-600">
-                          AED {record.netSalary.toLocaleString()}
+                          AED {record.netSalary?.toLocaleString() || "0"}
                         </div>
                         <div className="text-xs text-gray-500">{record.currency}</div>
                       </TableCell>
@@ -616,7 +616,7 @@ const PayrollPage = () => {
                     <div className="flex items-center gap-6">
                       <div className="text-center">
                         <div className="font-medium">
-                          AED {structure.basicSalary.min.toLocaleString()} - {structure.basicSalary.max.toLocaleString()}
+                          AED {structure.basicSalary.min?.toLocaleString() || "0"} - {structure.basicSalary.max?.toLocaleString() || "0"}
                         </div>
                         <div className="text-xs text-gray-500">Basic Salary Range</div>
                       </div>

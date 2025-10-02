@@ -246,7 +246,7 @@ const HRPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Average Salary</p>
-                <p className="text-2xl font-bold">AED {hrMetrics.avgSalary.toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {hrMetrics.avgSalary?.toLocaleString() || "0"}</p>
                 <p className="text-xs text-green-600">Competitive package</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -381,7 +381,7 @@ const HRPage = () => {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">
-                    AED {employee.salary.toLocaleString()}
+                    AED {employee.salary?.toLocaleString() || "0"}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -423,7 +423,7 @@ const HRPage = () => {
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-center">
-                    <div className="font-medium">AED {dept.avgSalary.toLocaleString()}</div>
+                    <div className="font-medium">AED {dept.avgSalary?.toLocaleString() || "0"}</div>
                     <div className="text-xs text-gray-500">Avg Salary</div>
                   </div>
                   <div className="text-center">

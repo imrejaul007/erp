@@ -304,7 +304,7 @@ export default function EcommercePage() {
         <Card>
           <CardContent className="pt-6">
             <ShoppingCart className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{ecommerceSummary.totalOrders.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{ecommerceSummary.totalOrders?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Monthly Orders</div>
           </CardContent>
         </Card>

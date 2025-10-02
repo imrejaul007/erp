@@ -871,11 +871,11 @@ export default function MultiCurrencyPage() {
                         <TableCell>
                           <div className="space-y-1">
                             <div className="text-sm">
-                              {transaction.fromCurrency} {transaction.fromAmount.toLocaleString()}
+                              {transaction.fromCurrency} {transaction.fromAmount?.toLocaleString() || "0"}
                             </div>
                             <ArrowLeftRight className="h-3 w-3 text-gray-400" />
                             <div className="text-sm">
-                              {transaction.toCurrency} {transaction.toAmount.toLocaleString()}
+                              {transaction.toCurrency} {transaction.toAmount?.toLocaleString() || "0"}
                             </div>
                           </div>
                         </TableCell>

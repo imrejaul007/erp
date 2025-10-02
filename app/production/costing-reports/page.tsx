@@ -315,7 +315,7 @@ export default function CostingReportsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Avg: AED {costingSummary.avgCostPerBatch.toLocaleString()}/batch
+              Avg: AED {costingSummary.avgCostPerBatch?.toLocaleString() || "0"}/batch
             </p>
           </CardContent>
         </Card>
@@ -334,7 +334,7 @@ export default function CostingReportsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Wastage Cost</CardDescription>
-            <CardTitle className="text-3xl">AED {costingSummary.totalWastageCost.toLocaleString()}</CardTitle>
+            <CardTitle className="text-3xl">AED {costingSummary.totalWastageCost?.toLocaleString() || "0"}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-amber-600">
@@ -401,34 +401,34 @@ export default function CostingReportsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4 bg-gray-50 rounded-lg">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Raw Materials</p>
-                    <p className="font-semibold">AED {batch.costs.rawMaterials.toLocaleString()}</p>
+                    <p className="font-semibold">AED {batch.costs.rawMaterials?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Packaging</p>
-                    <p className="font-semibold">AED {batch.costs.packaging.toLocaleString()}</p>
+                    <p className="font-semibold">AED {batch.costs.packaging?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Labor</p>
-                    <p className="font-semibold">AED {batch.costs.labor.toLocaleString()}</p>
+                    <p className="font-semibold">AED {batch.costs.labor?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Utilities</p>
-                    <p className="font-semibold">AED {batch.costs.utilities.toLocaleString()}</p>
+                    <p className="font-semibold">AED {batch.costs.utilities?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Overhead</p>
-                    <p className="font-semibold">AED {batch.costs.overhead.toLocaleString()}</p>
+                    <p className="font-semibold">AED {batch.costs.overhead?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">QC Testing</p>
-                    <p className="font-semibold">AED {batch.costs.qcTesting.toLocaleString()}</p>
+                    <p className="font-semibold">AED {batch.costs.qcTesting?.toLocaleString() || "0"}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Total Cost</p>
-                    <p className="font-semibold text-lg">AED {batch.costs.total.toLocaleString()}</p>
+                    <p className="font-semibold text-lg">AED {batch.costs.total?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Cost Per Unit</p>
@@ -436,15 +436,15 @@ export default function CostingReportsPage() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Selling Price</p>
-                    <p className="font-semibold text-lg text-green-600">AED {batch.sellingPricePerUnit.toLocaleString()}</p>
+                    <p className="font-semibold text-lg text-green-600">AED {batch.sellingPricePerUnit?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Total Revenue</p>
-                    <p className="font-semibold text-lg text-green-600">AED {batch.totalRevenue.toLocaleString()}</p>
+                    <p className="font-semibold text-lg text-green-600">AED {batch.totalRevenue?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Total Profit</p>
-                    <p className="font-semibold text-lg text-green-600">AED {batch.totalProfit.toLocaleString()}</p>
+                    <p className="font-semibold text-lg text-green-600">AED {batch.totalProfit?.toLocaleString() || "0"}</p>
                   </div>
                 </div>
 
@@ -549,7 +549,7 @@ export default function CostingReportsPage() {
                       <TableCell>{waste.material}</TableCell>
                       <TableCell>{waste.totalWastage} {waste.unit}</TableCell>
                       <TableCell>{waste.wastagePercent}%</TableCell>
-                      <TableCell>AED {waste.wastageCost.toLocaleString()}</TableCell>
+                      <TableCell>AED {waste.wastageCost?.toLocaleString() || "0"}</TableCell>
                       <TableCell className="text-sm">{waste.cause}</TableCell>
                       <TableCell className="text-sm text-blue-600">{waste.improvement}</TableCell>
                     </TableRow>
@@ -589,9 +589,9 @@ export default function CostingReportsPage() {
                     <TableRow key={idx}>
                       <TableCell className="font-medium">{product.productLine}</TableCell>
                       <TableCell>{product.totalBatches}</TableCell>
-                      <TableCell>{product.totalUnits.toLocaleString()} {product.unit}</TableCell>
-                      <TableCell>AED {product.avgCostPerUnit.toLocaleString()}</TableCell>
-                      <TableCell>AED {product.avgSellingPrice.toLocaleString()}</TableCell>
+                      <TableCell>{product.totalUnits?.toLocaleString() || "0"} {product.unit}</TableCell>
+                      <TableCell>AED {product.avgCostPerUnit?.toLocaleString() || "0"}</TableCell>
+                      <TableCell>AED {product.avgSellingPrice?.toLocaleString() || "0"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-green-600">{product.profitMargin.toFixed(1)}%</span>
@@ -734,7 +734,7 @@ export default function CostingReportsPage() {
                       <TableCell className="font-medium">{supplier.supplier}</TableCell>
                       <TableCell>{supplier.material}</TableCell>
                       <TableCell>{supplier.totalPurchased} {supplier.unit}</TableCell>
-                      <TableCell>AED {supplier.avgCostPerKg.toLocaleString()}</TableCell>
+                      <TableCell>AED {supplier.avgCostPerKg?.toLocaleString() || "0"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold">{supplier.avgYield} {supplier.yieldMetric}</span>
@@ -1066,7 +1066,7 @@ export default function CostingReportsPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Selling Price:</span>
-                      <span className="font-bold text-green-600">AED {selectedBatch.sellingPricePerUnit.toLocaleString()}</span>
+                      <span className="font-bold text-green-600">AED {selectedBatch.sellingPricePerUnit?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Profit Per Unit:</span>
@@ -1086,42 +1086,42 @@ export default function CostingReportsPage() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-3 bg-gray-50 rounded-lg border">
                     <p className="text-xs text-gray-600 mb-1">Raw Materials</p>
-                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.rawMaterials.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.rawMaterials?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 mt-1">
                       {((selectedBatch.costs.rawMaterials / selectedBatch.costs.total) * 100).toFixed(1)}% of total
                     </p>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg border">
                     <p className="text-xs text-gray-600 mb-1">Packaging</p>
-                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.packaging.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.packaging?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 mt-1">
                       {((selectedBatch.costs.packaging / selectedBatch.costs.total) * 100).toFixed(1)}% of total
                     </p>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg border">
                     <p className="text-xs text-gray-600 mb-1">Labor</p>
-                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.labor.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.labor?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 mt-1">
                       {((selectedBatch.costs.labor / selectedBatch.costs.total) * 100).toFixed(1)}% of total
                     </p>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg border">
                     <p className="text-xs text-gray-600 mb-1">Utilities</p>
-                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.utilities.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.utilities?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 mt-1">
                       {((selectedBatch.costs.utilities / selectedBatch.costs.total) * 100).toFixed(1)}% of total
                     </p>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg border">
                     <p className="text-xs text-gray-600 mb-1">Overhead</p>
-                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.overhead.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.overhead?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 mt-1">
                       {((selectedBatch.costs.overhead / selectedBatch.costs.total) * 100).toFixed(1)}% of total
                     </p>
                   </div>
                   <div className="p-3 bg-gray-50 rounded-lg border">
                     <p className="text-xs text-gray-600 mb-1">QC Testing</p>
-                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.qcTesting.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-gray-900">AED {selectedBatch.costs.qcTesting?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 mt-1">
                       {((selectedBatch.costs.qcTesting / selectedBatch.costs.total) * 100).toFixed(1)}% of total
                     </p>
@@ -1131,7 +1131,7 @@ export default function CostingReportsPage() {
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-gray-900">Total Production Cost:</span>
-                    <span className="text-2xl font-bold text-primary">AED {selectedBatch.costs.total.toLocaleString()}</span>
+                    <span className="text-2xl font-bold text-primary">AED {selectedBatch.costs.total?.toLocaleString() || "0"}</span>
                   </div>
                 </div>
               </Card>
@@ -1140,13 +1140,13 @@ export default function CostingReportsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4 bg-blue-50 border border-blue-200">
                   <h3 className="font-semibold mb-2 text-gray-900">Total Revenue</h3>
-                  <p className="text-3xl font-bold text-blue-600">AED {selectedBatch.totalRevenue.toLocaleString()}</p>
-                  <p className="text-xs text-gray-600 mt-1">{selectedBatch.outputQty} units @ AED {selectedBatch.sellingPricePerUnit.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-blue-600">AED {selectedBatch.totalRevenue?.toLocaleString() || "0"}</p>
+                  <p className="text-xs text-gray-600 mt-1">{selectedBatch.outputQty} units @ AED {selectedBatch.sellingPricePerUnit?.toLocaleString() || "0"}</p>
                 </Card>
 
                 <Card className="p-4 bg-green-50 border border-green-200">
                   <h3 className="font-semibold mb-2 text-gray-900">Total Profit</h3>
-                  <p className="text-3xl font-bold text-green-600">AED {selectedBatch.totalProfit.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-green-600">AED {selectedBatch.totalProfit?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-600 mt-1">Margin: {selectedBatch.profitMargin.toFixed(1)}% above target</p>
                 </Card>
               </div>

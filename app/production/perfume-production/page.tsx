@@ -453,7 +453,7 @@ export default function PerfumeProductionPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">AED {batch.totalValue.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-green-600">AED {batch.totalValue?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-muted-foreground">Total value</p>
                   </div>
                 </div>
@@ -498,7 +498,7 @@ export default function PerfumeProductionPage() {
                           <TableCell className="font-semibold">{output.quantity} units</TableCell>
                           <TableCell className="font-mono text-sm">{output.sku}</TableCell>
                           <TableCell className="font-semibold text-green-600">
-                            AED {output.value.toLocaleString()}
+                            AED {output.value?.toLocaleString() || "0"}
                           </TableCell>
                         </TableRow>
                       ))}

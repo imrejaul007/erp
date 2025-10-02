@@ -255,7 +255,7 @@ export default function ComprehensiveCRMPage() {
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <Gift className="h-4 w-4 text-green-600" />
-                      <span className="font-medium">{customer.loyaltyPoints.toLocaleString()}</span>
+                      <span className="font-medium">{customer.loyaltyPoints?.toLocaleString() || "0"}</span>
                     </div>
                   </TableCell>
                   <TableCell>

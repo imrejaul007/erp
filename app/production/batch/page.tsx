@@ -266,7 +266,7 @@ export default function StartBatchPage() {
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-lg">Total Material Cost</span>
                   <span className="text-2xl font-bold text-green-600">
-                    AED {calculateTotalCost().toLocaleString()}
+                    AED {calculateTotalCost()?.toLocaleString() || "0"}
                   </span>
                 </div>
               </div>

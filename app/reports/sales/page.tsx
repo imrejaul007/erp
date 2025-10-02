@@ -257,7 +257,7 @@ export default function SalesReportsPage() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{salesOverview.totalOrders.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-blue-600">{salesOverview.totalOrders?.toLocaleString() || "0"}</div>
             <p className="text-xs text-muted-foreground">
               AOV: {formatCurrency(salesOverview.averageOrderValue)}
             </p>

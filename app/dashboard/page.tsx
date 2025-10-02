@@ -258,7 +258,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 group-hover:text-gray-800">Today's Sales</p>
-                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.todaysSales.amount.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.todaysSales.amount?.toLocaleString() || "0"}</p>
                   <p className="text-sm text-gray-600 group-hover:text-gray-700">{kpiData.todaysSales.orders} orders</p>
                   <div className={`text-xs flex items-center gap-1 ${getChangeColor(kpiData.todaysSales.change)}`}>
                     {getChangeIcon(kpiData.todaysSales.change)}
@@ -311,7 +311,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 group-hover:text-gray-800">Daily Profit</p>
-                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.dailyProfit.amount.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900 group-hover:text-gray-900">AED {kpiData.dailyProfit.amount?.toLocaleString() || "0"}</p>
                   <p className="text-sm text-gray-600 group-hover:text-gray-700">{kpiData.dailyProfit.margin}% margin</p>
                   <div className={`text-xs flex items-center gap-1 ${getChangeColor(kpiData.dailyProfit.change)}`}>
                     {getChangeIcon(kpiData.dailyProfit.change)}
@@ -568,7 +568,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium text-gray-900 group-hover:text-gray-900">AED {customer.spent.toLocaleString()}</div>
+                      <div className="font-medium text-gray-900 group-hover:text-gray-900">AED {customer.spent?.toLocaleString() || "0"}</div>
                       <div className="text-sm text-gray-600 group-hover:text-gray-700">this month</div>
                     </div>
                   </div>
@@ -819,7 +819,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Total Spent (This Month)</div>
-                  <div className="font-medium text-gray-900">AED {selectedCustomer.spent.toLocaleString()}</div>
+                  <div className="font-medium text-gray-900">AED {selectedCustomer.spent?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Loyalty Points</div>
@@ -841,7 +841,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex justify-between p-2 bg-gray-50 rounded">
                     <span className="text-sm text-gray-700">Lifetime Value</span>
-                    <span className="font-medium text-gray-900">AED {(selectedCustomer.spent * 1.5).toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">AED {(selectedCustomer.spent * 1.5)?.toLocaleString() || "0"}</span>
                   </div>
                 </div>
               </div>
@@ -900,11 +900,11 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Today's Sales</div>
-                  <div className="font-medium text-gray-900">AED {selectedStore.sales.toLocaleString()}</div>
+                  <div className="font-medium text-gray-900">AED {selectedStore.sales?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Daily Target</div>
-                  <div className="font-medium text-gray-900">AED {selectedStore.target.toLocaleString()}</div>
+                  <div className="font-medium text-gray-900">AED {selectedStore.target?.toLocaleString() || "0"}</div>
                 </div>
               </div>
 
@@ -978,11 +978,11 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Total Sales</div>
-                  <div className="text-2xl font-bold text-gray-900">AED {selectedDaySales.sales.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-gray-900">AED {selectedDaySales.sales?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Daily Target</div>
-                  <div className="text-2xl font-bold text-gray-900">AED {selectedDaySales.target.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-gray-900">AED {selectedDaySales.target?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Achievement</div>
@@ -993,7 +993,7 @@ export default function DashboardPage() {
                 <div>
                   <div className="text-sm text-gray-600">Variance</div>
                   <div className={`text-xl font-bold ${selectedDaySales.sales >= selectedDaySales.target ? 'text-green-600' : 'text-red-600'}`}>
-                    AED {(selectedDaySales.sales - selectedDaySales.target).toLocaleString()}
+                    AED {(selectedDaySales.sales - selectedDaySales.target)?.toLocaleString() || "0"}
                   </div>
                 </div>
               </div>
@@ -1079,7 +1079,7 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Total Sales</div>
-                  <div className="text-2xl font-bold text-gray-900">AED {selectedSale.amount.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-gray-900">AED {selectedSale.amount?.toLocaleString() || "0"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Total Orders</div>

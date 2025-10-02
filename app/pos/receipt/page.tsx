@@ -467,7 +467,7 @@ View full receipt: ${window.location.href}`;
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Date & Time:</span>
-                    <span className="text-sm">{new Date(receiptData.date).toLocaleString()}</span>
+                    <span className="text-sm">{new Date(receiptData.date)?.toLocaleString() || "0"}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Status:</span>

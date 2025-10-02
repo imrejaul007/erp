@@ -367,7 +367,7 @@ export default function AIAutomationPage() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {aiSummary.tasksSaved.toLocaleString()} tasks automated
+              {aiSummary.tasksSaved?.toLocaleString() || "0"} tasks automated
             </p>
           </CardContent>
         </Card>
@@ -401,7 +401,7 @@ export default function AIAutomationPage() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-green-600">
-              {aiSummary.predictionsGenerated.toLocaleString()} predictions generated
+              {aiSummary.predictionsGenerated?.toLocaleString() || "0"} predictions generated
             </p>
           </CardContent>
         </Card>
@@ -465,7 +465,7 @@ export default function AIAutomationPage() {
                         <div key={key}>
                           <p className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
                           <p className="text-lg font-semibold">
-                            {typeof value === 'number' && value > 100 ? value.toLocaleString() : value}
+                            {typeof value === 'number' && value > 100 ? value?.toLocaleString() || "0" : value}
                             {key.includes('Rate') || key.includes('accuracy') || key.includes('satisfaction') || key.includes('resolution') || key.includes('success') ? '%' : ''}
                             {key.includes('avgResponse') ? 's' : ''}
                           </p>
@@ -500,7 +500,7 @@ export default function AIAutomationPage() {
                         </Badge>
                       </div>
                       <div className="flex gap-6 text-sm text-muted-foreground">
-                        <span>Executions: {workflow.executions.toLocaleString()}</span>
+                        <span>Executions: {workflow.executions?.toLocaleString() || "0"}</span>
                         <span>Success: {workflow.success}%</span>
                         <span>Time Saved: {workflow.timeSaved}h</span>
                       </div>
@@ -529,7 +529,7 @@ export default function AIAutomationPage() {
                       <div>
                         <h3 className="font-semibold">{model.model}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {model.type} | {model.predictions.toLocaleString()} predictions | Last trained: {model.lastTrained}
+                          {model.type} | {model.predictions?.toLocaleString() || "0"} predictions | Last trained: {model.lastTrained}
                         </p>
                       </div>
                       <div className="text-right">

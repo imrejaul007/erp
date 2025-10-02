@@ -332,7 +332,7 @@ export default function RawMaterialsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-              AED {totalValue.toLocaleString()}
+              AED {totalValue?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-500 mt-1">Current inventory value</p>
           </CardContent>
@@ -474,7 +474,7 @@ export default function RawMaterialsPage() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">AED {material.totalValue.toLocaleString()}</div>
+                        <div className="font-medium">AED {material.totalValue?.toLocaleString() || "0"}</div>
                         <div className="text-xs text-gray-500">
                           @ AED {material.costPerUnit}/{material.unit}
                         </div>
@@ -559,7 +559,7 @@ export default function RawMaterialsPage() {
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Total Value</Label>
                       <p className="text-2xl font-bold text-blue-600">
-                        AED {selectedMaterial.totalValue.toLocaleString()}
+                        AED {selectedMaterial.totalValue?.toLocaleString() || "0"}
                       </p>
                     </div>
                     <div>

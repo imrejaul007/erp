@@ -467,7 +467,7 @@ export default function ComprehensiveInventoryPage() {
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="text-gray-600">Value:</span>
-              <span className="font-medium text-green-600">AED {item.totalValue.toLocaleString()}</span>
+              <span className="font-medium text-green-600">AED {item.totalValue?.toLocaleString() || "0"}</span>
             </div>
             {item.unitCost && (
               <div className="flex justify-between items-center text-xs">
@@ -598,7 +598,7 @@ export default function ComprehensiveInventoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Inventory Value</p>
-                  <p className="text-2xl font-bold text-green-600">AED {stats.totalValue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-green-600">AED {stats.totalValue?.toLocaleString() || "0"}</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600" />
               </div>
@@ -764,7 +764,7 @@ export default function ComprehensiveInventoryPage() {
                   )}
                   <div className="flex justify-between">
                     <span>Total Value:</span>
-                    <span className="font-medium text-green-600">AED {selectedItem.totalValue.toLocaleString()}</span>
+                    <span className="font-medium text-green-600">AED {selectedItem.totalValue?.toLocaleString() || "0"}</span>
                   </div>
                 </div>
               </div>

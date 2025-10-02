@@ -513,7 +513,7 @@ export default function OilExtractionPage() {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600 group-hover:text-green-700">AED {batch.totalValue.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-green-600 group-hover:text-green-700">AED {batch.totalValue?.toLocaleString() || "0"}</p>
                     <p className="text-xs text-gray-600 group-hover:text-gray-700">Total value</p>
                   </div>
                 </div>
@@ -567,7 +567,7 @@ export default function OilExtractionPage() {
                             </div>
                           </TableCell>
                           <TableCell className="font-semibold text-green-600">
-                            AED {output.value.toLocaleString()}
+                            AED {output.value?.toLocaleString() || "0"}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -861,7 +861,7 @@ export default function OilExtractionPage() {
                             </div>
                           </TableCell>
                           <TableCell className="font-semibold text-green-600 group-hover:text-green-700">
-                            AED {output.value.toLocaleString()}
+                            AED {output.value?.toLocaleString() || "0"}
                           </TableCell>
                         </TableRow>
                       ))}

@@ -309,7 +309,7 @@ export default function AdvancedCRMPage() {
         <Card>
           <CardContent className="pt-6">
             <Users className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{crmSummary.totalCustomers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{crmSummary.totalCustomers?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Total Customers</div>
           </CardContent>
         </Card>
@@ -317,7 +317,7 @@ export default function AdvancedCRMPage() {
         <Card>
           <CardContent className="pt-6">
             <Heart className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{crmSummary.activeCustomers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{crmSummary.activeCustomers?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Active Customers</div>
           </CardContent>
         </Card>
@@ -407,7 +407,7 @@ export default function AdvancedCRMPage() {
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">Avg LTV</div>
-                    <div className="font-bold text-purple-600">AED {segment.ltv.toLocaleString()}</div>
+                    <div className="font-bold text-purple-600">AED {segment.ltv?.toLocaleString() || "0"}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">Per Customer</div>
@@ -439,7 +439,7 @@ export default function AdvancedCRMPage() {
                 <div className="grid grid-cols-5 gap-4">
                   <div>
                     <div className="text-sm text-gray-600">Sent</div>
-                    <div className="font-bold">{campaign.sent.toLocaleString()}</div>
+                    <div className="font-bold">{campaign.sent?.toLocaleString() || "0"}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">Opened</div>

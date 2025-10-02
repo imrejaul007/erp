@@ -451,29 +451,29 @@ export default function RawMaterialPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div className="p-3 bg-white rounded-lg">
                     <p className="text-xs text-muted-foreground">Purchase Price</p>
-                    <p className="text-lg font-bold">AED {parseFloat(purchasePrice || 0).toLocaleString()}</p>
+                    <p className="text-lg font-bold">AED {parseFloat(purchasePrice || 0)?.toLocaleString() || "0"}</p>
                   </div>
                   <div className="p-3 bg-white rounded-lg">
                     <p className="text-xs text-muted-foreground">Segregation Cost</p>
-                    <p className="text-lg font-bold">AED {parseFloat(segregationCost || 0).toLocaleString()}</p>
+                    <p className="text-lg font-bold">AED {parseFloat(segregationCost || 0)?.toLocaleString() || "0"}</p>
                   </div>
                   <div className="p-3 bg-white rounded-lg">
                     <p className="text-xs text-muted-foreground">Shipping & Logistics</p>
-                    <p className="text-lg font-bold">AED {parseFloat(shippingCost || 0).toLocaleString()}</p>
+                    <p className="text-lg font-bold">AED {parseFloat(shippingCost || 0)?.toLocaleString() || "0"}</p>
                   </div>
                   <div className="p-3 bg-white rounded-lg">
                     <p className="text-xs text-muted-foreground">Miscellaneous</p>
-                    <p className="text-lg font-bold">AED {parseFloat(miscCost || 0).toLocaleString()}</p>
+                    <p className="text-lg font-bold">AED {parseFloat(miscCost || 0)?.toLocaleString() || "0"}</p>
                   </div>
                   <div className="p-3 bg-white rounded-lg">
                     <p className="text-xs text-muted-foreground">Overhead ({overheadPercent || 0}%)</p>
                     <p className="text-lg font-bold">
-                      AED {((parseFloat(purchasePrice || 0) * (parseFloat(overheadPercent || 0) / 100))).toLocaleString()}
+                      AED {((parseFloat(purchasePrice || 0) * (parseFloat(overheadPercent || 0) / 100)))?.toLocaleString() || "0"}
                     </p>
                   </div>
                   <div className="p-3 bg-green-600 text-white rounded-lg">
                     <p className="text-xs opacity-90">TOTAL LANDED COST</p>
-                    <p className="text-xl font-bold">AED {calculateLandedCost().toLocaleString()}</p>
+                    <p className="text-xl font-bold">AED {calculateLandedCost()?.toLocaleString() || "0"}</p>
                   </div>
                 </div>
                 <div className="p-4 bg-white rounded-lg border-2 border-green-600">
@@ -539,7 +539,7 @@ export default function RawMaterialPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Stock</CardDescription>
-            <CardTitle className="text-3xl">{materialSummary.totalStock.toLocaleString()} kg</CardTitle>
+            <CardTitle className="text-3xl">{materialSummary.totalStock?.toLocaleString() || "0"} kg</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-green-600">
@@ -723,7 +723,7 @@ export default function RawMaterialPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-gray-900 group-hover:text-gray-900">AED {intake.estimatedCost.toLocaleString()}</p>
+                      <p className="text-xl font-bold text-gray-900 group-hover:text-gray-900">AED {intake.estimatedCost?.toLocaleString() || "0"}</p>
                       <p className="text-xs text-gray-600 group-hover:text-gray-700">Estimated cost</p>
                     </div>
                   </div>
@@ -879,7 +879,7 @@ export default function RawMaterialPage() {
                           <h3 className="font-semibold text-lg">{supplier.supplier}</h3>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {supplier.totalBatches} batches • {supplier.totalWeight.toLocaleString()} kg total
+                          {supplier.totalBatches} batches • {supplier.totalWeight?.toLocaleString() || "0"} kg total
                         </p>
                       </div>
                       <Badge
@@ -1119,12 +1119,12 @@ export default function RawMaterialPage() {
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground mb-1">Cost per kg</p>
-                    <p className="text-2xl font-bold text-primary">AED {selectedBatch.costPerKg.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-primary">AED {selectedBatch.costPerKg?.toLocaleString() || "0"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground mb-1">Total Cost (Net Weight)</p>
                     <p className="text-2xl font-bold text-green-600">
-                      AED {(selectedBatch.costPerKg * selectedBatch.netWeight).toLocaleString()}
+                      AED {(selectedBatch.costPerKg * selectedBatch.netWeight)?.toLocaleString() || "0"}
                     </p>
                   </div>
                   <div>
@@ -1226,7 +1226,7 @@ export default function RawMaterialPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Estimated Cost:</span>
-                      <span className="font-bold text-primary">AED {selectedPO.estimatedCost.toLocaleString()}</span>
+                      <span className="font-bold text-primary">AED {selectedPO.estimatedCost?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Cost per kg:</span>

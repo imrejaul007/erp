@@ -830,7 +830,7 @@ export default function PurchasingVendorManagementPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Total Value:</span>
-            <span className="font-medium text-green-600">AED {vendor.performance.totalValue.toLocaleString()}</span>
+            <span className="font-medium text-green-600">AED {vendor.performance.totalValue?.toLocaleString() || "0"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">On-time Delivery:</span>
@@ -882,7 +882,7 @@ export default function PurchasingVendorManagementPage() {
             <Badge className={getStatusColor(po.status)} variant="secondary">
               {po.status}
             </Badge>
-            <p className="text-xs text-gray-500 mt-1">{po.currency} {po.totalAmount.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-1">{po.currency} {po.totalAmount?.toLocaleString() || "0"}</p>
           </div>
         </div>
 
@@ -1085,7 +1085,7 @@ export default function PurchasingVendorManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total PO Value</p>
-                  <p className="text-2xl font-bold text-purple-600">AED {stats.totalPOValue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-purple-600">AED {stats.totalPOValue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">current orders</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-purple-600" />
@@ -1180,7 +1180,7 @@ export default function PurchasingVendorManagementPage() {
                           <p className="text-xs text-gray-500">{po.status}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium">{po.currency} {po.totalAmount.toLocaleString()}</p>
+                          <p className="text-sm font-medium">{po.currency} {po.totalAmount?.toLocaleString() || "0"}</p>
                           <p className="text-xs text-gray-500">{po.expectedDelivery}</p>
                         </div>
                       </div>
@@ -1741,11 +1741,11 @@ export default function PurchasingVendorManagementPage() {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Total Value:</span>
-                        <span className="font-bold text-green-600">AED {selectedVendor.performance.totalValue.toLocaleString()}</span>
+                        <span className="font-bold text-green-600">AED {selectedVendor.performance.totalValue?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Average Order Value:</span>
-                        <span className="font-bold">AED {selectedVendor.performance.averageOrderValue.toLocaleString()}</span>
+                        <span className="font-bold">AED {selectedVendor.performance.averageOrderValue?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Last Order:</span>
@@ -1806,7 +1806,7 @@ export default function PurchasingVendorManagementPage() {
                           {activity.status}
                         </Badge>
                         {activity.value && (
-                          <p className="text-sm font-medium text-green-600 mt-1">AED {activity.value.toLocaleString()}</p>
+                          <p className="text-sm font-medium text-green-600 mt-1">AED {activity.value?.toLocaleString() || "0"}</p>
                         )}
                       </div>
                     </div>
@@ -1865,7 +1865,7 @@ export default function PurchasingVendorManagementPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Credit Limit:</span>
-                        <span className="font-medium">{selectedVendor.paymentTerms.currency} {selectedVendor.paymentTerms.creditLimit.toLocaleString()}</span>
+                        <span className="font-medium">{selectedVendor.paymentTerms.currency} {selectedVendor.paymentTerms.creditLimit?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Currency:</span>
@@ -1965,7 +1965,7 @@ export default function PurchasingVendorManagementPage() {
                 {selectedPO.id} - Purchase Order Details
               </DialogTitle>
               <DialogDescription>
-                {selectedPO.vendorName} • {selectedPO.currency} {selectedPO.totalAmount.toLocaleString()}
+                {selectedPO.vendorName} • {selectedPO.currency} {selectedPO.totalAmount?.toLocaleString() || "0"}
               </DialogDescription>
             </DialogHeader>
 
@@ -2022,7 +2022,7 @@ export default function PurchasingVendorManagementPage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span>Total Amount:</span>
-                        <span className="font-bold text-green-600">{selectedPO.currency} {selectedPO.totalAmount.toLocaleString()}</span>
+                        <span className="font-bold text-green-600">{selectedPO.currency} {selectedPO.totalAmount?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Currency:</span>
@@ -2032,15 +2032,15 @@ export default function PurchasingVendorManagementPage() {
                         <>
                           <div className="flex justify-between">
                             <span>Duty Amount:</span>
-                            <span className="font-medium">AED {selectedPO.customs.dutyAmount.toLocaleString()}</span>
+                            <span className="font-medium">AED {selectedPO.customs.dutyAmount?.toLocaleString() || "0"}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>VAT Amount:</span>
-                            <span className="font-medium">AED {selectedPO.customs.vatAmount.toLocaleString()}</span>
+                            <span className="font-medium">AED {selectedPO.customs.vatAmount?.toLocaleString() || "0"}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Total Taxes:</span>
-                            <span className="font-medium">AED {selectedPO.customs.totalTaxes.toLocaleString()}</span>
+                            <span className="font-medium">AED {selectedPO.customs.totalTaxes?.toLocaleString() || "0"}</span>
                           </div>
                         </>
                       )}
@@ -2067,8 +2067,8 @@ export default function PurchasingVendorManagementPage() {
                         <TableCell className="font-medium">{item.productCode}</TableCell>
                         <TableCell>{item.description}</TableCell>
                         <TableCell>{item.quantity} {item.unit}</TableCell>
-                        <TableCell>{selectedPO.currency} {item.unitPrice.toLocaleString()}</TableCell>
-                        <TableCell>{selectedPO.currency} {item.totalPrice.toLocaleString()}</TableCell>
+                        <TableCell>{selectedPO.currency} {item.unitPrice?.toLocaleString() || "0"}</TableCell>
+                        <TableCell>{selectedPO.currency} {item.totalPrice?.toLocaleString() || "0"}</TableCell>
                         <TableCell className="text-xs">{item.specifications}</TableCell>
                       </TableRow>
                     ))}
@@ -2216,11 +2216,11 @@ export default function PurchasingVendorManagementPage() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span>Advance Paid:</span>
-                          <span className="font-medium text-green-600">{selectedPO.currency} {selectedPO.payment.advancePaid.toLocaleString()}</span>
+                          <span className="font-medium text-green-600">{selectedPO.currency} {selectedPO.payment.advancePaid?.toLocaleString() || "0"}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Balance Due:</span>
-                          <span className="font-medium text-orange-600">{selectedPO.currency} {selectedPO.payment.balanceDue.toLocaleString()}</span>
+                          <span className="font-medium text-orange-600">{selectedPO.currency} {selectedPO.payment.balanceDue?.toLocaleString() || "0"}</span>
                         </div>
                       </div>
                     </div>
@@ -2235,8 +2235,8 @@ export default function PurchasingVendorManagementPage() {
                       </div>
                       <Progress value={(selectedPO.payment.advancePaid / selectedPO.totalAmount) * 100} />
                       <div className="flex justify-between text-xs text-gray-500">
-                        <span>Paid: {selectedPO.currency} {selectedPO.payment.advancePaid.toLocaleString()}</span>
-                        <span>Total: {selectedPO.currency} {selectedPO.totalAmount.toLocaleString()}</span>
+                        <span>Paid: {selectedPO.currency} {selectedPO.payment.advancePaid?.toLocaleString() || "0"}</span>
+                        <span>Total: {selectedPO.currency} {selectedPO.totalAmount?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                   </div>

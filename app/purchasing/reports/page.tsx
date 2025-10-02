@@ -464,7 +464,7 @@ const SupplierReportsPage = () => {
               <CardHeader>
                 <CardTitle>Spending by Category</CardTitle>
                 <CardDescription>
-                  Total spend: USD ${spendingAnalysis.totalSpend.toLocaleString()}
+                  Total spend: USD ${spendingAnalysis.totalSpend?.toLocaleString() || "0"}
                 </CardDescription>
               </CardHeader>
               <CardContent>

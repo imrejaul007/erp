@@ -258,7 +258,7 @@ export default function MobileAppsPage() {
         <Card>
           <CardContent className="pt-6">
             <Download className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{usageStats.totalDownloads.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{usageStats.totalDownloads?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Total Downloads</div>
             <div className="text-xs text-green-600 mt-1">+{usageStats.monthlyGrowth}% this month</div>
           </CardContent>
@@ -276,7 +276,7 @@ export default function MobileAppsPage() {
         <Card>
           <CardContent className="pt-6">
             <TrendingUp className="h-8 w-8 text-purple-600 mb-2" />
-            <div className="text-2xl font-bold">{usageStats.dailyTransactions.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{usageStats.dailyTransactions?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Daily Transactions</div>
             <div className="text-xs text-gray-500 mt-1">Across all apps</div>
           </CardContent>

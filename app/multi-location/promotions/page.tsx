@@ -571,7 +571,7 @@ const PromotionsPage = () => {
                         <div className="text-xs text-gray-500">Discount</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold">AED {promotion.revenue.toLocaleString()}</div>
+                        <div className="text-2xl font-bold">AED {promotion.revenue?.toLocaleString() || "0"}</div>
                         <div className="text-xs text-gray-500">Revenue Generated</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
@@ -729,7 +729,7 @@ const PromotionsPage = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold">AED {promotion.revenue.toLocaleString()}</div>
+                          <div className="font-bold">AED {promotion.revenue?.toLocaleString() || "0"}</div>
                           <div className="text-sm text-gray-500">{promotion.orders} orders</div>
                         </div>
                       </div>
@@ -760,7 +760,7 @@ const PromotionsPage = () => {
                           <div className="text-sm text-gray-500">{locationPromotions.length} active promotions</div>
                         </div>
                         <div className="text-right">
-                          <div className="font-medium">AED {totalRevenue.toLocaleString()}</div>
+                          <div className="font-medium">AED {totalRevenue?.toLocaleString() || "0"}</div>
                           <div className="text-sm text-gray-500">{totalOrders} orders</div>
                         </div>
                       </div>

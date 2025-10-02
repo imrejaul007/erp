@@ -714,7 +714,7 @@ const CurrencySettingsPage = () => {
                       1 AED = {currency.rate.toFixed(4)} {currency.code}
                     </div>
                     <div className="text-xs text-gray-400 mt-1">
-                      Updated: {new Date(currency.lastUpdated).toLocaleString()}
+                      Updated: {new Date(currency.lastUpdated)?.toLocaleString() || "0"}
                     </div>
                   </div>
                 ))}

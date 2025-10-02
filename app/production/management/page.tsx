@@ -575,7 +575,7 @@ export default function ProductionManagementPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Cost/Batch:</span>
-            <span className="font-medium text-green-600">AED {recipe.costPerBatch.toLocaleString()}</span>
+            <span className="font-medium text-green-600">AED {recipe.costPerBatch?.toLocaleString() || "0"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Difficulty:</span>
@@ -645,7 +645,7 @@ export default function ProductionManagementPage() {
           <div className="flex justify-between">
             <span className="text-gray-600">Cost:</span>
             <span className="font-medium text-green-600">
-              AED {(batch.actualCosts || batch.estimatedCosts).toLocaleString()}
+              AED {(batch.actualCosts || batch.estimatedCosts)?.toLocaleString() || "0"}
             </span>
           </div>
           {batch.status === 'in_progress' && batch.timeRemaining && (
@@ -837,7 +837,7 @@ export default function ProductionManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Production Value</p>
-                  <p className="text-2xl font-bold text-green-600">AED {stats.totalValue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-green-600">AED {stats.totalValue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">current batches</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600" />
@@ -1202,7 +1202,7 @@ export default function ProductionManagementPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Cost per Batch:</span>
-                        <span className="font-medium text-green-600">AED {selectedRecipe.costPerBatch.toLocaleString()}</span>
+                        <span className="font-medium text-green-600">AED {selectedRecipe.costPerBatch?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Quality Grade:</span>
@@ -1419,7 +1419,7 @@ export default function ProductionManagementPage() {
                   <div className="flex justify-between">
                     <span>Cost:</span>
                     <span className="font-medium text-green-600">
-                      AED {(selectedBatch.actualCosts || selectedBatch.estimatedCosts).toLocaleString()}
+                      AED {(selectedBatch.actualCosts || selectedBatch.estimatedCosts)?.toLocaleString() || "0"}
                     </span>
                   </div>
                   {selectedBatch.qualityScore && (

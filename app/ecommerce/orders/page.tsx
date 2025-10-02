@@ -533,7 +533,7 @@ const OrdersPage = () => {
                             <div className="font-medium">{order.orderNumber}</div>
                             <div className="text-sm text-gray-500">{order.customer.name}</div>
                             <div className="text-xs text-gray-400">
-                              {new Date(order.orderDate).toLocaleString()}
+                              {new Date(order.orderDate)?.toLocaleString() || "0"}
                             </div>
                           </div>
                         </div>
@@ -590,7 +590,7 @@ const OrdersPage = () => {
                             <div className="font-medium">{order.orderNumber}</div>
                             <div className="text-sm text-gray-500">{order.customer.name}</div>
                             <div className="text-xs text-gray-400">
-                              Processing since: {new Date(order.orderDate).toLocaleString()}
+                              Processing since: {new Date(order.orderDate)?.toLocaleString() || "0"}
                             </div>
                           </div>
                         </div>
@@ -887,7 +887,7 @@ const OrdersPage = () => {
                   <h3 className="text-lg font-medium">{selectedOrder.orderNumber}</h3>
                   <p className="text-sm text-gray-500">Order ID: {selectedOrder.id}</p>
                   <p className="text-xs text-gray-400">
-                    Placed on: {new Date(selectedOrder.orderDate).toLocaleString()}
+                    Placed on: {new Date(selectedOrder.orderDate)?.toLocaleString() || "0"}
                   </p>
                 </div>
                 <div className="text-right">
@@ -1034,7 +1034,7 @@ const OrdersPage = () => {
                     </div>
                     <div>
                       <Label className="text-sm text-gray-600">Estimated Delivery</Label>
-                      <p className="text-sm">{new Date(selectedOrder.estimatedDelivery).toLocaleString()}</p>
+                      <p className="text-sm">{new Date(selectedOrder.estimatedDelivery)?.toLocaleString() || "0"}</p>
                     </div>
                     {selectedOrder.trackingNumber && (
                       <div>

@@ -481,7 +481,7 @@ export default function CompliancePage() {
                             {typeof value === 'boolean'
                               ? (value ? 'Yes' : 'No')
                               : typeof value === 'number' && value > 100
-                                ? value.toLocaleString()
+                                ? value?.toLocaleString() || "0"
                                 : value}
                             {key.includes('score') || key.includes('Rate') ? '%' : ''}
                           </p>

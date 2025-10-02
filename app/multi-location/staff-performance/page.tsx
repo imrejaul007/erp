@@ -766,7 +766,7 @@ const StaffPerformancePage = () => {
                           </div>
                           <div className="text-xs text-gray-500">Sales Target</div>
                           <div className="text-xs text-gray-400">
-                            AED {staff.performance.salesAchieved.toLocaleString()} / {staff.performance.salesTarget.toLocaleString()}
+                            AED {staff.performance.salesAchieved?.toLocaleString() || "0"} / {staff.performance.salesTarget?.toLocaleString() || "0"}
                           </div>
                         </div>
 
@@ -832,7 +832,7 @@ const StaffPerformancePage = () => {
                           <div className="space-y-3">
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600">Revenue Generated:</span>
-                              <span className="font-medium">AED {staff.performance.revenueGenerated.toLocaleString()}</span>
+                              <span className="font-medium">AED {staff.performance.revenueGenerated?.toLocaleString() || "0"}</span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-sm text-gray-600">Average Order Value:</span>
@@ -952,7 +952,7 @@ const StaffPerformancePage = () => {
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-green-600">
-                            AED {staff.performance.revenueGenerated.toLocaleString()}
+                            AED {staff.performance.revenueGenerated?.toLocaleString() || "0"}
                           </div>
                           <div className="text-sm text-gray-500">
                             {staff.performance.salesPercentage.toFixed(1)}% of target

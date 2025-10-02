@@ -421,7 +421,7 @@ export default function BatchMaterialsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              AED {materials.reduce((acc, m) => acc + (m.currentStock * m.costPerUnit), 0).toLocaleString()}
+              AED {materials.reduce((acc, m) => acc + (m.currentStock * m.costPerUnit), 0)?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-muted-foreground">
               Current inventory value

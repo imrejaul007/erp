@@ -1026,12 +1026,12 @@ const ClickCollectPage = () => {
                     </div>
                     <div>
                       <Label className="text-sm text-gray-600">Order Date</Label>
-                      <p className="text-sm">{new Date(selectedOrder.orderDate).toLocaleString()}</p>
+                      <p className="text-sm">{new Date(selectedOrder.orderDate)?.toLocaleString() || "0"}</p>
                     </div>
                     {selectedOrder.readyDate && (
                       <div>
                         <Label className="text-sm text-gray-600">Ready Date</Label>
-                        <p className="text-sm">{new Date(selectedOrder.readyDate).toLocaleString()}</p>
+                        <p className="text-sm">{new Date(selectedOrder.readyDate)?.toLocaleString() || "0"}</p>
                       </div>
                     )}
                     <div>
@@ -1039,7 +1039,7 @@ const ClickCollectPage = () => {
                       <p className={`text-sm ${
                         getDaysUntilExpiry(selectedOrder.expiryDate) <= 1 ? 'text-red-600' : 'text-gray-900'
                       }`}>
-                        {new Date(selectedOrder.expiryDate).toLocaleString()}
+                        {new Date(selectedOrder.expiryDate)?.toLocaleString() || "0"}
                       </p>
                     </div>
                   </CardContent>
@@ -1100,7 +1100,7 @@ const ClickCollectPage = () => {
                       <div>
                         <Label className="text-sm text-gray-600">Collection Details</Label>
                         <p className="text-sm">
-                          Collected on: {new Date(selectedOrder.collectedDate).toLocaleString()}
+                          Collected on: {new Date(selectedOrder.collectedDate)?.toLocaleString() || "0"}
                         </p>
                         <p className="text-sm">Collected by: {selectedOrder.collectedBy}</p>
                         <p className="text-sm">Staff member: {selectedOrder.staffMember}</p>

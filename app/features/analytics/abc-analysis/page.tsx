@@ -558,7 +558,7 @@ export default function ABCAnalysisPage() {
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Units Sold</div>
-                        <div className="font-semibold">{item.units.toLocaleString()}</div>
+                        <div className="font-semibold">{item.units?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Unit Price</div>
@@ -609,7 +609,7 @@ export default function ABCAnalysisPage() {
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Units Sold</div>
-                        <div className="font-semibold">{item.units.toLocaleString()}</div>
+                        <div className="font-semibold">{item.units?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Unit Price</div>
@@ -662,7 +662,7 @@ export default function ABCAnalysisPage() {
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Units Sold</div>
-                        <div className="font-semibold">{item.units.toLocaleString()}</div>
+                        <div className="font-semibold">{item.units?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Unit Price</div>

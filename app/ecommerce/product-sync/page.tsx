@@ -520,7 +520,7 @@ const ProductSyncPage = () => {
                           <div className="flex justify-between">
                             <span>Last Sync:</span>
                             <span className="text-xs text-gray-500">
-                              {channel.lastSync ? new Date(channel.lastSync).toLocaleString() : 'Never'}
+                              {channel.lastSync ? new Date(channel.lastSync)?.toLocaleString() || "0" : 'Never'}
                             </span>
                           </div>
                           <div className="flex justify-between">

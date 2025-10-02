@@ -286,7 +286,7 @@ const VendorPaymentPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Pending Payments</p>
-                <p className="text-2xl font-bold">USD ${(totals.pending + totals.scheduled).toLocaleString()}</p>
+                <p className="text-2xl font-bold">USD ${(totals.pending + totals.scheduled)?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-yellow-600 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {payments.filter(p => p.status === 'pending_approval' || p.status === 'scheduled').length} payments
@@ -302,7 +302,7 @@ const VendorPaymentPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Processing</p>
-                <p className="text-2xl font-bold">USD ${totals.processing.toLocaleString()}</p>
+                <p className="text-2xl font-bold">USD ${totals.processing?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-blue-600 flex items-center gap-1">
                   <Activity className="h-3 w-3" />
                   In progress
@@ -318,7 +318,7 @@ const VendorPaymentPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Completed Today</p>
-                <p className="text-2xl font-bold">USD ${totals.completed.toLocaleString()}</p>
+                <p className="text-2xl font-bold">USD ${totals.completed?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   +15.2% from yesterday
@@ -416,8 +416,8 @@ const VendorPaymentPage = () => {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{payment.currency} {payment.amount.toLocaleString()}</div>
-                          <div className="text-sm text-gray-500">~USD ${payment.amountUSD.toLocaleString()}</div>
+                          <div className="font-medium">{payment.currency} {payment.amount?.toLocaleString() || "0"}</div>
+                          <div className="text-sm text-gray-500">~USD ${payment.amountUSD?.toLocaleString() || "0"}</div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -501,7 +501,7 @@ const VendorPaymentPage = () => {
                     </Badge>
                   </div>
                   <div className="text-lg font-bold mb-1">
-                    {account.currency} {account.balance.toLocaleString()}
+                    {account.currency} {account.balance?.toLocaleString() || "0"}
                   </div>
                   <div className="text-xs text-gray-500 font-mono">
                     {account.accountNumber}
@@ -632,7 +632,7 @@ const VendorPaymentPage = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Amount:</span>
                         <span className="font-medium text-lg">
-                          {selectedPayment.currency} {selectedPayment.amount.toLocaleString()}
+                          {selectedPayment.currency} {selectedPayment.amount?.toLocaleString() || "0"}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -641,7 +641,7 @@ const VendorPaymentPage = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">USD Equivalent:</span>
-                        <span className="font-medium">USD ${selectedPayment.amountUSD.toLocaleString()}</span>
+                        <span className="font-medium">USD ${selectedPayment.amountUSD?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Transaction Fees:</span>
@@ -650,7 +650,7 @@ const VendorPaymentPage = () => {
                       <Separator />
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total Cost:</span>
-                        <span>USD ${(selectedPayment.amountUSD + selectedPayment.fees).toLocaleString()}</span>
+                        <span>USD ${(selectedPayment.amountUSD + selectedPayment.fees)?.toLocaleString() || "0"}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -826,7 +826,7 @@ const VendorPaymentPage = () => {
                   <CardContent className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Payment Amount:</span>
-                      <span className="font-medium">USD ${selectedPayment.amountUSD.toLocaleString()}</span>
+                      <span className="font-medium">USD ${selectedPayment.amountUSD?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Approval Required:</span>

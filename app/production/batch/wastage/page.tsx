@@ -391,7 +391,7 @@ export default function WastageTrackingPage() {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">AED {totalWastageCost.toLocaleString()}</div>
+            <div className="text-2xl font-bold">AED {totalWastageCost?.toLocaleString() || "0"}</div>
             <p className="text-xs text-muted-foreground">
               This month
             </p>
@@ -685,7 +685,7 @@ export default function WastageTrackingPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="text-2xl font-bold">AED {totalWastageCost.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">AED {totalWastageCost?.toLocaleString() || "0"}</div>
                   <p className="text-sm text-muted-foreground">Total wastage cost</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-red-500" />

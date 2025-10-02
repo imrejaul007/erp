@@ -297,7 +297,7 @@ export default function AnalyticsPage() {
 
                       <div className="grid grid-cols-3 gap-4 pt-2">
                         <div className="text-center">
-                          <div className="text-lg font-semibold">{location.footfall.toLocaleString()}</div>
+                          <div className="text-lg font-semibold">{location.footfall?.toLocaleString() || "0"}</div>
                           <div className="text-xs text-gray-500">Footfall</div>
                         </div>
                         <div className="text-center">

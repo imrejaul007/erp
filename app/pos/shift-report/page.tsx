@@ -134,7 +134,7 @@ export default function ShiftReportPage() {
             </div>
             <div>
               <div className="text-sm text-gray-600">Opening Cash</div>
-              <div className="font-semibold text-green-600">AED {currentShift.openingCash.toLocaleString()}</div>
+              <div className="font-semibold text-green-600">AED {currentShift.openingCash?.toLocaleString() || "0"}</div>
             </div>
           </div>
         </CardContent>
@@ -161,7 +161,7 @@ export default function ShiftReportPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              AED {salesSummary.totalRevenue.toLocaleString()}
+              AED {salesSummary.totalRevenue?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3" />
@@ -188,7 +188,7 @@ export default function ShiftReportPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              AED {(currentShift.openingCash + salesSummary.cash).toLocaleString()}
+              AED {(currentShift.openingCash + salesSummary.cash)?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-600 mt-1">
               Opening: AED {currentShift.openingCash}
@@ -229,7 +229,7 @@ export default function ShiftReportPage() {
                       <TableCell className="font-medium">{payment.method}</TableCell>
                       <TableCell>{payment.count}</TableCell>
                       <TableCell className="font-semibold text-green-600">
-                        AED {payment.amount.toLocaleString()}
+                        AED {payment.amount?.toLocaleString() || "0"}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">{payment.percentage}%</Badge>
@@ -273,7 +273,7 @@ export default function ShiftReportPage() {
                         <Badge variant="outline">{txn.payment}</Badge>
                       </TableCell>
                       <TableCell className="font-semibold">
-                        AED {txn.amount.toLocaleString()}
+                        AED {txn.amount?.toLocaleString() || "0"}
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-green-100 text-green-800">{txn.status}</Badge>
@@ -308,7 +308,7 @@ export default function ShiftReportPage() {
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-green-600">
-                        AED {product.amount.toLocaleString()}
+                        AED {product.amount?.toLocaleString() || "0"}
                       </div>
                     </div>
                   </div>
@@ -342,11 +342,11 @@ export default function ShiftReportPage() {
                       <TableCell className="font-medium">{movement.type}</TableCell>
                       <TableCell>
                         <span className={movement.amount > 0 ? 'text-green-600' : 'text-red-600'}>
-                          {movement.amount > 0 ? '+' : ''}AED {Math.abs(movement.amount).toLocaleString()}
+                          {movement.amount > 0 ? '+' : ''}AED {Math.abs(movement.amount)?.toLocaleString() || "0"}
                         </span>
                       </TableCell>
                       <TableCell className="font-semibold">
-                        AED {movement.balance.toLocaleString()}
+                        AED {movement.balance?.toLocaleString() || "0"}
                       </TableCell>
                     </TableRow>
                   ))}

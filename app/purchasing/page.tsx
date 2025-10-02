@@ -297,7 +297,7 @@ const PurchasingPage = () => {
                     </div>
                   </TableCell>
                   <TableCell>{order.items} items</TableCell>
-                  <TableCell className="font-medium">AED {order.total.toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">AED {order.total?.toLocaleString() || "0"}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(order.status)}>
                       {order.status.replace('_', ' ')}

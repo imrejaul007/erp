@@ -400,7 +400,7 @@ export default function HRPayrollPage() {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <div className="text-sm text-gray-600">Avg Salary</div>
-                    <div className="font-bold text-green-600">AED {dept.avgSalary.toLocaleString()}</div>
+                    <div className="font-bold text-green-600">AED {dept.avgSalary?.toLocaleString() || "0"}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">Turnover</div>

@@ -456,7 +456,7 @@ export default function PackagingPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Packaging Cost (Today)</CardDescription>
-            <CardTitle className="text-3xl">AED {packagingSummary.packagingCost.toLocaleString()}</CardTitle>
+            <CardTitle className="text-3xl">AED {packagingSummary.packagingCost?.toLocaleString() || "0"}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">

@@ -425,7 +425,7 @@ const CommissionPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Commissions</p>
-                <p className="text-2xl font-bold">AED {commissionMetrics.totalCommissions.toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {commissionMetrics.totalCommissions?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(commissionMetrics.trends.commissions)}`}>
                   {getTrendIcon(commissionMetrics.trends.commissions)}
                   {Math.abs(commissionMetrics.trends.commissions)}% vs last month
@@ -545,10 +545,10 @@ const CommissionPage = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">AED {record.salesTarget.toLocaleString()}</div>
+                        <div className="font-medium">AED {record.salesTarget?.toLocaleString() || "0"}</div>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">AED {record.actualSales.toLocaleString()}</div>
+                        <div className="font-medium">AED {record.actualSales?.toLocaleString() || "0"}</div>
                         <div className="text-xs text-gray-500">
                           {record.actualSales > record.salesTarget ? '+' : ''}
                           {((record.actualSales - record.salesTarget) / record.salesTarget * 100).toFixed(1)}%
@@ -573,7 +573,7 @@ const CommissionPage = () => {
                       </TableCell>
                       <TableCell>
                         <div className="font-bold text-green-600">
-                          AED {record.commissionEarned.toLocaleString()}
+                          AED {record.commissionEarned?.toLocaleString() || "0"}
                         </div>
                         {record.specialIncentives.length > 0 && (
                           <div className="text-xs text-purple-600">
@@ -798,10 +798,10 @@ const CommissionPage = () => {
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-green-600">
-                          AED {performer.commission.toLocaleString()}
+                          AED {performer.commission?.toLocaleString() || "0"}
                         </div>
                         <div className="text-sm text-gray-600">
-                          AED {performer.sales.toLocaleString()} sales
+                          AED {performer.sales?.toLocaleString() || "0"} sales
                         </div>
                         <div className={`text-xs ${getAchievementColor(performer.achievement)}`}>
                           {performer.achievement}% achievement

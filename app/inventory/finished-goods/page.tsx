@@ -430,7 +430,7 @@ export default function FinishedGoodsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-              AED {totalValue.toLocaleString()}
+              AED {totalValue?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-500 mt-1">Inventory value</p>
           </CardContent>
@@ -807,7 +807,7 @@ export default function FinishedGoodsPage() {
                         <hr />
                         <div className="flex justify-between font-semibold">
                           <span>Total Value in Stock:</span>
-                          <span>{selectedProduct.currency} {selectedProduct.totalValue.toLocaleString()}</span>
+                          <span>{selectedProduct.currency} {selectedProduct.totalValue?.toLocaleString() || "0"}</span>
                         </div>
                       </div>
                     </div>

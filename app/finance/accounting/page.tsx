@@ -549,15 +549,15 @@ export default function FinanceAccountingPage() {
         <div className="space-y-2 text-xs">
           <div className="flex justify-between">
             <span className="text-gray-600">Amount:</span>
-            <span className="font-medium">{transaction.currency} {transaction.amount.toLocaleString()}</span>
+            <span className="font-medium">{transaction.currency} {transaction.amount?.toLocaleString() || "0"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">VAT:</span>
-            <span className="font-medium">{transaction.currency} {transaction.vatAmount.toLocaleString()}</span>
+            <span className="font-medium">{transaction.currency} {transaction.vatAmount?.toLocaleString() || "0"}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Total:</span>
-            <span className="font-medium text-green-600">{transaction.currency} {transaction.totalAmount.toLocaleString()}</span>
+            <span className="font-medium text-green-600">{transaction.currency} {transaction.totalAmount?.toLocaleString() || "0"}</span>
           </div>
           {(transaction.customer || transaction.vendor) && (
             <div className="flex justify-between">
@@ -703,7 +703,7 @@ export default function FinanceAccountingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-green-600">AED {stats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-green-600">AED {stats.totalRevenue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">this month</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
@@ -716,7 +716,7 @@ export default function FinanceAccountingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Net Profit</p>
-                  <p className="text-2xl font-bold text-blue-600">AED {stats.netProfit.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-blue-600">AED {stats.netProfit?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">{((stats.netProfit / stats.totalRevenue) * 100).toFixed(1)}% margin</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-blue-600" />
@@ -729,7 +729,7 @@ export default function FinanceAccountingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">VAT Due</p>
-                  <p className="text-2xl font-bold text-amber-600">AED {stats.vatDue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-amber-600">AED {stats.vatDue?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">net payable</p>
                 </div>
                 <Receipt className="h-8 w-8 text-amber-600" />
@@ -742,7 +742,7 @@ export default function FinanceAccountingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Pending Invoices</p>
-                  <p className="text-2xl font-bold text-red-600">AED {stats.pendingInvoices.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-red-600">AED {stats.pendingInvoices?.toLocaleString() || "0"}</p>
                   <p className="text-xs text-gray-500">outstanding</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-600" />
@@ -779,7 +779,7 @@ export default function FinanceAccountingPage() {
                         <div key={key} className="flex justify-between items-center">
                           <span className="text-sm capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
                           <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">AED {(value as number).toLocaleString()}</span>
+                            <span className="text-sm font-medium">AED {(value as number)?.toLocaleString() || "0"}</span>
                             <span className="text-xs text-gray-500">({percentage}%)</span>
                           </div>
                         </div>
@@ -800,24 +800,24 @@ export default function FinanceAccountingPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Total Revenue:</span>
-                      <span className="font-bold text-green-600">AED {financialReports.profitLoss.revenue.totalRevenue.toLocaleString()}</span>
+                      <span className="font-bold text-green-600">AED {financialReports.profitLoss.revenue.totalRevenue?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Cost of Goods Sold:</span>
-                      <span className="font-medium text-red-600">AED {financialReports.profitLoss.costOfSales.totalCOGS.toLocaleString()}</span>
+                      <span className="font-medium text-red-600">AED {financialReports.profitLoss.costOfSales.totalCOGS?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Gross Profit:</span>
-                      <span className="font-bold text-blue-600">AED {financialReports.profitLoss.grossProfit.toLocaleString()}</span>
+                      <span className="font-bold text-blue-600">AED {financialReports.profitLoss.grossProfit?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Operating Expenses:</span>
-                      <span className="font-medium text-orange-600">AED {financialReports.profitLoss.operatingExpenses.totalOpEx.toLocaleString()}</span>
+                      <span className="font-medium text-orange-600">AED {financialReports.profitLoss.operatingExpenses.totalOpEx?.toLocaleString() || "0"}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Net Profit:</span>
-                      <span className="font-bold text-green-600">AED {financialReports.profitLoss.netProfit.toLocaleString()}</span>
+                      <span className="font-bold text-green-600">AED {financialReports.profitLoss.netProfit?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Profit Margin:</span>
@@ -838,16 +838,16 @@ export default function FinanceAccountingPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">VAT Collected (Output VAT):</span>
-                      <span className="font-medium text-green-600">AED {stats.vatCollected.toLocaleString()}</span>
+                      <span className="font-medium text-green-600">AED {stats.vatCollected?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">VAT Paid (Input VAT):</span>
-                      <span className="font-medium text-blue-600">AED {stats.vatPaid.toLocaleString()}</span>
+                      <span className="font-medium text-blue-600">AED {stats.vatPaid?.toLocaleString() || "0"}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Net VAT Due:</span>
-                      <span className="font-bold text-amber-600">AED {stats.vatDue.toLocaleString()}</span>
+                      <span className="font-bold text-amber-600">AED {stats.vatDue?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="mt-4 p-3 bg-amber-50 rounded">
                       <div className="flex items-center space-x-2">
@@ -871,19 +871,19 @@ export default function FinanceAccountingPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Cash & Bank Balance:</span>
-                      <span className="font-bold text-green-600">AED {financialReports.balanceSheet.assets.currentAssets.cashAndBank.toLocaleString()}</span>
+                      <span className="font-bold text-green-600">AED {financialReports.balanceSheet.assets.currentAssets.cashAndBank?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Accounts Receivable:</span>
-                      <span className="font-medium">AED {financialReports.balanceSheet.assets.currentAssets.accountsReceivable.toLocaleString()}</span>
+                      <span className="font-medium">AED {financialReports.balanceSheet.assets.currentAssets.accountsReceivable?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Accounts Payable:</span>
-                      <span className="font-medium text-red-600">AED {financialReports.balanceSheet.liabilities.currentLiabilities.accountsPayable.toLocaleString()}</span>
+                      <span className="font-medium text-red-600">AED {financialReports.balanceSheet.liabilities.currentLiabilities.accountsPayable?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Pending Invoices:</span>
-                      <span className="font-medium text-orange-600">AED {stats.pendingInvoices.toLocaleString()}</span>
+                      <span className="font-medium text-orange-600">AED {stats.pendingInvoices?.toLocaleString() || "0"}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -1109,25 +1109,25 @@ export default function FinanceAccountingPage() {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-gray-600">Total Sales:</span>
-                            <p className="font-medium">AED {vatReturn.totalSales.toLocaleString()}</p>
+                            <p className="font-medium">AED {vatReturn.totalSales?.toLocaleString() || "0"}</p>
                           </div>
                           <div>
                             <span className="text-gray-600">Output VAT:</span>
-                            <p className="font-medium">AED {vatReturn.outputVAT.toLocaleString()}</p>
+                            <p className="font-medium">AED {vatReturn.outputVAT?.toLocaleString() || "0"}</p>
                           </div>
                           <div>
                             <span className="text-gray-600">Total Purchases:</span>
-                            <p className="font-medium">AED {vatReturn.totalPurchases.toLocaleString()}</p>
+                            <p className="font-medium">AED {vatReturn.totalPurchases?.toLocaleString() || "0"}</p>
                           </div>
                           <div>
                             <span className="text-gray-600">Input VAT:</span>
-                            <p className="font-medium">AED {vatReturn.inputVAT.toLocaleString()}</p>
+                            <p className="font-medium">AED {vatReturn.inputVAT?.toLocaleString() || "0"}</p>
                           </div>
                         </div>
                         <Separator />
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium">Final VAT Due:</span>
-                          <span className="font-bold text-amber-600">AED {vatReturn.finalVATDue.toLocaleString()}</span>
+                          <span className="font-bold text-amber-600">AED {vatReturn.finalVATDue?.toLocaleString() || "0"}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
                           <span>Due Date:</span>
@@ -1182,46 +1182,46 @@ export default function FinanceAccountingPage() {
                       {Object.entries(financialReports.profitLoss.revenue).filter(([key]) => key !== 'totalRevenue').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
                       <div className="flex justify-between font-medium border-t pt-2">
                         <span>Total Revenue</span>
-                        <span className="text-green-600">AED {financialReports.profitLoss.revenue.totalRevenue.toLocaleString()}</span>
+                        <span className="text-green-600">AED {financialReports.profitLoss.revenue.totalRevenue?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="font-medium text-red-600 mt-4">COST OF GOODS SOLD</div>
                       {Object.entries(financialReports.profitLoss.costOfSales).filter(([key]) => key !== 'totalCOGS').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
                       <div className="flex justify-between font-medium border-t pt-2">
                         <span>Total COGS</span>
-                        <span className="text-red-600">AED {financialReports.profitLoss.costOfSales.totalCOGS.toLocaleString()}</span>
+                        <span className="text-red-600">AED {financialReports.profitLoss.costOfSales.totalCOGS?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="flex justify-between font-bold text-lg border-t pt-2">
                         <span>GROSS PROFIT</span>
-                        <span className="text-blue-600">AED {financialReports.profitLoss.grossProfit.toLocaleString()}</span>
+                        <span className="text-blue-600">AED {financialReports.profitLoss.grossProfit?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="font-medium text-orange-600 mt-4">OPERATING EXPENSES</div>
                       {Object.entries(financialReports.profitLoss.operatingExpenses).filter(([key]) => key !== 'totalOpEx').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
                       <div className="flex justify-between font-medium border-t pt-2">
                         <span>Total Operating Expenses</span>
-                        <span className="text-orange-600">AED {financialReports.profitLoss.operatingExpenses.totalOpEx.toLocaleString()}</span>
+                        <span className="text-orange-600">AED {financialReports.profitLoss.operatingExpenses.totalOpEx?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="flex justify-between font-bold text-xl border-t-2 border-gray-300 pt-3">
                         <span>NET PROFIT</span>
-                        <span className="text-green-600">AED {financialReports.profitLoss.netProfit.toLocaleString()}</span>
+                        <span className="text-green-600">AED {financialReports.profitLoss.netProfit?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="text-right text-sm text-gray-600">
                         Profit Margin: {financialReports.profitLoss.profitMargin}%
@@ -1243,29 +1243,29 @@ export default function FinanceAccountingPage() {
                       {Object.entries(financialReports.balanceSheet.assets.currentAssets).filter(([key]) => key !== 'totalCurrentAssets').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
                       <div className="flex justify-between font-medium border-t pt-1 pl-2">
                         <span>Total Current Assets</span>
-                        <span>AED {financialReports.balanceSheet.assets.currentAssets.totalCurrentAssets.toLocaleString()}</span>
+                        <span>AED {financialReports.balanceSheet.assets.currentAssets.totalCurrentAssets?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="font-medium text-sm pl-2">Fixed Assets</div>
                       {Object.entries(financialReports.balanceSheet.assets.fixedAssets).filter(([key]) => key !== 'totalFixedAssets').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
                       <div className="flex justify-between font-medium border-t pt-1 pl-2">
                         <span>Total Fixed Assets</span>
-                        <span>AED {financialReports.balanceSheet.assets.fixedAssets.totalFixedAssets.toLocaleString()}</span>
+                        <span>AED {financialReports.balanceSheet.assets.fixedAssets.totalFixedAssets?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="flex justify-between font-bold border-t-2 pt-2">
                         <span>TOTAL ASSETS</span>
-                        <span className="text-blue-600">AED {financialReports.balanceSheet.assets.totalAssets.toLocaleString()}</span>
+                        <span className="text-blue-600">AED {financialReports.balanceSheet.assets.totalAssets?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="font-medium text-red-600 mt-4">LIABILITIES</div>
@@ -1274,7 +1274,7 @@ export default function FinanceAccountingPage() {
                       {Object.entries(financialReports.balanceSheet.liabilities.currentLiabilities).filter(([key]) => key !== 'totalCurrentLiabilities').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
 
@@ -1282,26 +1282,26 @@ export default function FinanceAccountingPage() {
                       {Object.entries(financialReports.balanceSheet.liabilities.longTermLiabilities).filter(([key]) => key !== 'totalLongTermLiabilities').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
 
                       <div className="flex justify-between font-bold border-t pt-2">
                         <span>TOTAL LIABILITIES</span>
-                        <span className="text-red-600">AED {financialReports.balanceSheet.liabilities.totalLiabilities.toLocaleString()}</span>
+                        <span className="text-red-600">AED {financialReports.balanceSheet.liabilities.totalLiabilities?.toLocaleString() || "0"}</span>
                       </div>
 
                       <div className="font-medium text-green-600 mt-4">EQUITY</div>
                       {Object.entries(financialReports.balanceSheet.equity).filter(([key]) => key !== 'totalEquity').map(([key, value]) => (
                         <div key={key} className="flex justify-between text-sm pl-4">
                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                          <span>AED {(value as number).toLocaleString()}</span>
+                          <span>AED {(value as number)?.toLocaleString() || "0"}</span>
                         </div>
                       ))}
 
                       <div className="flex justify-between font-bold border-t-2 border-gray-300 pt-3">
                         <span>TOTAL EQUITY</span>
-                        <span className="text-green-600">AED {financialReports.balanceSheet.equity.totalEquity.toLocaleString()}</span>
+                        <span className="text-green-600">AED {financialReports.balanceSheet.equity.totalEquity?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -1372,11 +1372,11 @@ export default function FinanceAccountingPage() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span>Mandatory Registration Threshold:</span>
-                          <span className="font-medium">AED {uaeVATConfig.registrationThreshold.toLocaleString()}/year</span>
+                          <span className="font-medium">AED {uaeVATConfig.registrationThreshold?.toLocaleString() || "0"}/year</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Voluntary Registration Threshold:</span>
-                          <span className="font-medium">AED {uaeVATConfig.voluntaryThreshold.toLocaleString()}/year</span>
+                          <span className="font-medium">AED {uaeVATConfig.voluntaryThreshold?.toLocaleString() || "0"}/year</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Standard VAT Rate:</span>
@@ -1575,15 +1575,15 @@ export default function FinanceAccountingPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Amount (Excl. VAT):</span>
-                    <span className="font-medium">{selectedTransaction.currency} {selectedTransaction.amount.toLocaleString()}</span>
+                    <span className="font-medium">{selectedTransaction.currency} {selectedTransaction.amount?.toLocaleString() || "0"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>VAT Amount:</span>
-                    <span className="font-medium">{selectedTransaction.currency} {selectedTransaction.vatAmount.toLocaleString()}</span>
+                    <span className="font-medium">{selectedTransaction.currency} {selectedTransaction.vatAmount?.toLocaleString() || "0"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total Amount:</span>
-                    <span className="font-bold text-green-600">{selectedTransaction.currency} {selectedTransaction.totalAmount.toLocaleString()}</span>
+                    <span className="font-bold text-green-600">{selectedTransaction.currency} {selectedTransaction.totalAmount?.toLocaleString() || "0"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Currency:</span>
@@ -1627,8 +1627,8 @@ export default function FinanceAccountingPage() {
                     <TableRow key={index}>
                       <TableCell className="font-medium">{entry.account}</TableCell>
                       <TableCell>{entry.accountName}</TableCell>
-                      <TableCell>{entry.debit > 0 ? `AED ${entry.debit.toLocaleString()}` : '-'}</TableCell>
-                      <TableCell>{entry.credit > 0 ? `AED ${entry.credit.toLocaleString()}` : '-'}</TableCell>
+                      <TableCell>{entry.debit > 0 ? `AED ${entry.debit?.toLocaleString() || "0"}` : '-'}</TableCell>
+                      <TableCell>{entry.credit > 0 ? `AED ${entry.credit?.toLocaleString() || "0"}` : '-'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1709,20 +1709,20 @@ export default function FinanceAccountingPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Output VAT Collected:</span>
-                      <span className="font-medium">AED {selectedVATReturn.outputVAT.toLocaleString()}</span>
+                      <span className="font-medium">AED {selectedVATReturn.outputVAT?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Input VAT Paid:</span>
-                      <span className="font-medium">AED {selectedVATReturn.inputVAT.toLocaleString()}</span>
+                      <span className="font-medium">AED {selectedVATReturn.inputVAT?.toLocaleString() || "0"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Adjustments:</span>
-                      <span className="font-medium">AED {selectedVATReturn.adjustments.toLocaleString()}</span>
+                      <span className="font-medium">AED {selectedVATReturn.adjustments?.toLocaleString() || "0"}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
                       <span className="font-medium">Final VAT Due:</span>
-                      <span className="font-bold text-amber-600">AED {selectedVATReturn.finalVATDue.toLocaleString()}</span>
+                      <span className="font-bold text-amber-600">AED {selectedVATReturn.finalVATDue?.toLocaleString() || "0"}</span>
                     </div>
                   </div>
                 </div>
@@ -1736,23 +1736,23 @@ export default function FinanceAccountingPage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span>Total Sales:</span>
-                        <span className="font-medium">AED {selectedVATReturn.totalSales.toLocaleString()}</span>
+                        <span className="font-medium">AED {selectedVATReturn.totalSales?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Taxable Sales ({selectedVATReturn.breakdown.standardRateSales.rate}%):</span>
-                        <span className="font-medium">AED {selectedVATReturn.breakdown.standardRateSales.amount.toLocaleString()}</span>
+                        <span className="font-medium">AED {selectedVATReturn.breakdown.standardRateSales.amount?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Zero Rated Sales:</span>
-                        <span className="font-medium">AED {selectedVATReturn.zeroRatedSales.toLocaleString()}</span>
+                        <span className="font-medium">AED {selectedVATReturn.zeroRatedSales?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Exempt Sales:</span>
-                        <span className="font-medium">AED {selectedVATReturn.exemptSales.toLocaleString()}</span>
+                        <span className="font-medium">AED {selectedVATReturn.exemptSales?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between border-t pt-2">
                         <span className="font-medium">Output VAT:</span>
-                        <span className="font-bold text-green-600">AED {selectedVATReturn.outputVAT.toLocaleString()}</span>
+                        <span className="font-bold text-green-600">AED {selectedVATReturn.outputVAT?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                   </div>
@@ -1762,15 +1762,15 @@ export default function FinanceAccountingPage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span>Total Purchases:</span>
-                        <span className="font-medium">AED {selectedVATReturn.totalPurchases.toLocaleString()}</span>
+                        <span className="font-medium">AED {selectedVATReturn.totalPurchases?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Taxable Purchases ({selectedVATReturn.breakdown.standardRatePurchases.rate}%):</span>
-                        <span className="font-medium">AED {selectedVATReturn.breakdown.standardRatePurchases.amount.toLocaleString()}</span>
+                        <span className="font-medium">AED {selectedVATReturn.breakdown.standardRatePurchases.amount?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between border-t pt-2">
                         <span className="font-medium">Input VAT:</span>
-                        <span className="font-bold text-blue-600">AED {selectedVATReturn.inputVAT.toLocaleString()}</span>
+                        <span className="font-bold text-blue-600">AED {selectedVATReturn.inputVAT?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                   </div>

@@ -254,7 +254,7 @@ const SupplierInvoicesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Outstanding</p>
-                <p className="text-2xl font-bold">AED {(totals.pending + totals.overdue + totals.processing).toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {(totals.pending + totals.overdue + totals.processing)?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-red-600 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   +12.5% from last month
@@ -270,7 +270,7 @@ const SupplierInvoicesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Paid This Month</p>
-                <p className="text-2xl font-bold">AED {totals.paid.toLocaleString()}</p>
+                <p className="text-2xl font-bold">AED {totals.paid?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   +8.2% from last month
@@ -286,7 +286,7 @@ const SupplierInvoicesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Overdue Amount</p>
-                <p className="text-2xl font-bold">USD {totals.overdue.toLocaleString()}</p>
+                <p className="text-2xl font-bold">USD {totals.overdue?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-red-600 flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" />
                   Requires attention
@@ -302,7 +302,7 @@ const SupplierInvoicesPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Processing</p>
-                <p className="text-2xl font-bold">USD {totals.processing.toLocaleString()}</p>
+                <p className="text-2xl font-bold">USD {totals.processing?.toLocaleString() || "0"}</p>
                 <div className="text-xs text-blue-600 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   In review
@@ -415,7 +415,7 @@ const SupplierInvoicesPage = () => {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">
-                    {invoice.currency} {calculateInvoiceTotal(invoice).toLocaleString()}
+                    {invoice.currency} {calculateInvoiceTotal(invoice)?.toLocaleString() || "0"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -561,29 +561,29 @@ const SupplierInvoicesPage = () => {
                       <div className="flex justify-between">
                         <span>Subtotal:</span>
                         <span className="font-medium">
-                          {selectedInvoice.currency} {selectedInvoice.items.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                          {selectedInvoice.currency} {selectedInvoice.items.reduce((sum, item) => sum + item.total, 0)?.toLocaleString() || "0"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span>VAT ({((selectedInvoice.taxes.vat / selectedInvoice.items.reduce((sum, item) => sum + item.total, 0)) * 100).toFixed(1)}%):</span>
-                        <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.vat.toLocaleString()}</span>
+                        <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.vat?.toLocaleString() || "0"}</span>
                       </div>
                       {selectedInvoice.taxes.customsDuty > 0 && (
                         <div className="flex justify-between">
                           <span>Customs Duty:</span>
-                          <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.customsDuty.toLocaleString()}</span>
+                          <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.customsDuty?.toLocaleString() || "0"}</span>
                         </div>
                       )}
                       {selectedInvoice.discounts > 0 && (
                         <div className="flex justify-between text-green-600">
                           <span>Discount:</span>
-                          <span className="font-medium">-{selectedInvoice.currency} {selectedInvoice.discounts.toLocaleString()}</span>
+                          <span className="font-medium">-{selectedInvoice.currency} {selectedInvoice.discounts?.toLocaleString() || "0"}</span>
                         </div>
                       )}
                       <Separator />
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total Amount:</span>
-                        <span>{selectedInvoice.currency} {calculateInvoiceTotal(selectedInvoice).toLocaleString()}</span>
+                        <span>{selectedInvoice.currency} {calculateInvoiceTotal(selectedInvoice)?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -610,8 +610,8 @@ const SupplierInvoicesPage = () => {
                           <TableRow key={index}>
                             <TableCell className="font-medium">{item.description}</TableCell>
                             <TableCell>{item.qty}</TableCell>
-                            <TableCell>{selectedInvoice.currency} {item.unitPrice.toLocaleString()}</TableCell>
-                            <TableCell className="font-medium">{selectedInvoice.currency} {item.total.toLocaleString()}</TableCell>
+                            <TableCell>{selectedInvoice.currency} {item.unitPrice?.toLocaleString() || "0"}</TableCell>
+                            <TableCell className="font-medium">{selectedInvoice.currency} {item.total?.toLocaleString() || "0"}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -621,29 +621,29 @@ const SupplierInvoicesPage = () => {
                       <div className="flex justify-between items-center min-w-64 ml-auto">
                         <span>Subtotal:</span>
                         <span className="font-medium">
-                          {selectedInvoice.currency} {selectedInvoice.items.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                          {selectedInvoice.currency} {selectedInvoice.items.reduce((sum, item) => sum + item.total, 0)?.toLocaleString() || "0"}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>VAT:</span>
-                        <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.vat.toLocaleString()}</span>
+                        <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.vat?.toLocaleString() || "0"}</span>
                       </div>
                       {selectedInvoice.taxes.customsDuty > 0 && (
                         <div className="flex justify-between items-center">
                           <span>Customs Duty:</span>
-                          <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.customsDuty.toLocaleString()}</span>
+                          <span className="font-medium">{selectedInvoice.currency} {selectedInvoice.taxes.customsDuty?.toLocaleString() || "0"}</span>
                         </div>
                       )}
                       {selectedInvoice.discounts > 0 && (
                         <div className="flex justify-between items-center text-green-600">
                           <span>Discount:</span>
-                          <span className="font-medium">-{selectedInvoice.currency} {selectedInvoice.discounts.toLocaleString()}</span>
+                          <span className="font-medium">-{selectedInvoice.currency} {selectedInvoice.discounts?.toLocaleString() || "0"}</span>
                         </div>
                       )}
                       <Separator />
                       <div className="flex justify-between items-center text-lg font-bold">
                         <span>Total:</span>
-                        <span>{selectedInvoice.currency} {calculateInvoiceTotal(selectedInvoice).toLocaleString()}</span>
+                        <span>{selectedInvoice.currency} {calculateInvoiceTotal(selectedInvoice)?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -679,7 +679,7 @@ const SupplierInvoicesPage = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Amount Due:</span>
                         <span className="font-medium text-lg">
-                          {selectedInvoice.currency} {calculateInvoiceTotal(selectedInvoice).toLocaleString()}
+                          {selectedInvoice.currency} {calculateInvoiceTotal(selectedInvoice)?.toLocaleString() || "0"}
                         </span>
                       </div>
                     </CardContent>

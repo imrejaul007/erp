@@ -626,7 +626,7 @@ export default function RecipesPage() {
                       <div className="text-right">
                         <div className="font-medium">{recipe.usageCount} times</div>
                         <div className="text-sm text-muted-foreground">
-                          AED {recipe.cost.toLocaleString()}
+                          AED {recipe.cost?.toLocaleString() || "0"}
                         </div>
                       </div>
                     </div>
@@ -701,7 +701,7 @@ export default function RecipesPage() {
                   </div>
                   <div>
                     <Label className="text-sm font-medium">Cost</Label>
-                    <p className="text-sm mt-1">{selectedRecipe.currency} {selectedRecipe.cost.toLocaleString()}</p>
+                    <p className="text-sm mt-1">{selectedRecipe.currency} {selectedRecipe.cost?.toLocaleString() || "0"}</p>
                   </div>
                 </div>
 
@@ -728,7 +728,7 @@ export default function RecipesPage() {
                             <TableCell>
                               <Badge variant="outline">{ingredient.grade}</Badge>
                             </TableCell>
-                            <TableCell>{ingredient.cost.toLocaleString()}</TableCell>
+                            <TableCell>{ingredient.cost?.toLocaleString() || "0"}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

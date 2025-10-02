@@ -942,20 +942,20 @@ const HRStaffManagement = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm">Total Salaries</span>
-                    <span className="font-medium">AED {payrollSummary.totalSalaries.toLocaleString()}</span>
+                    <span className="font-medium">AED {payrollSummary.totalSalaries?.toLocaleString() || "0"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Total Bonuses</span>
-                    <span className="font-medium text-green-600">+AED {payrollSummary.totalBonuses.toLocaleString()}</span>
+                    <span className="font-medium text-green-600">+AED {payrollSummary.totalBonuses?.toLocaleString() || "0"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Total Deductions</span>
-                    <span className="font-medium text-red-600">-AED {payrollSummary.totalDeductions.toLocaleString()}</span>
+                    <span className="font-medium text-red-600">-AED {payrollSummary.totalDeductions?.toLocaleString() || "0"}</span>
                   </div>
                   <hr />
                   <div className="flex justify-between font-medium text-lg">
                     <span>Net Payroll</span>
-                    <span>AED {payrollSummary.netPayroll.toLocaleString()}</span>
+                    <span>AED {payrollSummary.netPayroll?.toLocaleString() || "0"}</span>
                   </div>
                 </div>
 
@@ -966,7 +966,7 @@ const HRStaffManagement = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Average Salary</span>
-                    <span>AED {payrollSummary.avgSalary.toLocaleString()}</span>
+                    <span>AED {payrollSummary.avgSalary?.toLocaleString() || "0"}</span>
                   </div>
                 </div>
 
@@ -1007,10 +1007,10 @@ const HRStaffManagement = () => {
                               <div className="text-sm text-gray-500">{employee.position}</div>
                             </div>
                           </TableCell>
-                          <TableCell>AED {employee.salary.toLocaleString()}</TableCell>
-                          <TableCell className="text-green-600">+AED {bonus.toLocaleString()}</TableCell>
-                          <TableCell className="text-red-600">-AED {deductions.toLocaleString()}</TableCell>
-                          <TableCell className="font-medium">AED {netPay.toLocaleString()}</TableCell>
+                          <TableCell>AED {employee.salary?.toLocaleString() || "0"}</TableCell>
+                          <TableCell className="text-green-600">+AED {bonus?.toLocaleString() || "0"}</TableCell>
+                          <TableCell className="text-red-600">-AED {deductions?.toLocaleString() || "0"}</TableCell>
+                          <TableCell className="font-medium">AED {netPay?.toLocaleString() || "0"}</TableCell>
                           <TableCell>
                             <Badge className="bg-green-100 text-green-800">
                               Processed

@@ -367,7 +367,7 @@ export default function SemiFinishedGoodsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-              AED {totalValue.toLocaleString()}
+              AED {totalValue?.toLocaleString() || "0"}
             </div>
             <p className="text-xs text-gray-500 mt-1">Work-in-progress value</p>
           </CardContent>
@@ -620,7 +620,7 @@ export default function SemiFinishedGoodsPage() {
                     <div>
                       <Label className="text-sm font-medium text-gray-600">Estimated Cost</Label>
                       <p className="text-lg font-semibold text-green-600">
-                        {selectedGood.currency} {selectedGood.estimatedCost.toLocaleString()}
+                        {selectedGood.currency} {selectedGood.estimatedCost?.toLocaleString() || "0"}
                       </p>
                     </div>
                   </div>

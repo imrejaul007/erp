@@ -458,7 +458,7 @@ const TransfersPage = () => {
                             </div>
                           </div>
                           <div className="text-sm text-gray-600">
-                            {transfer.totalItems} items • AED {transfer.totalValue.toLocaleString()}
+                            {transfer.totalItems} items • AED {transfer.totalValue?.toLocaleString() || "0"}
                           </div>
                         </div>
                       </div>
@@ -589,7 +589,7 @@ const TransfersPage = () => {
                       </div>
                       <div className="border-t mt-2 pt-2 flex justify-between font-medium">
                         <span>Total: {transfer.totalItems} items</span>
-                        <span>AED {transfer.totalValue.toLocaleString()}</span>
+                        <span>AED {transfer.totalValue?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
 

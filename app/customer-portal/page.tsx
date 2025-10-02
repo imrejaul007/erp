@@ -102,7 +102,7 @@ export default function CustomerPortalPage() {
               <p className="text-blue-100">{customer.email} • {customer.phone}</p>
             </div>
             <div className="text-right">
-              <div className="text-4xl font-bold">{customer.loyaltyPoints.toLocaleString()}</div>
+              <div className="text-4xl font-bold">{customer.loyaltyPoints?.toLocaleString() || "0"}</div>
               <div className="text-blue-100">Loyalty Points</div>
               <Button variant="secondary" size="sm" className="mt-2">
                 <Gift className="w-4 h-4 mr-2" />
@@ -208,7 +208,7 @@ export default function CustomerPortalPage() {
                         <TableCell className="font-medium">{order.id}</TableCell>
                         <TableCell>{order.date}</TableCell>
                         <TableCell>{order.items} items</TableCell>
-                        <TableCell>AED {order.total.toLocaleString()}</TableCell>
+                        <TableCell>AED {order.total?.toLocaleString() || "0"}</TableCell>
                         <TableCell>
                           <Badge className="bg-green-100 text-green-800">{order.status}</Badge>
                         </TableCell>
@@ -243,7 +243,7 @@ export default function CustomerPortalPage() {
                         <div className="flex items-center justify-between mb-4">
                           <div>
                             <h3 className="font-semibold">{reward.name}</h3>
-                            <p className="text-sm text-muted-foreground">{reward.points.toLocaleString()} points</p>
+                            <p className="text-sm text-muted-foreground">{reward.points?.toLocaleString() || "0"} points</p>
                           </div>
                           <Gift className="h-8 w-8 text-purple-500" />
                         </div>

@@ -276,7 +276,7 @@ const EcommercePage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{ecommerceMetrics.totalOrders.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{ecommerceMetrics.totalOrders?.toLocaleString() || "0"}</p>
                 <div className={`text-xs flex items-center gap-1 ${getTrendColor(ecommerceMetrics.trends.orders)}`}>
                   {getTrendIcon(ecommerceMetrics.trends.orders)}
                   {Math.abs(ecommerceMetrics.trends.orders)}% vs last period

@@ -252,7 +252,7 @@ export default function SamplingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Revenue from Trials</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">AED {conversionStats.totalRevenue.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">AED {conversionStats.totalRevenue?.toLocaleString() || "0"}</p>
                 <p className="text-sm text-gray-500 mt-1">{conversionStats.totalPurchased} conversions</p>
               </div>
               <div className="p-3 bg-amber-100 rounded-lg">
@@ -496,7 +496,7 @@ export default function SamplingPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Revenue Generated</span>
-                    <span className="text-xl font-bold text-green-600">AED {conversionStats.totalRevenue.toLocaleString()}</span>
+                    <span className="text-xl font-bold text-green-600">AED {conversionStats.totalRevenue?.toLocaleString() || "0"}</span>
                   </div>
                   <div className="flex justify-between items-center pt-3 border-t">
                     <span className="text-gray-900 font-medium">ROI</span>

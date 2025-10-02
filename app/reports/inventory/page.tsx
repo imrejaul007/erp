@@ -345,7 +345,7 @@ export default function InventoryReportsPage() {
               {formatCurrency(inventoryOverview.totalValue)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {inventoryOverview.totalItems.toLocaleString()} total items
+              {inventoryOverview.totalItems?.toLocaleString() || "0"} total items
             </p>
             <div className="mt-2 text-xs text-muted-foreground">
               Avg Value: {formatCurrency(inventoryOverview.averageValue)}

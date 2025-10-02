@@ -383,7 +383,7 @@ const ImportTrackingPage = () => {
                           </div>
                         </div>
                         <div>
-                          <div className="text-sm font-medium">{shipment.currency} {shipment.value.toLocaleString()}</div>
+                          <div className="text-sm font-medium">{shipment.currency} {shipment.value?.toLocaleString() || "0"}</div>
                           <div className="text-sm text-gray-600">{shipment.carrier} • {shipment.weight}</div>
                         </div>
                       </div>
@@ -534,7 +534,7 @@ const ImportTrackingPage = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Value:</span>
-                        <span className="font-medium">{selectedShipment.currency} {selectedShipment.value.toLocaleString()}</span>
+                        <span className="font-medium">{selectedShipment.currency} {selectedShipment.value?.toLocaleString() || "0"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Weight:</span>

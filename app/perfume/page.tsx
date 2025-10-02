@@ -317,7 +317,7 @@ const PerfumePage = () => {
                 <h3 className="font-semibold mb-1">{category.name}</h3>
                 <div className="text-sm text-gray-600 space-y-1">
                   <div>{category.count} products</div>
-                  <div>Avg: AED {category.averagePrice.toLocaleString()}</div>
+                  <div>Avg: AED {category.averagePrice?.toLocaleString() || "0"}</div>
                 </div>
               </div>
             ))}
@@ -397,7 +397,7 @@ const PerfumePage = () => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">AED {product.price.toLocaleString()}</div>
+                        <div className="font-medium">AED {product.price?.toLocaleString() || "0"}</div>
                         <div className="text-sm text-gray-600 flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {product.age}

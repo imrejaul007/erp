@@ -429,8 +429,8 @@ const TaxSettingsPage = () => {
                             {report.startDate} to {report.endDate}
                           </p>
                           <div className="flex gap-4 text-xs text-gray-500 mt-1">
-                            <span>Sales: AED {report.totalSales.toLocaleString()}</span>
-                            <span>VAT: AED {report.totalVat.toLocaleString()}</span>
+                            <span>Sales: AED {report.totalSales?.toLocaleString() || "0"}</span>
+                            <span>VAT: AED {report.totalVat?.toLocaleString() || "0"}</span>
                             {report.submissionDate && (
                               <span>Submitted: {report.submissionDate}</span>
                             )}
