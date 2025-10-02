@@ -166,7 +166,7 @@ export default function CustomerBehaviorPage() {
         <Card>
           <CardContent className="pt-6">
             <Users className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold">{behaviorSummary.totalCustomers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{behaviorSummary.totalCustomers?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Total Customers</div>
           </CardContent>
         </Card>
@@ -174,7 +174,7 @@ export default function CustomerBehaviorPage() {
         <Card>
           <CardContent className="pt-6">
             <Heart className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold">{behaviorSummary.activeCustomers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{behaviorSummary.activeCustomers?.toLocaleString() || "0"}</div>
             <div className="text-sm text-gray-600">Active Customers</div>
           </CardContent>
         </Card>
@@ -244,7 +244,7 @@ export default function CustomerBehaviorPage() {
                     <Progress value={pattern.percentage} className="h-2" />
                     <div className="flex justify-between text-xs text-gray-600 mt-1">
                       <span>{pattern.count} customers</span>
-                      <span>Avg: AED {pattern.avgSpend.toLocaleString()}</span>
+                      <span>Avg: AED {pattern.avgSpend?.toLocaleString() || "0"}</span>
                     </div>
                   </div>
                 ))}
@@ -270,7 +270,7 @@ export default function CustomerBehaviorPage() {
                       </div>
                       <div>
                         <span className="text-gray-600">Avg Spend: </span>
-                        <span className="font-semibold">AED {segment.avgSpend.toLocaleString()}</span>
+                        <span className="font-semibold">AED {segment.avgSpend?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                     <Progress value={segment.revenueShare} className="h-2" />
@@ -307,7 +307,7 @@ export default function CustomerBehaviorPage() {
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Avg Spend</div>
-                        <div className="text-xl font-bold text-green-600">AED {pattern.avgSpend.toLocaleString()}</div>
+                        <div className="text-xl font-bold text-green-600">AED {pattern.avgSpend?.toLocaleString() || "0"}</div>
                       </div>
                     </div>
                   </div>
@@ -393,7 +393,7 @@ export default function CustomerBehaviorPage() {
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Avg Spend</div>
-                        <div className="font-semibold">AED {pref.avgSpend.toLocaleString()}</div>
+                        <div className="font-semibold">AED {pref.avgSpend?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Loyalty</div>
@@ -424,7 +424,7 @@ export default function CustomerBehaviorPage() {
                     <div className="grid grid-cols-3 gap-2 text-sm">
                       <div>
                         <div className="text-xs text-gray-600">Visits</div>
-                        <div className="font-semibold">{loc.visits.toLocaleString()}</div>
+                        <div className="font-semibold">{loc.visits?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Revenue</div>
@@ -434,7 +434,7 @@ export default function CustomerBehaviorPage() {
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Avg Transaction</div>
-                        <div className="font-semibold">AED {loc.avgTransaction.toLocaleString()}</div>
+                        <div className="font-semibold">AED {loc.avgTransaction?.toLocaleString() || "0"}</div>
                       </div>
                     </div>
                   </div>
@@ -476,7 +476,7 @@ export default function CustomerBehaviorPage() {
                       <div>
                         <div className="text-sm text-gray-600">Avg Spend</div>
                         <div className="text-xl font-bold">
-                          AED {segment.avgSpend.toLocaleString()}
+                          AED {segment.avgSpend?.toLocaleString() || "0"}
                         </div>
                       </div>
                       <div>
@@ -525,7 +525,7 @@ export default function CustomerBehaviorPage() {
                     <div className="grid grid-cols-3 gap-4 mb-3">
                       <div>
                         <div className="text-sm text-gray-600">Total</div>
-                        <div className="text-xl font-bold">{metric.enrolled.toLocaleString()}</div>
+                        <div className="text-xl font-bold">{metric.enrolled?.toLocaleString() || "0"}</div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Penetration Rate</div>
