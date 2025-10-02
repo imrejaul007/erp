@@ -18,7 +18,8 @@ import {
   Clock,
   TrendingUp,
   Target,
-  Settings
+  Settings,
+  Calendar
 } from 'lucide-react';
 
 export default function ProductionProPage() {
