@@ -212,8 +212,82 @@ export default function InventoryDashboard() {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null)
 
   useEffect(() => {
-    generateMockData()
+    fetchInventoryData()
   }, [selectedLocation, selectedCategory])
+
+  const fetchInventoryData = async () => {
+    try {
+      // Fetch products from real API
+      const productsResponse = await fetch('/api/products');
+      const productsData = await productsResponse.json();
+
+      // Transform products to inventory item format
+      const transformedItems: InventoryItem[] = (productsData.products || []).map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        nameArabic: product.nameArabic,
+        sku: product.sku,
+        category: 'finished_product',
+        subcategory: product.category?.name || 'General',
+        brand: product.brand?.name,
+        description: product.description || '',
+        specifications: {
+          weight: product.weight,
+          volume: product.volume,
+          quality: 'standard' as const
+        },
+        units: {
+          primary: product.unit as any || 'piece',
+          conversions: []
+        },
+        costPrice: Number(product.costPrice || 0),
+        pricing: {
+          retail: Number(product.unitPrice),
+          wholesale: Number(product.unitPrice) * 0.9,
+          vip: Number(product.unitPrice) * 0.92,
+          corporate: Number(product.unitPrice) * 0.95
+        },
+        stock: [],
+        totalStock: product.stockQuantity || 0,
+        totalValue: (product.stockQuantity || 0) * Number(product.unitPrice),
+        alerts: [],
+        images: product.images ? JSON.parse(product.images) : [],
+        tags: product.tags ? JSON.parse(product.tags) : []
+      }));
+
+      setInventoryItems(transformedItems);
+
+      // Also fetch stores for locations
+      const storesResponse = await fetch('/api/stores');
+      const storesData = await storesResponse.json();
+
+      const transformedLocations: Location[] = (storesData.data || []).map((store: any) => ({
+        id: store.id,
+        name: store.name,
+        type: 'store' as const,
+        address: store.address || '',
+        city: store.city || '',
+        region: store.emirate || '',
+        manager: '',
+        phone: store.phone || '',
+        email: store.email || '',
+        isActive: store.isActive,
+        capacity: 1000,
+        currentUtilization: 50,
+        operatingHours: {
+          open: store.openingTime || '09:00',
+          close: store.closingTime || '21:00',
+          days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        }
+      }));
+
+      setLocations(transformedLocations);
+    } catch (error) {
+      console.error('Error fetching inventory data:', error);
+      // Fallback to mock data on error
+      generateMockData();
+    }
+  }
 
   const generateMockData = () => {
     const mockLocations: Location[] = [

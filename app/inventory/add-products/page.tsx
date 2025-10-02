@@ -430,17 +430,106 @@ export default function AddProductPage() {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // First, get or create the category
+      let categoryId = '';
+      try {
+        // Try to find existing category
+        const categoriesResponse = await fetch('/api/categories');
+        const categoriesData = await categoriesResponse.json();
 
-      // Reset form or redirect
-      console.log('Product created:', formData);
+        let existingCategory = categoriesData.categories?.find(
+          (cat: any) => cat.name.toLowerCase() === formData.category.toLowerCase()
+        );
+
+        if (!existingCategory) {
+          // Create new category
+          const createCategoryResponse = await fetch('/api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: formData.category || 'General',
+              description: `Auto-created category for ${formData.category}`
+            })
+          });
+          const newCategory = await createCategoryResponse.json();
+          categoryId = newCategory.id;
+        } else {
+          categoryId = existingCategory.id;
+        }
+      } catch (error) {
+        console.error('Error handling category:', error);
+        throw new Error('Failed to process category');
+      }
+
+      // Get or create brand if specified
+      let brandId = undefined;
+      if (formData.brand && formData.brand !== '') {
+        try {
+          const brandsResponse = await fetch('/api/brands');
+          const brandsData = await brandsResponse.json();
+
+          let existingBrand = brandsData.brands?.find(
+            (brand: any) => brand.name.toLowerCase() === formData.brand.toLowerCase()
+          );
+
+          if (!existingBrand) {
+            const createBrandResponse = await fetch('/api/brands', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: formData.brand,
+                description: `Auto-created brand for ${formData.brand}`
+              })
+            });
+            const newBrand = await createBrandResponse.json();
+            brandId = newBrand.id;
+          } else {
+            brandId = existingBrand.id;
+          }
+        } catch (error) {
+          console.error('Error handling brand:', error);
+          // Continue without brand if it fails
+        }
+      }
+
+      // Create the product
+      const productResponse = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          nameArabic: formData.nameArabic,
+          sku: formData.sku || `SKU-${Date.now()}`,
+          categoryId: categoryId,
+          brandId: brandId,
+          description: formData.description,
+          unit: formData.unit,
+          unitPrice: formData.retailPrice,
+          costPrice: formData.costPerUnit,
+          stockQuantity: 0, // Start with 0, add via inventory
+          minStock: formData.minimumStock,
+          maxStock: formData.maximumStock,
+          weight: formData.weight,
+          volume: formData.size,
+          images: formData.images,
+          tags: formData.tags,
+          isActive: true,
+          isFeatured: false
+        })
+      });
+
+      if (!productResponse.ok) {
+        const errorData = await productResponse.json();
+        throw new Error(errorData.error || 'Failed to create product');
+      }
+
+      const newProduct = await productResponse.json();
 
       // Add to imported products list
       setImportedProducts(prev => [...prev, formData]);
       setShowImportedProducts(true);
 
-      alert('Product created successfully!');
+      alert(`Product "${newProduct.name}" created successfully! SKU: ${newProduct.sku}`);
 
       // Reset form
       setCurrentStep(1);
@@ -486,7 +575,7 @@ export default function AddProductPage() {
       });
     } catch (error) {
       console.error('Error creating product:', error);
-      alert('Error creating product. Please try again.');
+      alert(`Error creating product: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
