@@ -385,6 +385,7 @@ class ShopifyConnector {
 
       } catch (error) {
         results.errors.push({
+          type: 'product_sync_error',
           itemId: product.sku,
           message: error instanceof Error ? error.message : 'Unknown error'
         });
@@ -473,6 +474,7 @@ class WooCommerceConnector {
 
       } catch (error) {
         results.errors.push({
+          type: 'product_sync_error',
           itemId: product.sku,
           message: error instanceof Error ? error.message : 'Unknown error'
         });
