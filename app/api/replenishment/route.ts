@@ -1,40 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
-// Validation schemas
-const ReplenishmentRuleSchema = z.object({
-  storeId: z.string().optional(),
-  productId: z.string().optional(),
-  categoryId: z.string().optional(),
-  minLevel: z.number().min(0, 'Min level must be non-negative'),
-  maxLevel: z.number().min(1, 'Max level must be positive'),
-  reorderQuantity: z.number().min(1, 'Reorder quantity must be positive'),
-  leadTimeDays: z.number().min(1, 'Lead time must be at least 1 day'),
-  safetyStock: z.number().min(0, 'Safety stock must be non-negative'),
-  seasonalAdjustment: z.array(z.object({
-    month: z.number().min(1).max(12, 'Month must be between 1 and 12'),
-    adjustmentPercentage: z.number().min(-90).max(500, 'Adjustment percentage out of range'),
-    reason: z.string().optional()
-  })).optional(),
-  autoApprove: z.boolean().default(false),
-  isActive: z.boolean().default(true)
-}).refine(data => {
-  return data.maxLevel > data.minLevel;
-}, {
-  message: 'Max level must be greater than min level',
-  path: ['maxLevel']
-});
-
-const AlertActionSchema = z.object({
-  alertId: z.string().min(1, 'Alert ID is required'),
-  action: z.enum(['resolve', 'create_order', 'snooze']),
-  notes: z.string().optional(),
-  snoozeUntil: z.string().datetime().optional()
-});
-
-// GET /api/replenishment - Get replenishment rules and alerts
+// GET /api/replenishment - Get replenishment suggestions based on real inventory
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -50,156 +20,143 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const type = url.searchParams.get('type') || 'all'; // rules, alerts, or all
     const storeId = url.searchParams.get('storeId');
     const priority = url.searchParams.get('priority');
 
-    // Filter by user's accessible stores if not admin/owner
-    const userStores = session.user.stores || [];
-    const accessibleStores = ['OWNER', 'ADMIN'].includes(userRole) ? null : userStores;
+    // Build where clause
+    const whereClause: any = {};
 
-    // Mock data - TODO: Replace with actual database queries
-    const mockRules = [
-      {
-        id: '1',
-        storeId: '1',
-        productId: null,
-        categoryId: 'cat1',
-        minLevel: 10,
-        maxLevel: 100,
-        reorderQuantity: 50,
-        leadTimeDays: 3,
-        safetyStock: 5,
-        seasonalAdjustment: [
-          { month: 12, adjustmentPercentage: 50, reason: 'Holiday season increase' },
-          { month: 6, adjustmentPercentage: -20, reason: 'Summer decrease' }
-        ],
-        autoApprove: true,
-        isActive: true,
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-01-15')
-      },
-      {
-        id: '2',
-        storeId: '2',
-        productId: 'prod2',
-        categoryId: null,
-        minLevel: 15,
-        maxLevel: 80,
-        reorderQuantity: 30,
-        leadTimeDays: 2,
-        safetyStock: 8,
-        seasonalAdjustment: [],
-        autoApprove: false,
-        isActive: true,
-        createdAt: new Date('2024-02-01'),
-        updatedAt: new Date('2024-02-01')
-      }
-    ];
-
-    const mockAlerts = [
-      {
-        id: '1',
-        storeId: '1',
-        productId: 'prod2',
-        alertType: 'LOW_STOCK',
-        currentStock: 8,
-        suggestedOrder: 25,
-        priority: 'HIGH',
-        message: 'Rose Perfume is running low at Dubai Mall Store. Current stock (8) is below minimum level (15).',
-        isResolved: false,
-        createdAt: new Date('2024-09-16T08:30:00Z'),
-        resolvedAt: null
-      },
-      {
-        id: '2',
-        storeId: '2',
-        productId: 'prod3',
-        alertType: 'OUT_OF_STOCK',
-        currentStock: 0,
-        suggestedOrder: 20,
-        priority: 'CRITICAL',
-        message: 'Arabian Nights is out of stock at Mall of the Emirates. Immediate replenishment required.',
-        isResolved: false,
-        createdAt: new Date('2024-09-15T14:20:00Z'),
-        resolvedAt: null
-      },
-      {
-        id: '3',
-        storeId: '1',
-        productId: 'prod1',
-        alertType: 'SEASONAL_ADJUSTMENT',
-        currentStock: 45,
-        suggestedOrder: 75,
-        priority: 'MEDIUM',
-        message: 'Increase Oud Al Malaki stock for upcoming holiday season (50% adjustment recommended).',
-        isResolved: true,
-        createdAt: new Date('2024-09-10T10:00:00Z'),
-        resolvedAt: new Date('2024-09-12T16:30:00Z')
-      }
-    ];
-
-    let response: any = {};
-
-    if (type === 'rules' || type === 'all') {
-      let filteredRules = mockRules;
-
-      if (accessibleStores) {
-        filteredRules = filteredRules.filter(rule =>
-          !rule.storeId || accessibleStores.includes(rule.storeId)
-        );
-      }
-
-      if (storeId) {
-        filteredRules = filteredRules.filter(rule => rule.storeId === storeId);
-      }
-
-      response.rules = filteredRules;
+    // Filter by accessible stores if not admin/owner
+    if (!['OWNER', 'ADMIN'].includes(userRole)) {
+      const userStoreIds = await prisma.userStore.findMany({
+        where: { userId: session.user.id },
+        select: { storeId: true }
+      });
+      const storeIds = userStoreIds.map(us => us.storeId);
+      whereClause.storeId = { in: storeIds };
     }
 
-    if (type === 'alerts' || type === 'all') {
-      let filteredAlerts = mockAlerts;
-
-      if (accessibleStores) {
-        filteredAlerts = filteredAlerts.filter(alert =>
-          accessibleStores.includes(alert.storeId)
-        );
-      }
-
-      if (storeId) {
-        filteredAlerts = filteredAlerts.filter(alert => alert.storeId === storeId);
-      }
-
-      if (priority) {
-        filteredAlerts = filteredAlerts.filter(alert => alert.priority === priority);
-      }
-
-      response.alerts = filteredAlerts;
-
-      // Add alert statistics
-      response.alertStats = {
-        total: filteredAlerts.length,
-        unresolved: filteredAlerts.filter(a => !a.isResolved).length,
-        critical: filteredAlerts.filter(a => a.priority === 'CRITICAL' && !a.isResolved).length,
-        high: filteredAlerts.filter(a => a.priority === 'HIGH' && !a.isResolved).length,
-        resolvedToday: filteredAlerts.filter(a =>
-          a.isResolved &&
-          a.resolvedAt &&
-          new Date(a.resolvedAt).toDateString() === new Date().toDateString()
-        ).length
-      };
+    if (storeId) {
+      whereClause.storeId = storeId;
     }
 
-    // Add engine status
-    response.engineStatus = {
-      isEnabled: true,
-      lastRun: new Date('2024-09-16T09:00:00Z'),
-      nextRun: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
-      rulesProcessed: mockRules.filter(r => r.isActive).length,
-      alertsGenerated: 2
+    // Get inventory data with product info
+    const inventoryData = await prisma.storeInventory.findMany({
+      where: whereClause,
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            nameArabic: true,
+            sku: true,
+            minStock: true,
+            maxStock: true,
+            category: {
+              select: { id: true, name: true }
+            }
+          }
+        },
+        store: {
+          select: {
+            id: true,
+            name: true,
+            code: true
+          }
+        }
+      }
+    });
+
+    // Generate replenishment alerts based on stock levels
+    const alerts = [];
+
+    for (const inventory of inventoryData) {
+      const currentStock = inventory.quantity;
+      const minStock = inventory.product.minStock || 0;
+      const maxStock = inventory.product.maxStock || 100;
+      const reservedQty = inventory.reservedQty || 0;
+      const availableStock = currentStock - reservedQty;
+
+      let alertType = null;
+      let priority = null;
+      let suggestedOrder = 0;
+      let message = '';
+
+      // Determine alert type and priority
+      if (currentStock === 0) {
+        alertType = 'OUT_OF_STOCK';
+        priority = 'CRITICAL';
+        suggestedOrder = maxStock;
+        message = `${inventory.product.name} is out of stock at ${inventory.store.name}. Immediate replenishment required.`;
+      } else if (availableStock <= 0) {
+        alertType = 'NO_AVAILABLE_STOCK';
+        priority = 'HIGH';
+        suggestedOrder = maxStock - currentStock;
+        message = `${inventory.product.name} has no available stock at ${inventory.store.name} (all reserved). Current: ${currentStock}, Reserved: ${reservedQty}.`;
+      } else if (currentStock <= minStock * 0.5) {
+        alertType = 'CRITICALLY_LOW';
+        priority = 'HIGH';
+        suggestedOrder = maxStock - currentStock;
+        message = `${inventory.product.name} is critically low at ${inventory.store.name}. Current stock (${currentStock}) is 50% below minimum level (${minStock}).`;
+      } else if (currentStock <= minStock) {
+        alertType = 'LOW_STOCK';
+        priority = 'MEDIUM';
+        suggestedOrder = maxStock - currentStock;
+        message = `${inventory.product.name} is running low at ${inventory.store.name}. Current stock (${currentStock}) is below minimum level (${minStock}).`;
+      }
+
+      // Only create alert if there's an issue
+      if (alertType) {
+        alerts.push({
+          id: `alert_${inventory.id}`,
+          storeId: inventory.storeId,
+          storeName: inventory.store.name,
+          productId: inventory.productId,
+          productName: inventory.product.name,
+          productSku: inventory.product.sku,
+          categoryId: inventory.product.category?.id,
+          categoryName: inventory.product.category?.name,
+          alertType,
+          priority,
+          currentStock,
+          reservedStock: reservedQty,
+          availableStock,
+          minLevel: minStock,
+          maxLevel: maxStock,
+          suggestedOrder,
+          message,
+          isResolved: false,
+          createdAt: inventory.lastUpdated || new Date()
+        });
+      }
+    }
+
+    // Apply priority filter if requested
+    let filteredAlerts = alerts;
+    if (priority) {
+      filteredAlerts = alerts.filter(alert => alert.priority === priority.toUpperCase());
+    }
+
+    // Sort by priority (CRITICAL > HIGH > MEDIUM > LOW)
+    const priorityOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+    filteredAlerts.sort((a, b) => priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder]);
+
+    // Calculate summary statistics
+    const summary = {
+      totalAlerts: filteredAlerts.length,
+      criticalAlerts: filteredAlerts.filter(a => a.priority === 'CRITICAL').length,
+      highPriorityAlerts: filteredAlerts.filter(a => a.priority === 'HIGH').length,
+      mediumPriorityAlerts: filteredAlerts.filter(a => a.priority === 'MEDIUM').length,
+      outOfStockItems: filteredAlerts.filter(a => a.alertType === 'OUT_OF_STOCK').length,
+      lowStockItems: filteredAlerts.filter(a => a.alertType === 'LOW_STOCK').length,
+      totalSuggestedOrderValue: filteredAlerts.reduce((sum, alert) => sum + alert.suggestedOrder, 0)
     };
 
-    return NextResponse.json(response);
+    return NextResponse.json({
+      alerts: filteredAlerts,
+      summary,
+      timestamp: new Date().toISOString()
+    });
 
   } catch (error) {
     console.error('Error fetching replenishment data:', error);
@@ -210,7 +167,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/replenishment - Create rule or process alert
+// POST /api/replenishment - Create replenishment order or update inventory settings
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -226,308 +183,146 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { action, data } = body;
-    const userStores = session.user.stores || [];
+    const { action, productId, storeId, minStock, maxStock, createTransfer } = body;
 
-    switch (action) {
-      case 'create_rule':
-        const ruleData = ReplenishmentRuleSchema.parse(data);
+    if (action === 'update_levels') {
+      // Update product min/max stock levels
+      if (!productId || minStock === undefined || maxStock === undefined) {
+        return NextResponse.json(
+          { error: 'Product ID, minStock, and maxStock are required' },
+          { status: 400 }
+        );
+      }
 
-        // Check store access if storeId is provided
-        if (ruleData.storeId && !['OWNER', 'ADMIN'].includes(userRole)) {
-          if (!userStores.includes(ruleData.storeId)) {
-            return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 });
-          }
+      if (minStock < 0 || maxStock <= minStock) {
+        return NextResponse.json(
+          { error: 'Invalid stock levels. Max must be greater than min, and both must be non-negative.' },
+          { status: 400 }
+        );
+      }
+
+      const product = await prisma.product.update({
+        where: { id: productId },
+        data: {
+          minStock,
+          maxStock
         }
+      });
 
-        // Validate rule logic
-        if (ruleData.storeId && ruleData.productId && ruleData.categoryId) {
+      return NextResponse.json({
+        success: true,
+        message: 'Stock levels updated successfully',
+        product: {
+          id: product.id,
+          name: product.name,
+          minStock: product.minStock,
+          maxStock: product.maxStock
+        }
+      });
+    }
+
+    if (action === 'create_replenishment') {
+      // Create a transfer order for replenishment
+      if (!createTransfer || !createTransfer.fromStoreId || !createTransfer.toStoreId || !createTransfer.items) {
+        return NextResponse.json(
+          { error: 'Transfer details (fromStoreId, toStoreId, items) are required' },
+          { status: 400 }
+        );
+      }
+
+      // Verify stores exist
+      const [fromStore, toStore] = await Promise.all([
+        prisma.store.findUnique({ where: { id: createTransfer.fromStoreId } }),
+        prisma.store.findUnique({ where: { id: createTransfer.toStoreId } })
+      ]);
+
+      if (!fromStore || !toStore) {
+        return NextResponse.json({ error: 'One or both stores not found' }, { status: 404 });
+      }
+
+      // Check inventory availability at source store
+      for (const item of createTransfer.items) {
+        const inventory = await prisma.storeInventory.findUnique({
+          where: {
+            storeId_productId: {
+              storeId: createTransfer.fromStoreId,
+              productId: item.productId
+            }
+          }
+        });
+
+        if (!inventory || inventory.quantity < item.quantity) {
+          const product = await prisma.product.findUnique({ where: { id: item.productId } });
           return NextResponse.json({
-            error: 'Rule cannot specify both productId and categoryId'
+            error: `Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`
           }, { status: 400 });
         }
+      }
 
-        // TODO: Check for conflicting rules
-        // TODO: Create rule in database
-
-        const newRule = {
-          id: `rule_${Date.now()}`,
-          ...ruleData,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-
-        return NextResponse.json(newRule, { status: 201 });
-
-      case 'process_alert':
-        const alertAction = AlertActionSchema.parse(data);
-
-        // Check store access for the alert
-        // TODO: Get alert from database and check store access
-
-        switch (alertAction.action) {
-          case 'resolve':
-            // TODO: Mark alert as resolved in database
-            const resolvedAlert = {
-              id: alertAction.alertId,
-              isResolved: true,
-              resolvedAt: new Date(),
-              resolvedBy: session.user.id,
-              notes: alertAction.notes
-            };
-
-            return NextResponse.json({
-              message: 'Alert resolved successfully',
-              alert: resolvedAlert
-            });
-
-          case 'create_order':
-            // TODO: Create purchase order based on alert suggestion
-            const purchaseOrder = {
-              id: `po_${Date.now()}`,
-              alertId: alertAction.alertId,
-              status: 'PENDING',
-              createdBy: session.user.id,
-              createdAt: new Date(),
-              notes: alertAction.notes
-            };
-
-            // TODO: Mark alert as resolved
-            return NextResponse.json({
-              message: 'Purchase order created successfully',
-              purchaseOrder
-            }, { status: 201 });
-
-          case 'snooze':
-            if (!alertAction.snoozeUntil) {
-              return NextResponse.json({
-                error: 'Snooze until date is required'
-              }, { status: 400 });
-            }
-
-            // TODO: Update alert with snooze date
-            const snoozedAlert = {
-              id: alertAction.alertId,
-              snoozedUntil: new Date(alertAction.snoozeUntil),
-              snoozedBy: session.user.id,
-              notes: alertAction.notes
-            };
-
-            return NextResponse.json({
-              message: 'Alert snoozed successfully',
-              alert: snoozedAlert
-            });
-        }
-        break;
-
-      case 'run_engine':
-        // Manual trigger of replenishment engine
-        if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-          return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-        }
-
-        // TODO: Trigger replenishment engine
-        const engineRun = {
-          id: `run_${Date.now()}`,
-          triggeredBy: session.user.id,
-          startTime: new Date(),
-          status: 'RUNNING'
-        };
-
-        return NextResponse.json({
-          message: 'Replenishment engine started',
-          run: engineRun
-        });
-
-      case 'generate_suggestions':
-        const { storeIds, productIds } = data;
-
-        // Check store access
-        const accessibleStores = ['OWNER', 'ADMIN'].includes(userRole) ?
-          storeIds :
-          storeIds?.filter((id: string) => userStores.includes(id)) || userStores;
-
-        // TODO: Generate reorder suggestions based on current stock levels
-        const suggestions = [
-          {
-            storeId: '1',
-            storeName: 'Dubai Mall Store',
-            productId: 'prod2',
-            productName: 'Rose Perfume',
-            currentStock: 8,
-            suggestedQuantity: 25,
-            priority: 'HIGH',
-            reason: 'Stock below reorder point (15)',
-            estimatedCost: 6250,
-            leadTimeDays: 2
-          },
-          {
-            storeId: '2',
-            storeName: 'Mall of the Emirates',
-            productId: 'prod3',
-            productName: 'Arabian Nights',
-            currentStock: 0,
-            suggestedQuantity: 20,
-            priority: 'CRITICAL',
-            reason: 'Out of stock',
-            estimatedCost: 7000,
-            leadTimeDays: 1
+      // Create transfer for replenishment
+      const transfer = await prisma.$transaction(async (tx) => {
+        const newTransfer = await tx.transfer.create({
+          data: {
+            fromStoreId: createTransfer.fromStoreId,
+            toStoreId: createTransfer.toStoreId,
+            notes: createTransfer.notes || 'Automated replenishment order',
+            totalItems: createTransfer.items.length,
+            createdById: session.user.id,
+            status: 'PENDING'
           }
-        ];
+        });
 
-        return NextResponse.json({
-          suggestions: suggestions.filter(s =>
-            accessibleStores.includes(s.storeId) &&
-            (!productIds || productIds.includes(s.productId))
+        // Create transfer items
+        await Promise.all(
+          createTransfer.items.map((item: any) =>
+            tx.transferItem.create({
+              data: {
+                transferId: newTransfer.id,
+                productId: item.productId,
+                quantity: item.quantity,
+                receivedQty: null
+              }
+            })
           )
-        });
+        );
 
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-    }
+        // Reserve inventory at source store
+        await Promise.all(
+          createTransfer.items.map((item: any) =>
+            tx.storeInventory.update({
+              where: {
+                storeId_productId: {
+                  storeId: createTransfer.fromStoreId,
+                  productId: item.productId
+                }
+              },
+              data: {
+                reservedQty: { increment: item.quantity }
+              }
+            })
+          )
+        );
 
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
+        return newTransfer;
+      });
 
-    console.error('Error processing replenishment request:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT /api/replenishment - Update rule or engine settings
-export async function PUT(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
-
-    const body = await req.json();
-    const { action, data } = body;
-
-    switch (action) {
-      case 'update_rule':
-        const { ruleId, updates } = data;
-        const ruleUpdates = ReplenishmentRuleSchema.partial().parse(updates);
-
-        // TODO: Check if user has access to the rule's store
-        // TODO: Update rule in database
-
-        const updatedRule = {
-          id: ruleId,
-          ...ruleUpdates,
-          updatedAt: new Date()
-        };
-
-        return NextResponse.json(updatedRule);
-
-      case 'toggle_engine':
-        if (!['OWNER', 'ADMIN'].includes(userRole)) {
-          return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json({
+        success: true,
+        message: 'Replenishment transfer created successfully',
+        transfer: {
+          id: transfer.id,
+          fromStoreId: transfer.fromStoreId,
+          toStoreId: transfer.toStoreId,
+          status: transfer.status,
+          totalItems: transfer.totalItems
         }
-
-        const { enabled } = data;
-
-        // TODO: Update engine status in database
-        // TODO: Start/stop background processes
-
-        return NextResponse.json({
-          engineEnabled: enabled,
-          message: `Replenishment engine ${enabled ? 'enabled' : 'disabled'}`,
-          updatedAt: new Date(),
-          updatedBy: session.user.id
-        });
-
-      case 'update_settings':
-        if (!['OWNER', 'ADMIN'].includes(userRole)) {
-          return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-        }
-
-        const { settings } = data;
-
-        // TODO: Update engine settings in database
-        const updatedSettings = {
-          runInterval: settings.runInterval ?? 3600, // seconds
-          enableEmailNotifications: settings.enableEmailNotifications ?? true,
-          enableSmsNotifications: settings.enableSmsNotifications ?? false,
-          autoApproveThreshold: settings.autoApproveThreshold ?? 1000, // AED
-          maxOrderValue: settings.maxOrderValue ?? 50000, // AED
-          updatedAt: new Date(),
-          updatedBy: session.user.id
-        };
-
-        return NextResponse.json(updatedSettings);
-
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+      }, { status: 201 });
     }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error('Error updating replenishment:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/replenishment - Delete rule
-export async function DELETE(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
-
-    const url = new URL(req.url);
-    const ruleId = url.searchParams.get('ruleId');
-
-    if (!ruleId) {
-      return NextResponse.json({ error: 'Rule ID is required' }, { status: 400 });
-    }
-
-    // TODO: Check if user has access to the rule's store
-    // TODO: Check if rule can be deleted (no pending orders, etc.)
-    // TODO: Soft delete rule (mark as inactive)
-
-    return NextResponse.json({
-      message: 'Replenishment rule deleted successfully',
-      ruleId,
-      deletedAt: new Date(),
-      deletedBy: session.user.id
-    });
-
-  } catch (error) {
-    console.error('Error deleting replenishment rule:', error);
+    console.error('Error processing replenishment action:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

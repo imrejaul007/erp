@@ -1,273 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 
-// Mock product database - in real implementation, this would query your database
-const mockProducts = [
-  {
-    _id: 'prod_001',
-    sku: 'OUD-ROYAL-001',
-    barcode: '1234567890123',
-    name: 'Royal Oud Collection - Premium',
-    arabicName: 'مجموعة العود الملكي - فاخر',
-    description: 'Premium oud fragrance with notes of rose and amber',
-    category: {
-      _id: 'cat_001',
-      name: 'Premium Oud',
-      slug: 'premium-oud'
-    },
-    brand: {
-      _id: 'brand_001',
-      name: 'Royal Heritage',
-      slug: 'royal-heritage'
-    },
-    basePrice: 500.00,
-    retailPrice: 650.00,
-    wholesalePrice: 450.00,
-    vipPrice: 600.00,
-    exportPrice: 520.00,
-    vatRate: 5,
-    images: [
-      'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400',
-      'https://images.unsplash.com/photo-1594736797933-d0d83a8dd74c?w=400'
-    ],
-    stock: {
-      quantity: 45,
-      minLevel: 10,
-      maxLevel: 100,
-      lastUpdated: new Date()
-    },
-    specifications: {
-      volume: '12ml',
-      concentration: 'Parfum',
-      longevity: '8-12 hours',
-      sillage: 'Strong',
-      season: 'All seasons',
-      occasion: 'Evening, Special occasions'
-    },
-    ingredients: [
-      'Agarwood (Oud)',
-      'Rose',
-      'Amber',
-      'Sandalwood',
-      'Musk'
-    ],
-    featured: true,
-    active: true,
-    salesCount: 156,
-    rating: 4.8,
-    reviews: 23,
-    tags: ['premium', 'oud', 'royal', 'luxury'],
-    metadata: {
-      weight: 50, // grams
-      dimensions: { length: 5, width: 5, height: 10 }, // cm
-      origin: 'UAE',
-      ageRestriction: false,
-      giftWrappable: true
-    },
-    pricing: {
-      costPrice: 350.00,
-      profitMargin: 46.15, // percentage
-      discountAllowed: true,
-      maxDiscountPercent: 15,
-      loyaltyPointsEarned: 65, // points per purchase
-      bulkPricing: [
-        { minQuantity: 5, price: 620.00 },
-        { minQuantity: 10, price: 590.00 },
-        { minQuantity: 25, price: 550.00 }
-      ]
-    },
-    compliance: {
-      halalCertified: true,
-      crueltyFree: true,
-      vegan: false,
-      organic: true,
-      certifications: ['Halal', 'IFRA Compliant']
-    },
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-06-01')
-  },
-  {
-    _id: 'prod_002',
-    sku: 'ROSE-AMB-002',
-    barcode: '2345678901234',
-    name: 'Rose & Amber Perfume',
-    arabicName: 'عطر الورد والعنبر',
-    description: 'Elegant floral fragrance with rich amber base',
-    category: {
-      _id: 'cat_002',
-      name: 'Floral',
-      slug: 'floral'
-    },
-    brand: {
-      _id: 'brand_002',
-      name: 'Desert Bloom',
-      slug: 'desert-bloom'
-    },
-    basePrice: 280.00,
-    retailPrice: 380.00,
-    wholesalePrice: 250.00,
-    vipPrice: 350.00,
-    exportPrice: 300.00,
-    vatRate: 5,
-    images: [
-      'https://images.unsplash.com/photo-1588405748880-12d1d2a59d75?w=400'
-    ],
-    stock: {
-      quantity: 28,
-      minLevel: 5,
-      maxLevel: 50,
-      lastUpdated: new Date()
-    },
-    specifications: {
-      volume: '10ml',
-      concentration: 'Eau de Parfum',
-      longevity: '6-8 hours',
-      sillage: 'Moderate',
-      season: 'Spring, Summer',
-      occasion: 'Daily wear, Office'
-    },
-    ingredients: [
-      'Rose',
-      'Amber',
-      'Jasmine',
-      'Bergamot',
-      'White Musk'
-    ],
-    featured: false,
-    active: true,
-    salesCount: 89,
-    rating: 4.5,
-    reviews: 12,
-    tags: ['floral', 'rose', 'amber', 'elegant'],
-    metadata: {
-      weight: 35,
-      dimensions: { length: 4, width: 4, height: 8 },
-      origin: 'UAE',
-      ageRestriction: false,
-      giftWrappable: true
-    },
-    pricing: {
-      costPrice: 200.00,
-      profitMargin: 47.37,
-      discountAllowed: true,
-      maxDiscountPercent: 20,
-      loyaltyPointsEarned: 38,
-      bulkPricing: [
-        { minQuantity: 5, price: 360.00 },
-        { minQuantity: 10, price: 340.00 }
-      ]
-    },
-    compliance: {
-      halalCertified: true,
-      crueltyFree: true,
-      vegan: true,
-      organic: false,
-      certifications: ['Halal', 'IFRA Compliant', 'Vegan']
-    },
-    createdAt: new Date('2024-02-20'),
-    updatedAt: new Date('2024-06-15')
-  }
-];
+// Function to calculate appropriate price based on customer type
+function calculatePrice(product: any, customerType: string = 'retail'): number {
+  // For now, using unitPrice as base price
+  // Can be extended with customer-specific pricing later
+  const basePrice = Number(product.unitPrice);
 
-// Function to calculate appropriate price based on customer type and bulk quantity
-function calculatePrice(product: any, customerType: string = 'retail', quantity: number = 1): number {
-  let basePrice: number;
-
-  // Determine base price by customer type
   switch (customerType.toLowerCase()) {
     case 'wholesale':
-      basePrice = product.wholesalePrice || product.basePrice;
-      break;
+      return basePrice * 0.9; // 10% discount for wholesale
     case 'vip':
-      basePrice = product.vipPrice || product.retailPrice || product.basePrice;
-      break;
+      return basePrice * 0.92; // 8% discount for VIP
     case 'export':
-      basePrice = product.exportPrice || product.retailPrice || product.basePrice;
-      break;
+      return basePrice * 0.95; // 5% discount for export
     case 'retail':
     default:
-      basePrice = product.retailPrice || product.basePrice;
-      break;
+      return basePrice;
   }
-
-  // Apply bulk pricing if applicable
-  if (product.pricing?.bulkPricing && quantity > 1) {
-    const applicableBulkPrice = product.pricing.bulkPricing
-      .filter((tier: any) => quantity >= tier.minQuantity)
-      .sort((a: any, b: any) => b.minQuantity - a.minQuantity)[0];
-
-    if (applicableBulkPrice) {
-      basePrice = applicableBulkPrice.price;
-    }
-  }
-
-  return basePrice;
 }
 
 // Enhanced product enrichment with pricing tiers and availability
-function enrichProductData(product: any, customerType?: string, quantity: number = 1) {
-  const enrichedProduct = {
-    ...product,
-    // Current price based on customer type and quantity
-    currentPrice: calculatePrice(product, customerType, quantity),
+function enrichProductData(product: any, customerType?: string) {
+  const currentPrice = calculatePrice(product, customerType);
+  const costPrice = Number(product.costPrice || 0);
+  const profitMargin = costPrice > 0 ? ((currentPrice - costPrice) / currentPrice) * 100 : 0;
 
-    // All pricing tiers for reference
+  return {
+    _id: product.id,
+    sku: product.sku,
+    barcode: product.sku, // Using SKU as barcode since no barcode field
+    name: product.name,
+    arabicName: product.nameArabic || '',
+    description: product.description || '',
+    category: product.category ? {
+      _id: product.category.id,
+      name: product.category.name,
+      slug: product.category.name.toLowerCase().replace(/\s+/g, '-')
+    } : null,
+    brand: product.brand ? {
+      _id: product.brand.id,
+      name: product.brand.name,
+      slug: product.brand.name.toLowerCase().replace(/\s+/g, '-')
+    } : null,
+    basePrice: Number(product.unitPrice),
+    currentPrice: currentPrice,
+    retailPrice: Number(product.unitPrice),
+    wholesalePrice: Number(product.unitPrice) * 0.9,
+    vipPrice: Number(product.unitPrice) * 0.92,
+    exportPrice: Number(product.unitPrice) * 0.95,
+    vatRate: 5,
+    images: product.images ? JSON.parse(product.images) : [],
+    stock: {
+      quantity: product.stockQuantity || 0,
+      minLevel: product.minStock || 0,
+      maxLevel: product.maxStock || 100,
+      lastUpdated: product.updatedAt
+    },
+    specifications: {
+      unit: product.unit || 'piece',
+      weight: product.weight || null,
+      volume: product.volume || null
+    },
+    featured: product.isFeatured || false,
+    active: product.isActive,
     pricingTiers: {
-      retail: product.retailPrice || product.basePrice,
-      wholesale: product.wholesalePrice || product.basePrice,
-      vip: product.vipPrice || product.retailPrice || product.basePrice,
-      export: product.exportPrice || product.retailPrice || product.basePrice
+      retail: Number(product.unitPrice),
+      wholesale: Number(product.unitPrice) * 0.9,
+      vip: Number(product.unitPrice) * 0.92,
+      export: Number(product.unitPrice) * 0.95
     },
-
-    // Stock availability
     availability: {
-      inStock: product.stock.quantity > 0,
-      lowStock: product.stock.quantity <= product.stock.minLevel,
-      stockLevel: product.stock.quantity,
-      canBackorder: false, // Can be configured per product
-      estimatedRestockDate: product.stock.quantity <= 0 ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null
+      inStock: (product.stockQuantity || 0) > 0,
+      lowStock: (product.stockQuantity || 0) <= (product.minStock || 0),
+      stockLevel: product.stockQuantity || 0,
+      canBackorder: false,
+      estimatedRestockDate: (product.stockQuantity || 0) <= 0 ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) : null
     },
-
-    // Bulk pricing information
-    bulkPricing: product.pricing?.bulkPricing || [],
-
-    // Calculated fields
-    profitMargin: product.pricing?.profitMargin || 0,
-    loyaltyPointsEarned: Math.floor((calculatePrice(product, customerType, quantity) * 0.01) * 10), // 1% earning rate, 10 points per AED
-
-    // Compliance and certifications
-    certifications: product.compliance?.certifications || [],
-
-    // SEO and display
+    profitMargin: profitMargin.toFixed(2),
+    loyaltyPointsEarned: Math.floor(currentPrice * 0.01 * 10),
     displayName: product.name,
-    displayNameArabic: product.arabicName,
+    displayNameArabic: product.nameArabic || '',
     shortDescription: product.description?.substring(0, 100) + (product.description?.length > 100 ? '...' : ''),
-
-    // Promotional flags
-    isOnSale: false, // Can be enhanced with promotion logic
     isNewArrival: new Date(product.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    isFeatured: product.featured,
-    isPopular: product.salesCount > 100,
-
-    // Category and brand info for filtering
+    isFeatured: product.isFeatured || false,
     categoryInfo: product.category,
     brandInfo: product.brand,
-
-    // Images with fallbacks
-    primaryImage: product.images?.[0] || '/images/placeholder-product.jpg',
-    allImages: product.images || ['/images/placeholder-product.jpg'],
-
-    // Meta information
+    primaryImage: product.images ? JSON.parse(product.images)[0] || '/images/placeholder-product.jpg' : '/images/placeholder-product.jpg',
+    allImages: product.images ? JSON.parse(product.images) : ['/images/placeholder-product.jpg'],
     lastUpdated: product.updatedAt,
-    searchTags: [
-      product.sku.toLowerCase(),
-      product.name.toLowerCase(),
-      ...(product.tags || []),
-      product.brand?.name.toLowerCase(),
-      product.category?.name.toLowerCase()
-    ].filter(Boolean)
+    pricing: {
+      costPrice: Number(product.costPrice || 0),
+      profitMargin: profitMargin,
+      discountAllowed: true,
+      maxDiscountPercent: 15
+    }
   };
-
-  return enrichedProduct;
 }
 
 export async function GET(
@@ -275,12 +105,17 @@ export async function GET(
   { params }: { params: { barcode: string } }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const barcode = params.barcode;
     const { searchParams } = new URL(request.url);
 
     // Query parameters for enhanced functionality
     const customerType = searchParams.get('customerType') || 'retail';
-    const quantity = parseInt(searchParams.get('quantity') || '1');
     const storeId = searchParams.get('storeId');
     const includeAlternatives = searchParams.get('includeAlternatives') === 'true';
 
@@ -291,74 +126,76 @@ export async function GET(
       );
     }
 
-    // Search for product by barcode
-    const product = mockProducts.find(p => p.barcode === barcode);
+    // Search for product by SKU (using as barcode)
+    const product = await prisma.product.findFirst({
+      where: {
+        OR: [
+          { sku: barcode },
+          { sku: { contains: barcode, mode: 'insensitive' } }
+        ],
+        isActive: true
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        brand: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
 
     if (!product) {
-      // If barcode not found, try searching by SKU as fallback
-      const productBySku = mockProducts.find(p =>
-        p.sku.toLowerCase() === barcode.toLowerCase()
-      );
-
-      if (!productBySku) {
-        return NextResponse.json(
-          {
-            error: 'Product not found',
-            message: `No product found with barcode: ${barcode}`,
-            suggestions: [
-              'Check if the barcode is correct',
-              'Try scanning again',
-              'Search manually by product name or SKU'
-            ]
-          },
-          { status: 404 }
-        );
-      }
-
-      // Return product found by SKU
-      const enrichedProduct = enrichProductData(productBySku, customerType, quantity);
-
-      return NextResponse.json({
-        product: enrichedProduct,
-        foundBy: 'sku',
-        message: 'Product found by SKU instead of barcode'
-      });
-    }
-
-    // Check if product is active
-    if (!product.active) {
       return NextResponse.json(
         {
-          error: 'Product not available',
-          message: 'This product is currently not available for sale'
+          error: 'Product not found',
+          message: `No product found with barcode/SKU: ${barcode}`,
+          suggestions: [
+            'Check if the barcode is correct',
+            'Try scanning again',
+            'Search manually by product name or SKU'
+          ]
         },
-        { status: 410 }
+        { status: 404 }
       );
     }
 
     // Enrich product data with pricing and availability
-    const enrichedProduct = enrichProductData(product, customerType, quantity);
+    const enrichedProduct = enrichProductData(product, customerType);
 
     // Prepare response
     const response: any = {
       product: enrichedProduct,
-      foundBy: 'barcode',
+      foundBy: 'sku',
       scannedAt: new Date().toISOString(),
       storeId: storeId || null
     };
 
     // Include alternative/related products if requested
     if (includeAlternatives) {
-      const alternatives = mockProducts
-        .filter(p =>
-          p._id !== product._id &&
-          p.active &&
-          (p.category._id === product.category._id || p.brand._id === product.brand._id)
-        )
-        .slice(0, 5)
-        .map(p => enrichProductData(p, customerType, 1));
+      const alternatives = await prisma.product.findMany({
+        where: {
+          id: { not: product.id },
+          isActive: true,
+          OR: [
+            { categoryId: product.categoryId },
+            { brandId: product.brandId }
+          ]
+        },
+        include: {
+          category: { select: { id: true, name: true } },
+          brand: { select: { id: true, name: true } }
+        },
+        take: 5
+      });
 
-      response.alternatives = alternatives;
+      response.alternatives = alternatives.map(p => enrichProductData(p, customerType));
     }
 
     // Add stock warning if applicable
@@ -378,9 +215,6 @@ export async function GET(
       };
     }
 
-    // Log the scan for analytics (in real implementation)
-    console.log(`Product scanned: ${product.sku} - ${product.name} by ${customerType} customer`);
-
     return NextResponse.json(response);
 
   } catch (error) {
@@ -399,6 +233,12 @@ export async function GET(
 // POST endpoint for bulk barcode lookup
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { barcodes, customerType = 'retail' } = await request.json();
 
     if (!Array.isArray(barcodes) || barcodes.length === 0) {
@@ -415,10 +255,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const results = barcodes.map(barcode => {
-      const product = mockProducts.find(p => p.barcode === barcode);
+    // Fetch all products matching the barcodes/SKUs
+    const products = await prisma.product.findMany({
+      where: {
+        sku: { in: barcodes },
+        isActive: true
+      },
+      include: {
+        category: { select: { id: true, name: true } },
+        brand: { select: { id: true, name: true } }
+      }
+    });
 
-      if (!product || !product.active) {
+    const results = barcodes.map(barcode => {
+      const product = products.find(p => p.sku === barcode);
+
+      if (!product) {
         return {
           barcode,
           found: false,
@@ -429,7 +281,7 @@ export async function POST(request: NextRequest) {
       return {
         barcode,
         found: true,
-        product: enrichProductData(product, customerType, 1)
+        product: enrichProductData(product, customerType)
       };
     });
 

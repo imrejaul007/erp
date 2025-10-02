@@ -1,5 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
+
+// Validation schemas
+const TransactionItemSchema = z.object({
+  productId: z.string(),
+  sku: z.string(),
+  name: z.string(),
+  arabicName: z.string().optional(),
+  quantity: z.number().min(1),
+  unitPrice: z.number().min(0),
+  discount: z.number().min(0).default(0),
+  vatRate: z.number().min(0).default(5),
+  vatAmount: z.number().min(0),
+  totalPrice: z.number().min(0),
+  category: z.string().optional(),
+  brand: z.string().optional()
+});
+
+const PaymentDetailsSchema = z.object({
+  method: z.enum(['cash', 'card', 'digital', 'bank_transfer', 'loyalty_points', 'cheque']),
+  amountReceived: z.number().optional(),
+  changeGiven: z.number().optional(),
+  cardType: z.string().optional(),
+  lastFourDigits: z.string().optional(),
+  approvalCode: z.string().optional(),
+  digitalWallet: z.string().optional(),
+  transactionId: z.string().optional(),
+  bankReference: z.string().optional(),
+  bankName: z.string().optional(),
+  pointsUsed: z.number().optional(),
+  pointsValue: z.number().optional(),
+  chequeNumber: z.string().optional(),
+  chequeBank: z.string().optional()
+});
+
+const TransactionDataSchema = z.object({
+  storeId: z.string(),
+  cashierId: z.string(),
+  customerId: z.string().optional(),
+  items: z.array(TransactionItemSchema).min(1),
+  subtotal: z.number().min(0),
+  totalVat: z.number().min(0),
+  grandTotal: z.number().min(0),
+  currency: z.string().default('AED'),
+  paymentMethod: z.string(),
+  paymentDetails: PaymentDetailsSchema,
+  promotionsApplied: z.array(z.any()).optional(),
+  loyaltyPointsUsed: z.number().optional(),
+  loyaltyPointsEarned: z.number().optional(),
+  notes: z.string().optional()
+});
 
 export interface TransactionItem {
   productId: string;
@@ -48,8 +102,6 @@ export interface TransactionData {
   loyaltyPointsUsed?: number;
   loyaltyPointsEarned?: number;
   notes?: string;
-  receiptNumber?: string;
-  transactionDate?: Date;
 }
 
 export interface VATBreakdown {
@@ -98,7 +150,7 @@ function calculateUAEVAT(items: TransactionItem[]): {
   };
 }
 
-// Generate QR Code data for UAE ZATCA compliance
+// Generate ZATCA QR Code for UAE compliance
 function generateZATCAQRCode(transaction: any): string {
   const seller = 'Oud Premium Store';
   const vatNumber = 'TRN-100352966400003';
@@ -119,229 +171,238 @@ function generateZATCAQRCode(transaction: any): string {
   return Buffer.from(qrData).toString('base64');
 }
 
-// Generate receipt number
-function generateReceiptNumber(storeId: string): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substr(2, 4).toUpperCase();
-  return `${storeId}-${timestamp}-${random}`;
-}
-
-// Update inventory after successful transaction
-async function updateInventory(items: TransactionItem[]): Promise<void> {
-  // In a real implementation, this would update the inventory database
-  for (const item of items) {
-    try {
-      // Mock inventory update - in real implementation, call inventory API
-      console.log(`Updating inventory for ${item.sku}: -${item.quantity}`);
-
-      // await fetch('/api/inventory/update', {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     sku: item.sku,
-      //     quantity: -item.quantity,
-      //     operation: 'sale',
-      //     reference: transaction.receiptNumber
-      //   })
-      // });
-    } catch (error) {
-      console.error(`Failed to update inventory for ${item.sku}:`, error);
-    }
-  }
-}
-
-// Update customer loyalty points
-async function updateCustomerLoyalty(customerId: string, pointsEarned: number, pointsUsed: number, totalSpent: number): Promise<void> {
-  try {
-    // Mock loyalty update - in real implementation, call loyalty API
-    console.log(`Updating loyalty for customer ${customerId}: +${pointsEarned} points, -${pointsUsed} points, +${totalSpent} spent`);
-
-    // await fetch('/api/crm/loyalty/update', {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     customerId,
-    //     pointsEarned,
-    //     pointsUsed,
-    //     totalSpent,
-    //     transactionDate: new Date()
-    //   })
-    // });
-  } catch (error) {
-    console.error(`Failed to update customer loyalty:`, error);
-  }
-}
-
-// Validate transaction data
-function validateTransaction(data: TransactionData): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  // Required fields
-  if (!data.storeId) errors.push('Store ID is required');
-  if (!data.cashierId) errors.push('Cashier ID is required');
-  if (!data.items || data.items.length === 0) errors.push('At least one item is required');
-  if (!data.paymentMethod) errors.push('Payment method is required');
-  if (data.grandTotal <= 0) errors.push('Grand total must be greater than 0');
-
-  // Validate items
-  data.items?.forEach((item, index) => {
-    if (!item.sku) errors.push(`Item ${index + 1}: SKU is required`);
-    if (!item.name) errors.push(`Item ${index + 1}: Name is required`);
-    if (item.quantity <= 0) errors.push(`Item ${index + 1}: Quantity must be greater than 0`);
-    if (item.unitPrice < 0) errors.push(`Item ${index + 1}: Unit price cannot be negative`);
-  });
-
-  // Validate payment details based on method
-  const paymentDetails = data.paymentDetails;
-  switch (data.paymentMethod) {
-    case 'cash':
-      if (!paymentDetails.amountReceived || paymentDetails.amountReceived < data.grandTotal) {
-        errors.push('Cash payment: Amount received must be at least the grand total');
-      }
-      break;
-    case 'card':
-      if (!paymentDetails.lastFourDigits) {
-        errors.push('Card payment: Last four digits are required');
-      }
-      break;
-    case 'loyalty_points':
-      if (!paymentDetails.pointsUsed || paymentDetails.pointsUsed <= 0) {
-        errors.push('Loyalty payment: Points used must be greater than 0');
-      }
-      break;
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors
+// Map payment method to Prisma enum
+function mapPaymentMethod(method: string): any {
+  const methodMap: Record<string, string> = {
+    'cash': 'CASH',
+    'card': 'CARD',
+    'digital': 'DIGITAL_WALLET',
+    'bank_transfer': 'BANK_TRANSFER',
+    'loyalty_points': 'CASH', // Map to CASH for now
+    'cheque': 'CHEQUE'
   };
+  return methodMap[method] || 'CASH';
 }
 
+// POST - Create new POS transaction
 export async function POST(request: NextRequest) {
   try {
-    const transactionData: TransactionData = await request.json();
+    const session = await getServerSession(authOptions);
 
-    // Validate transaction data
-    const validation = validateTransaction(transactionData);
-    if (!validation.isValid) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.errors },
-        { status: 400 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Generate receipt number and transaction ID
-    const receiptNumber = generateReceiptNumber(transactionData.storeId);
-    const transactionId = uuidv4();
-    const transactionDate = new Date();
+    const body = await request.json();
+    const transactionData = TransactionDataSchema.parse(body);
 
-    // Calculate UAE VAT compliance data
+    // Verify store exists
+    const store = await prisma.store.findUnique({
+      where: { id: transactionData.storeId }
+    });
+
+    if (!store) {
+      return NextResponse.json({ error: 'Store not found' }, { status: 404 });
+    }
+
+    // Verify all products exist and have sufficient stock
+    for (const item of transactionData.items) {
+      const inventory = await prisma.storeInventory.findUnique({
+        where: {
+          storeId_productId: {
+            storeId: transactionData.storeId,
+            productId: item.productId
+          }
+        }
+      });
+
+      if (!inventory || inventory.quantity < item.quantity) {
+        return NextResponse.json({
+          error: `Insufficient stock for product ${item.name}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`
+        }, { status: 400 });
+      }
+    }
+
+    // Calculate VAT compliance data
     const vatData = calculateUAEVAT(transactionData.items);
 
-    // Create the complete transaction object
-    const transaction = {
-      id: transactionId,
-      receiptNumber,
-      storeId: transactionData.storeId,
-      cashierId: transactionData.cashierId,
-      customerId: transactionData.customerId,
-      items: transactionData.items,
-      subtotal: transactionData.subtotal,
-      totalVat: vatData.totalVatAmount,
-      grandTotal: transactionData.grandTotal,
-      currency: transactionData.currency || 'AED',
-      paymentMethod: transactionData.paymentMethod,
-      paymentDetails: transactionData.paymentDetails,
-      promotionsApplied: transactionData.promotionsApplied || [],
-      loyaltyPointsUsed: transactionData.loyaltyPointsUsed || 0,
-      loyaltyPointsEarned: transactionData.loyaltyPointsEarned || 0,
-      notes: transactionData.notes,
-      transactionDate,
-      vatBreakdown: vatData.vatBreakdown,
-      vatNumber: vatData.vatNumber,
-      qrCode: '',
-      status: 'completed',
-      channel: 'pos',
-      metadata: {
-        userAgent: request.headers.get('user-agent'),
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        deviceInfo: {
-          type: 'pos_terminal',
-          timestamp: transactionDate.toISOString()
+    // Generate receipt number
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+    const receiptNumber = `${store.code}-${timestamp}-${random}`;
+
+    // Create transaction in database with items
+    const order = await prisma.$transaction(async (tx) => {
+      // Create order
+      const newOrder = await tx.order.create({
+        data: {
+          orderNumber: receiptNumber,
+          storeId: transactionData.storeId,
+          customerId: transactionData.customerId,
+          totalAmount: transactionData.subtotal,
+          vatAmount: vatData.totalVatAmount,
+          grandTotal: transactionData.grandTotal,
+          status: 'COMPLETED',
+          paymentStatus: 'PAID',
+          notes: transactionData.notes,
+          createdById: session.user.id
         }
-      }
-    };
+      });
 
-    // Generate ZATCA compliant QR code
-    transaction.qrCode = generateZATCAQRCode(transaction);
-
-    // Save transaction to database (mock implementation)
-    // In a real application, this would save to your database
-    console.log('Saving transaction to database:', transaction);
-
-    // Update inventory
-    await updateInventory(transactionData.items);
-
-    // Update customer loyalty if applicable
-    if (transactionData.customerId && (transactionData.loyaltyPointsEarned || transactionData.loyaltyPointsUsed)) {
-      await updateCustomerLoyalty(
-        transactionData.customerId,
-        transactionData.loyaltyPointsEarned || 0,
-        transactionData.loyaltyPointsUsed || 0,
-        transactionData.grandTotal
+      // Create order items
+      await Promise.all(
+        transactionData.items.map(item =>
+          tx.orderItem.create({
+            data: {
+              orderId: newOrder.id,
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: item.totalPrice
+            }
+          })
+        )
       );
-    }
+
+      // Create payment record
+      await tx.payment.create({
+        data: {
+          orderId: newOrder.id,
+          customerId: transactionData.customerId,
+          amount: transactionData.grandTotal,
+          method: mapPaymentMethod(transactionData.paymentDetails.method),
+          status: 'COMPLETED',
+          reference: transactionData.paymentDetails.transactionId || receiptNumber,
+          notes: JSON.stringify(transactionData.paymentDetails),
+          processedById: session.user.id
+        }
+      });
+
+      // Update inventory for each item
+      await Promise.all(
+        transactionData.items.map(item =>
+          tx.storeInventory.update({
+            where: {
+              storeId_productId: {
+                storeId: transactionData.storeId,
+                productId: item.productId
+              }
+            },
+            data: {
+              quantity: { decrement: item.quantity }
+            }
+          })
+        )
+      );
+
+      // Update customer loyalty points if applicable
+      if (transactionData.customerId && transactionData.loyaltyPointsEarned) {
+        await tx.loyaltyPointsTransaction.create({
+          data: {
+            customerId: transactionData.customerId,
+            orderId: newOrder.id,
+            points: transactionData.loyaltyPointsEarned,
+            type: 'EARN',
+            description: `Points earned from order ${receiptNumber}`,
+            expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year expiry
+          }
+        });
+      }
+
+      if (transactionData.customerId && transactionData.loyaltyPointsUsed) {
+        await tx.loyaltyPointsTransaction.create({
+          data: {
+            customerId: transactionData.customerId,
+            orderId: newOrder.id,
+            points: -transactionData.loyaltyPointsUsed,
+            type: 'REDEEM',
+            description: `Points redeemed for order ${receiptNumber}`,
+            expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+          }
+        });
+      }
+
+      // Fetch complete order with relations
+      return tx.order.findUnique({
+        where: { id: newOrder.id },
+        include: {
+          items: {
+            include: {
+              product: true
+            }
+          },
+          payments: true,
+          customer: true,
+          store: true
+        }
+      });
+    });
+
+    // Generate QR code for receipt
+    const qrCode = generateZATCAQRCode({
+      receiptNumber,
+      grandTotal: transactionData.grandTotal,
+      totalVat: vatData.totalVatAmount
+    });
 
     // Prepare response
     const response = {
       success: true,
       transaction: {
-        id: transaction.id,
-        receiptNumber: transaction.receiptNumber,
-        transactionDate: transaction.transactionDate,
-        grandTotal: transaction.grandTotal,
-        currency: transaction.currency,
-        paymentMethod: transaction.paymentMethod,
-        qrCode: transaction.qrCode,
-        vatBreakdown: transaction.vatBreakdown,
-        items: transaction.items.map(item => ({
-          name: item.name,
+        id: order!.id,
+        receiptNumber: order!.orderNumber,
+        transactionDate: order!.createdAt,
+        grandTotal: Number(order!.grandTotal),
+        currency: transactionData.currency,
+        paymentMethod: transactionData.paymentMethod,
+        qrCode: qrCode,
+        vatBreakdown: vatData.vatBreakdown,
+        items: order!.items.map(item => ({
+          name: item.product.name,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice
+          unitPrice: Number(item.unitPrice),
+          totalPrice: Number(item.total)
         }))
       },
       receipt: {
-        receiptNumber: transaction.receiptNumber,
+        receiptNumber: order!.orderNumber,
         storeInfo: {
-          name: 'Oud Premium Store',
-          address: 'Dubai Mall, Ground Floor',
-          phone: '+971 4 123 4567',
-          email: 'info@oudpremium.ae',
+          name: order!.store.name,
+          address: order!.store.address,
+          phone: order!.store.phone,
+          email: order!.store.email,
           vatNumber: vatData.vatNumber
         },
-        transactionDate: transaction.transactionDate,
-        cashier: transaction.cashierId,
-        customer: transactionData.customerId ? {
-          id: transactionData.customerId,
-          loyaltyPointsEarned: transaction.loyaltyPointsEarned,
-          loyaltyPointsUsed: transaction.loyaltyPointsUsed
+        transactionDate: order!.createdAt,
+        cashier: transactionData.cashierId,
+        customer: order!.customer ? {
+          id: order!.customer.id,
+          name: order!.customer.name,
+          loyaltyPointsEarned: transactionData.loyaltyPointsEarned,
+          loyaltyPointsUsed: transactionData.loyaltyPointsUsed
         } : null,
-        items: transaction.items,
-        subtotal: transaction.subtotal,
-        totalVat: transaction.totalVat,
-        grandTotal: transaction.grandTotal,
-        paymentMethod: transaction.paymentMethod,
-        paymentDetails: transaction.paymentDetails,
-        vatBreakdown: transaction.vatBreakdown,
-        qrCode: transaction.qrCode,
-        promotions: transaction.promotionsApplied
+        items: transactionData.items,
+        subtotal: transactionData.subtotal,
+        totalVat: vatData.totalVatAmount,
+        grandTotal: transactionData.grandTotal,
+        paymentMethod: transactionData.paymentMethod,
+        paymentDetails: transactionData.paymentDetails,
+        vatBreakdown: vatData.vatBreakdown,
+        qrCode: qrCode,
+        promotions: transactionData.promotionsApplied || []
       }
     };
 
     return NextResponse.json(response, { status: 201 });
 
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      );
+    }
+
     console.error('Transaction processing error:', error);
     return NextResponse.json(
       {
@@ -353,57 +414,109 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET endpoint for retrieving transaction history
+// GET - Retrieve transaction history
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const storeId = searchParams.get('storeId');
-    const cashierId = searchParams.get('cashierId');
-    const date = searchParams.get('date');
-    const receiptNumber = searchParams.get('receiptNumber');
     const customerId = searchParams.get('customerId');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    const receiptNumber = searchParams.get('receiptNumber');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Mock transaction history - in real implementation, query database
-    const mockTransactions = [
-      {
-        id: '1',
-        receiptNumber: `${storeId}-${Date.now()}-ABCD`,
-        transactionDate: new Date(),
-        customerId: 'cust_001',
-        cashierId: cashierId || 'cashier_001',
-        grandTotal: 750.50,
-        currency: 'AED',
-        paymentMethod: 'card',
-        status: 'completed',
-        itemCount: 3
-      }
-    ];
+    // Build where clause
+    const whereClause: any = {
+      status: 'COMPLETED'
+    };
 
-    // Apply filters (mock implementation)
-    let filteredTransactions = mockTransactions;
-
-    if (receiptNumber) {
-      filteredTransactions = filteredTransactions.filter(t =>
-        t.receiptNumber.toLowerCase().includes(receiptNumber.toLowerCase())
-      );
+    if (storeId) {
+      whereClause.storeId = storeId;
     }
 
     if (customerId) {
-      filteredTransactions = filteredTransactions.filter(t => t.customerId === customerId);
+      whereClause.customerId = customerId;
     }
 
-    if (date) {
-      const filterDate = new Date(date);
-      filteredTransactions = filteredTransactions.filter(t =>
-        t.transactionDate.toDateString() === filterDate.toDateString()
-      );
+    if (receiptNumber) {
+      whereClause.orderNumber = {
+        contains: receiptNumber,
+        mode: 'insensitive'
+      };
     }
 
-    // Pagination
-    const total = filteredTransactions.length;
-    const transactions = filteredTransactions.slice(offset, offset + limit);
+    if (startDate || endDate) {
+      whereClause.createdAt = {};
+      if (startDate) whereClause.createdAt.gte = new Date(startDate);
+      if (endDate) whereClause.createdAt.lte = new Date(endDate);
+    }
+
+    // Fetch transactions from database
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where: whereClause,
+        include: {
+          items: {
+            include: {
+              product: {
+                select: { id: true, name: true, sku: true }
+              }
+            }
+          },
+          payments: true,
+          customer: {
+            select: { id: true, name: true, email: true }
+          },
+          store: {
+            select: { id: true, name: true, code: true }
+          },
+          createdBy: {
+            select: { id: true, name: true }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip: offset,
+        take: limit
+      }),
+      prisma.order.count({ where: whereClause })
+    ]);
+
+    // Transform data for response
+    const transactions = orders.map(order => ({
+      id: order.id,
+      receiptNumber: order.orderNumber,
+      transactionDate: order.createdAt,
+      customerId: order.customerId,
+      customerName: order.customer?.name,
+      cashierId: order.createdById,
+      cashierName: order.createdBy.name,
+      storeId: order.storeId,
+      storeName: order.store.name,
+      grandTotal: Number(order.grandTotal),
+      vatAmount: Number(order.vatAmount),
+      currency: 'AED',
+      paymentMethod: order.payments[0]?.method || 'CASH',
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      itemCount: order.items.length,
+      items: order.items.map(item => ({
+        productId: item.productId,
+        productName: item.product.name,
+        sku: item.product.sku,
+        quantity: item.quantity,
+        unitPrice: Number(item.unitPrice),
+        total: Number(item.total)
+      }))
+    }));
 
     return NextResponse.json({
       transactions,

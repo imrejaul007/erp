@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 // Validation schemas
 const TransferCreateSchema = z.object({
   fromStoreId: z.string().min(1, 'From store is required'),
   toStoreId: z.string().min(1, 'To store is required'),
-  priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT', 'EMERGENCY']),
   notes: z.string().optional(),
-  estimatedDelivery: z.string().datetime().optional(),
   items: z.array(z.object({
     productId: z.string().min(1, 'Product is required'),
-    quantityRequested: z.number().min(1, 'Quantity must be at least 1'),
-    notes: z.string().optional()
+    quantity: z.number().min(1, 'Quantity must be at least 1')
   })).min(1, 'At least one item is required')
 }).refine(data => data.fromStoreId !== data.toStoreId, {
   message: 'From store and to store cannot be the same',
@@ -25,25 +23,13 @@ const TransferFiltersSchema = z.object({
   fromStoreId: z.string().optional(),
   toStoreId: z.string().optional(),
   status: z.string().optional(),
-  priority: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  requestedById: z.string().optional(),
   page: z.string().optional().transform(val => val ? parseInt(val) : 1),
   limit: z.string().optional().transform(val => val ? parseInt(val) : 20),
-  sortBy: z.string().optional().default('createdAt'),
+  sortBy: z.string().optional().default('requestedAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc')
 });
-
-// Generate transfer number
-function generateTransferNumber(): string {
-  const now = new Date();
-  const year = now.getFullYear().toString().substr(-2);
-  const month = (now.getMonth() + 1).toString().padStart(2, '0');
-  const day = now.getDate().toString().padStart(2, '0');
-  const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-  return `TRF${year}${month}${day}${random}`;
-}
 
 // GET /api/transfers - List transfers with filters
 export async function GET(req: NextRequest) {
@@ -59,214 +45,119 @@ export async function GET(req: NextRequest) {
     const params = Object.fromEntries(url.searchParams.entries());
     const filters = TransferFiltersSchema.parse(params);
 
-    // TODO: Replace with actual database queries
-    const mockTransfers = [
-      {
-        id: '1',
-        transferNumber: 'TRF24090001',
-        fromStoreId: '1',
-        toStoreId: '2',
-        fromStore: {
-          id: '1',
-          name: 'Dubai Mall Store',
-          code: 'DUBOUT001',
-          city: 'Downtown Dubai',
-          emirate: 'DUBAI'
-        },
-        toStore: {
-          id: '2',
-          name: 'Mall of the Emirates',
-          code: 'DUBOUT002',
-          city: 'Al Barsha',
-          emirate: 'DUBAI'
-        },
-        status: 'PENDING_APPROVAL',
-        priority: 'NORMAL',
-        requestedById: session.user.id,
-        requestedBy: {
-          id: session.user.id,
-          name: session.user.name || 'User',
-          email: session.user.email || ''
-        },
-        approvedById: null,
-        approvedBy: null,
-        items: [
-          {
-            id: '1',
-            transferId: '1',
-            productId: 'prod1',
-            product: {
-              id: 'prod1',
-              name: 'Oud Al Malaki',
-              sku: 'OUD001',
-              stockQuantity: 50
-            },
-            quantityRequested: 10,
-            quantityApproved: null,
-            quantityShipped: null,
-            quantityReceived: null,
-            unitCost: 500,
-            notes: null
-          },
-          {
-            id: '2',
-            transferId: '1',
-            productId: 'prod2',
-            product: {
-              id: 'prod2',
-              name: 'Rose Perfume',
-              sku: 'ROSE001',
-              stockQuantity: 30
-            },
-            quantityRequested: 5,
-            quantityApproved: null,
-            quantityShipped: null,
-            quantityReceived: null,
-            unitCost: 300,
-            notes: null
-          }
-        ],
-        notes: 'Urgent restock needed for weekend sale',
-        estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-        actualDelivery: null,
-        trackingNumber: null,
-        shippingCost: null,
-        createdAt: new Date('2024-09-15'),
-        updatedAt: new Date('2024-09-15')
-      },
-      {
-        id: '2',
-        transferNumber: 'TRF24090002',
-        fromStoreId: '2',
-        toStoreId: '1',
-        fromStore: {
-          id: '2',
-          name: 'Mall of the Emirates',
-          code: 'DUBOUT002',
-          city: 'Al Barsha',
-          emirate: 'DUBAI'
-        },
-        toStore: {
-          id: '1',
-          name: 'Dubai Mall Store',
-          code: 'DUBOUT001',
-          city: 'Downtown Dubai',
-          emirate: 'DUBAI'
-        },
-        status: 'IN_TRANSIT',
-        priority: 'HIGH',
-        requestedById: 'user2',
-        requestedBy: {
-          id: 'user2',
-          name: 'Fatima Al Zahra',
-          email: 'fatima@company.com'
-        },
-        approvedById: session.user.id,
-        approvedBy: {
-          id: session.user.id,
-          name: session.user.name || 'User',
-          email: session.user.email || ''
-        },
-        items: [
-          {
-            id: '3',
-            transferId: '2',
-            productId: 'prod3',
-            product: {
-              id: 'prod3',
-              name: 'Arabian Nights',
-              sku: 'ARAB001',
-              stockQuantity: 25
-            },
-            quantityRequested: 8,
-            quantityApproved: 8,
-            quantityShipped: 8,
-            quantityReceived: null,
-            unitCost: 450,
-            notes: null
-          }
-        ],
-        notes: 'Rush order for VIP customer',
-        estimatedDelivery: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-        actualDelivery: null,
-        trackingNumber: 'TRK123456789',
-        shippingCost: 50,
-        createdAt: new Date('2024-09-14'),
-        updatedAt: new Date('2024-09-16')
-      }
-    ];
+    // Build where clause
+    const whereClause: any = {};
 
-    // Apply filters
-    let filteredTransfers = mockTransfers;
+    // Check permissions - non-admin users can only see transfers from/to their stores
+    const userRole = session.user.role;
+    if (!['OWNER', 'ADMIN'].includes(userRole)) {
+      const userStoreIds = await prisma.userStore.findMany({
+        where: { userId: session.user.id },
+        select: { storeId: true }
+      });
+      const storeIds = userStoreIds.map(us => us.storeId);
 
-    if (filters.search) {
-      filteredTransfers = filteredTransfers.filter(transfer =>
-        transfer.transferNumber.toLowerCase().includes(filters.search!.toLowerCase()) ||
-        transfer.fromStore.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
-        transfer.toStore.name.toLowerCase().includes(filters.search!.toLowerCase())
-      );
+      whereClause.OR = [
+        { fromStoreId: { in: storeIds } },
+        { toStoreId: { in: storeIds } }
+      ];
     }
 
     if (filters.fromStoreId) {
-      filteredTransfers = filteredTransfers.filter(t => t.fromStoreId === filters.fromStoreId);
+      whereClause.fromStoreId = filters.fromStoreId;
     }
 
     if (filters.toStoreId) {
-      filteredTransfers = filteredTransfers.filter(t => t.toStoreId === filters.toStoreId);
+      whereClause.toStoreId = filters.toStoreId;
     }
 
     if (filters.status) {
-      filteredTransfers = filteredTransfers.filter(t => t.status === filters.status);
-    }
-
-    if (filters.priority) {
-      filteredTransfers = filteredTransfers.filter(t => t.priority === filters.priority);
-    }
-
-    if (filters.requestedById) {
-      filteredTransfers = filteredTransfers.filter(t => t.requestedById === filters.requestedById);
+      whereClause.status = filters.status;
     }
 
     if (filters.startDate) {
-      const startDate = new Date(filters.startDate);
-      filteredTransfers = filteredTransfers.filter(t => new Date(t.createdAt) >= startDate);
+      whereClause.requestedAt = {
+        ...whereClause.requestedAt,
+        gte: new Date(filters.startDate)
+      };
     }
 
     if (filters.endDate) {
-      const endDate = new Date(filters.endDate);
-      filteredTransfers = filteredTransfers.filter(t => new Date(t.createdAt) <= endDate);
+      whereClause.requestedAt = {
+        ...whereClause.requestedAt,
+        lte: new Date(filters.endDate)
+      };
     }
 
-    // Apply sorting
-    filteredTransfers.sort((a, b) => {
-      let aValue: any = a[filters.sortBy as keyof typeof a];
-      let bValue: any = b[filters.sortBy as keyof typeof b];
+    // Fetch transfers from database
+    const [transfers, total] = await Promise.all([
+      prisma.transfer.findMany({
+        where: whereClause,
+        include: {
+          fromStore: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              city: true,
+              emirate: true
+            }
+          },
+          toStore: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              city: true,
+              emirate: true
+            }
+          },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          },
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  sku: true,
+                  stockQuantity: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          [filters.sortBy]: filters.sortOrder
+        },
+        skip: (filters.page - 1) * filters.limit,
+        take: filters.limit
+      }),
+      prisma.transfer.count({ where: whereClause })
+    ]);
 
-      if (filters.sortBy === 'createdAt') {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
-      }
-
-      if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-
-      const comparison = aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-      return filters.sortOrder === 'desc' ? -comparison : comparison;
-    });
-
-    // Apply pagination
-    const startIndex = (filters.page - 1) * filters.limit;
-    const paginatedTransfers = filteredTransfers.slice(startIndex, startIndex + filters.limit);
+    // Apply search filter (after fetching since it searches across relations)
+    let filteredTransfers = transfers;
+    if (filters.search) {
+      filteredTransfers = transfers.filter(transfer =>
+        transfer.fromStore.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        transfer.toStore.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
+        transfer.id.toLowerCase().includes(filters.search!.toLowerCase())
+      );
+    }
 
     const response = {
-      data: paginatedTransfers,
+      data: filteredTransfers,
       pagination: {
         total: filteredTransfers.length,
-        pages: Math.ceil(filteredTransfers.length / filters.limit),
+        pages: Math.ceil(total / filters.limit),
         currentPage: filters.page,
-        hasNextPage: startIndex + filters.limit < filteredTransfers.length,
+        hasNextPage: filters.page * filters.limit < total,
         hasPrevPage: filters.page > 1
       }
     };
@@ -301,46 +192,107 @@ export async function POST(req: NextRequest) {
     const transferData = TransferCreateSchema.parse(body);
 
     // Check store access permissions
-    const userStores = session.user.stores || [];
-    const canAccessFromStore = ['OWNER', 'ADMIN'].includes(userRole) || userStores.includes(transferData.fromStoreId);
-    const canAccessToStore = ['OWNER', 'ADMIN'].includes(userRole) || userStores.includes(transferData.toStoreId);
+    if (!['OWNER', 'ADMIN'].includes(userRole)) {
+      const userStoreIds = await prisma.userStore.findMany({
+        where: { userId: session.user.id },
+        select: { storeId: true }
+      });
+      const storeIds = userStoreIds.map(us => us.storeId);
 
-    if (!canAccessFromStore || !canAccessToStore) {
-      return NextResponse.json({ error: 'Access denied to one or both stores' }, { status: 403 });
+      const canAccessFromStore = storeIds.includes(transferData.fromStoreId);
+      const canAccessToStore = storeIds.includes(transferData.toStoreId);
+
+      if (!canAccessFromStore || !canAccessToStore) {
+        return NextResponse.json({ error: 'Access denied to one or both stores' }, { status: 403 });
+      }
     }
 
-    // TODO: Check inventory availability at source store
+    // Verify stores exist
+    const [fromStore, toStore] = await Promise.all([
+      prisma.store.findUnique({ where: { id: transferData.fromStoreId } }),
+      prisma.store.findUnique({ where: { id: transferData.toStoreId } })
+    ]);
+
+    if (!fromStore || !toStore) {
+      return NextResponse.json({ error: 'One or both stores not found' }, { status: 404 });
+    }
+
+    // Check inventory availability at source store
     for (const item of transferData.items) {
-      // Validate product exists and has sufficient stock
-      const availableStock = 100; // Mock check
-      if (item.quantityRequested > availableStock) {
+      const inventory = await prisma.storeInventory.findUnique({
+        where: {
+          storeId_productId: {
+            storeId: transferData.fromStoreId,
+            productId: item.productId
+          }
+        }
+      });
+
+      if (!inventory || inventory.quantity < item.quantity) {
+        const product = await prisma.product.findUnique({ where: { id: item.productId } });
         return NextResponse.json({
-          error: `Insufficient stock for product ${item.productId}. Available: ${availableStock}, Requested: ${item.quantityRequested}`
+          error: `Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`
         }, { status: 400 });
       }
     }
 
-    // Create transfer in database
-    const transferNumber = generateTransferNumber();
-    const newTransfer = {
-      id: `transfer_${Date.now()}`,
-      transferNumber,
-      ...transferData,
-      estimatedDelivery: transferData.estimatedDelivery ? new Date(transferData.estimatedDelivery) : null,
-      status: 'PENDING_APPROVAL',
-      requestedById: session.user.id,
-      approvedById: null,
-      actualDelivery: null,
-      trackingNumber: null,
-      shippingCost: null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    // Create transfer with items in transaction
+    const newTransfer = await prisma.$transaction(async (tx) => {
+      // Create transfer
+      const transfer = await tx.transfer.create({
+        data: {
+          fromStoreId: transferData.fromStoreId,
+          toStoreId: transferData.toStoreId,
+          notes: transferData.notes,
+          totalItems: transferData.items.length,
+          createdById: session.user.id,
+          status: 'PENDING'
+        },
+        include: {
+          fromStore: { select: { id: true, name: true, code: true } },
+          toStore: { select: { id: true, name: true, code: true } },
+          createdBy: { select: { id: true, name: true, email: true } }
+        }
+      });
 
-    // TODO: Create transfer items in database
-    // TODO: Reserve inventory at source store
-    // TODO: Send notification to approver
-    // TODO: Create audit log entry
+      // Create transfer items
+      const items = await Promise.all(
+        transferData.items.map(item =>
+          tx.transferItem.create({
+            data: {
+              transferId: transfer.id,
+              productId: item.productId,
+              quantity: item.quantity,
+              receivedQty: null
+            },
+            include: {
+              product: {
+                select: { id: true, name: true, sku: true }
+              }
+            }
+          })
+        )
+      );
+
+      // Reserve inventory at source store
+      await Promise.all(
+        transferData.items.map(item =>
+          tx.storeInventory.update({
+            where: {
+              storeId_productId: {
+                storeId: transferData.fromStoreId,
+                productId: item.productId
+              }
+            },
+            data: {
+              reservedQty: { increment: item.quantity }
+            }
+          })
+        )
+      );
+
+      return { ...transfer, items };
+    });
 
     return NextResponse.json(newTransfer, { status: 201 });
 
@@ -360,7 +312,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT /api/transfers - Bulk update transfers
+// PUT /api/transfers - Update transfer status
 export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -370,45 +322,178 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { transferIds, action, data } = body;
+    const { transferId, action, receivedQuantities } = body;
 
-    if (!Array.isArray(transferIds) || transferIds.length === 0) {
+    if (!transferId || !action) {
       return NextResponse.json(
-        { error: 'Transfer IDs array is required' },
+        { error: 'Transfer ID and action are required' },
         { status: 400 }
       );
     }
 
     // Check permissions based on action
     const userRole = session.user.role;
+    if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
+    // Get transfer
+    const transfer = await prisma.transfer.findUnique({
+      where: { id: transferId },
+      include: { items: true }
+    });
+
+    if (!transfer) {
+      return NextResponse.json({ error: 'Transfer not found' }, { status: 404 });
+    }
+
+    let updatedTransfer;
+
     switch (action) {
       case 'approve':
-        if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-          return NextResponse.json({ error: 'Insufficient permissions to approve transfers' }, { status: 403 });
+        if (transfer.status !== 'PENDING') {
+          return NextResponse.json({ error: 'Transfer must be in PENDING status' }, { status: 400 });
         }
+        updatedTransfer = await prisma.transfer.update({
+          where: { id: transferId },
+          data: {
+            status: 'APPROVED',
+            approvedAt: new Date()
+          }
+        });
         break;
+
+      case 'ship':
+        if (transfer.status !== 'APPROVED') {
+          return NextResponse.json({ error: 'Transfer must be in APPROVED status' }, { status: 400 });
+        }
+        updatedTransfer = await prisma.$transaction(async (tx) => {
+          // Update transfer status
+          const updated = await tx.transfer.update({
+            where: { id: transferId },
+            data: {
+              status: 'SHIPPED',
+              shippedAt: new Date()
+            }
+          });
+
+          // Deduct from source store inventory
+          await Promise.all(
+            transfer.items.map(item =>
+              tx.storeInventory.update({
+                where: {
+                  storeId_productId: {
+                    storeId: transfer.fromStoreId,
+                    productId: item.productId
+                  }
+                },
+                data: {
+                  quantity: { decrement: item.quantity },
+                  reservedQty: { decrement: item.quantity }
+                }
+              })
+            )
+          );
+
+          return updated;
+        });
+        break;
+
+      case 'receive':
+        if (transfer.status !== 'SHIPPED') {
+          return NextResponse.json({ error: 'Transfer must be in SHIPPED status' }, { status: 400 });
+        }
+        updatedTransfer = await prisma.$transaction(async (tx) => {
+          // Update transfer status
+          const updated = await tx.transfer.update({
+            where: { id: transferId },
+            data: {
+              status: 'RECEIVED',
+              receivedAt: new Date()
+            }
+          });
+
+          // Update received quantities and add to destination store inventory
+          await Promise.all(
+            transfer.items.map(async (item) => {
+              const receivedQty = receivedQuantities?.[item.id] || item.quantity;
+
+              // Update transfer item with received quantity
+              await tx.transferItem.update({
+                where: { id: item.id },
+                data: { receivedQty }
+              });
+
+              // Add to destination store inventory
+              await tx.storeInventory.upsert({
+                where: {
+                  storeId_productId: {
+                    storeId: transfer.toStoreId,
+                    productId: item.productId
+                  }
+                },
+                update: {
+                  quantity: { increment: receivedQty }
+                },
+                create: {
+                  storeId: transfer.toStoreId,
+                  productId: item.productId,
+                  quantity: receivedQty,
+                  reservedQty: 0
+                }
+              });
+            })
+          );
+
+          return updated;
+        });
+        break;
+
       case 'cancel':
-        // Users can cancel their own transfers, managers/admins can cancel any
+        if (transfer.status === 'RECEIVED') {
+          return NextResponse.json({ error: 'Cannot cancel a received transfer' }, { status: 400 });
+        }
+        updatedTransfer = await prisma.$transaction(async (tx) => {
+          // Update transfer status
+          const updated = await tx.transfer.update({
+            where: { id: transferId },
+            data: { status: 'CANCELLED' }
+          });
+
+          // Release reserved inventory if not yet shipped
+          if (transfer.status === 'PENDING' || transfer.status === 'APPROVED') {
+            await Promise.all(
+              transfer.items.map(item =>
+                tx.storeInventory.update({
+                  where: {
+                    storeId_productId: {
+                      storeId: transfer.fromStoreId,
+                      productId: item.productId
+                    }
+                  },
+                  data: {
+                    reservedQty: { decrement: item.quantity }
+                  }
+                })
+              )
+            );
+          }
+
+          return updated;
+        });
         break;
+
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
-    // TODO: Implement bulk update logic
-    const results = transferIds.map(id => ({
-      id,
-      action,
-      success: true,
-      message: `Transfer ${action}d successfully`
-    }));
-
     return NextResponse.json({
-      message: `${action} applied to ${transferIds.length} transfers`,
-      results
+      message: `Transfer ${action}ed successfully`,
+      transfer: updatedTransfer
     });
 
   } catch (error) {
-    console.error('Error bulk updating transfers:', error);
+    console.error('Error updating transfer:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
