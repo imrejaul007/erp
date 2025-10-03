@@ -10,7 +10,9 @@ async function main() {
   console.log('📝 Creating default branding...');
   const branding = await prisma.branding.upsert({
     where: { id: 'default' },
-    update: {},
+    update: {
+      updatedAt: new Date(),
+    },
     create: {
       id: 'default',
       companyName: 'Oud & Perfume ERP',
