@@ -184,6 +184,86 @@ function mapPaymentMethod(method: string): any {
   return methodMap[method] || 'CASH';
 }
 
+// GET - Fetch recent POS transactions
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const page = parseInt(searchParams.get('page') || '1');
+    const storeId = searchParams.get('storeId');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+
+    const where: any = {};
+
+    if (storeId) {
+      where.storeId = storeId;
+    }
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+
+    const [transactions, total] = await Promise.all([
+      prisma.posTransaction.findMany({
+        where,
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true
+            }
+          },
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  nameArabic: true,
+                  sku: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.posTransaction.count({ where })
+    ]);
+
+    return NextResponse.json({
+      transactions,
+      pagination: {
+        total,
+        pages: Math.ceil(total / limit),
+        currentPage: page,
+        limit
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 // POST - Create new POS transaction
 export async function POST(request: NextRequest) {
   try {

@@ -71,6 +71,10 @@ export default function DashboardPage() {
   const [selectedDaySales, setSelectedDaySales] = useState<any>(null);
   const [isDaySalesDetailOpen, setIsDaySalesDetailOpen] = useState(false);
 
+  // Recent sales state
+  const [recentSales, setRecentSales] = React.useState<any[]>([]);
+  const [salesLoading, setSalesLoading] = React.useState(true);
+
   // Sample KPI data
   const kpiData = {
     todaysSales: {
@@ -138,6 +142,24 @@ export default function DashboardPage() {
     { type: 'info', message: 'New import shipment arrived', time: '4h ago' },
     { type: 'urgent', message: 'VAT filing due in 3 days', time: '1d ago' }
   ];
+
+  // Fetch recent sales on mount
+  React.useEffect(() => {
+    const fetchRecentSales = async () => {
+      try {
+        const response = await fetch('/api/sales/pos/transaction?limit=10');
+        if (response.ok) {
+          const data = await response.json();
+          setRecentSales(data.transactions || []);
+        }
+      } catch (error) {
+        console.error('Error fetching recent sales:', error);
+      } finally {
+        setSalesLoading(false);
+      }
+    };
+    fetchRecentSales();
+  }, []);
 
   const getChangeColor = (change) => {
     if (change > 0) return 'text-green-600';
@@ -490,6 +512,106 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Recent Sales Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-blue-600" />
+                  Recent Sales
+                </CardTitle>
+                <CardDescription>Latest POS transactions</CardDescription>
+              </div>
+              <Link href="/pos">
+                <Button variant="outline" size="sm">
+                  View All
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {salesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
+                <span className="ml-2 text-gray-600">Loading sales...</span>
+              </div>
+            ) : recentSales.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Receipt className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <p>No sales yet</p>
+                <Link href="/pos">
+                  <Button variant="outline" size="sm" className="mt-3">
+                    Create First Sale
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Receipt #</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Customer</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Items</th>
+                      <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Total</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Payment</th>
+                      <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentSales.map((sale) => (
+                      <tr key={sale.id} className="border-b hover:bg-blue-50 transition-colors">
+                        <td className="py-3 px-3">
+                          <div className="font-medium text-gray-900">{sale.receiptNumber}</div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="text-sm text-gray-900">
+                            {sale.customer ? sale.customer.name : 'Walk-in'}
+                          </div>
+                          {sale.customer?.phone && (
+                            <div className="text-xs text-gray-600">{sale.customer.phone}</div>
+                          )}
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="text-sm text-gray-900">
+                            {sale.items?.length || 0} item{(sale.items?.length || 0) !== 1 ? 's' : ''}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <div className="font-medium text-gray-900">
+                            AED {sale.grandTotal?.toFixed(2) || '0.00'}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            VAT: {sale.totalVat?.toFixed(2) || '0.00'}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <Badge variant="secondary" className="text-xs">
+                            {sale.paymentMethod?.toUpperCase() || 'N/A'}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <div className="text-sm text-gray-900">
+                            {new Date(sale.createdAt).toLocaleDateString('en-GB')}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {new Date(sale.createdAt).toLocaleTimeString('en-GB', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Production & Customer Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
