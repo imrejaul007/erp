@@ -1,8 +1,7 @@
 'use client';
 
-import { Bell, Menu, Search, User, LogOut } from 'lucide-react';
+import { Bell, Menu, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +12,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/hooks/use-ui';
 import { useAuth } from '@/hooks/use-auth';
-import { useState } from 'react';
+import { GlobalSearch } from '@/components/global-search';
 
 export function Header() {
   const { toggle } = useSidebar();
   const { user, signOut } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <header className="h-16 border-b border-oud-200/50 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
@@ -34,15 +32,9 @@ export function Header() {
             <Menu className="w-5 h-5" />
           </Button>
 
-          {/* Search */}
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-oud-500 w-4 h-4" />
-            <Input
-              placeholder="Search products, orders, customers..."
-              className="pl-10 w-80 input-luxury"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          {/* Global Search */}
+          <div className="hidden md:block">
+            <GlobalSearch />
           </div>
         </div>
 
