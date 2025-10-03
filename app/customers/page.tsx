@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Users, Phone, Mail, MapPin, Calendar, Star, Gift, TrendingUp, UserCheck, Heart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, Search, Filter, Users, Phone, Mail, MapPin, Calendar, Star, Gift, TrendingUp, UserCheck, Heart, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -133,6 +134,7 @@ const getCustomerInitials = (name: string): string => {
 };
 
 export default function CustomersPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState<typeof customers[0] | null>(null);
@@ -163,14 +165,19 @@ export default function CustomersPage() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Users className="h-8 w-8 text-oud-600" />
-            Customer Management
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage customer relationships, loyalty programs, and purchase history
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+              <Users className="h-8 w-8 text-oud-600" />
+              Customer Management
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage customer relationships, loyalty programs, and purchase history
+            </p>
+          </div>
         </div>
         <Dialog open={isNewCustomerDialogOpen} onOpenChange={setIsNewCustomerDialogOpen}>
           <DialogTrigger asChild>
