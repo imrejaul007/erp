@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -18,13 +17,9 @@ const profitLossSchema = z.object({
 });
 
 // Generate Profit & Loss Statement
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const params = {
       startDate: searchParams.get('startDate'),
@@ -37,10 +32,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (!params.startDate || !params.endDate) {
-      return NextResponse.json(
-        { success: false, error: 'Start date and end date are required' },
-        { status: 400 }
-      );
+      return apiError('Start date and end date are required', 400);
     }
 
     const validatedParams = profitLossSchema.parse(params);
@@ -74,7 +66,7 @@ export async function GET(request: NextRequest) {
       return generatePDFResponse(reportData);
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: reportData,
       metadata: {
@@ -88,40 +80,27 @@ export async function GET(request: NextRequest) {
         } : null,
         currency: validatedParams.currency,
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user?.email,
       },
     });
   } catch (error) {
     console.error('Profit & Loss Report error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate profit & loss statement' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate profit & loss statement', 500);
   }
-}
+});
 
 // Save Profit & Loss Statement
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { startDate, endDate, currency = 'AED' } = body;
 
     if (!startDate || !endDate) {
-      return NextResponse.json(
-        { success: false, error: 'Start date and end date are required' },
-        { status: 400 }
-      );
+      return apiError('Start date and end date are required', 400);
     }
 
     // Generate P&L statement
@@ -144,11 +123,11 @@ export async function POST(request: NextRequest) {
         ${profitLossStatement.summary.totalOperatingExpenses}, ${profitLossStatement.summary.operatingIncome},
         ${profitLossStatement.summary.totalOtherIncome}, ${profitLossStatement.summary.totalOtherExpenses},
         ${profitLossStatement.summary.netProfitBeforeTax}, ${profitLossStatement.summary.taxExpense},
-        ${profitLossStatement.summary.netProfitAfterTax}, ${new Date()}, ${session.user.id}
+        ${profitLossStatement.summary.netProfitAfterTax}, ${new Date()}, ${user.id}
       )
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: plId,
@@ -158,12 +137,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Profit & Loss POST error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to save profit & loss statement' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to save profit & loss statement', 500);
   }
-}
+});
 
 // Generate Profit & Loss Statement data
 async function generateProfitLossStatement(startDate: string, endDate: string, currency: string) {
@@ -431,11 +410,7 @@ function generateCSVResponse(reportData: any) {
 
 // Generate PDF export (placeholder)
 function generatePDFResponse(reportData: any) {
-  return NextResponse.json({
-    success: false,
-    error: 'PDF export not implemented yet',
-    message: 'Please use CSV export or implement PDF generation library',
-  });
+  return apiError('PDF export not implemented yet', 501);
 }
 
 function generateId(): string {

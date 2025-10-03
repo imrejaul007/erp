@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -16,13 +15,9 @@ const cashFlowSchema = z.object({
 });
 
 // Generate Cash Flow Statement
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const params = {
       startDate: searchParams.get('startDate'),
@@ -33,10 +28,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (!params.startDate || !params.endDate) {
-      return NextResponse.json(
-        { success: false, error: 'Start date and end date are required' },
-        { status: 400 }
-      );
+      return apiError('Start date and end date are required', 400);
     }
 
     const validatedParams = cashFlowSchema.parse(params);
@@ -56,7 +48,7 @@ export async function GET(request: NextRequest) {
       return generatePDFResponse(cashFlowStatement);
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: cashFlowStatement,
       metadata: {
@@ -67,40 +59,27 @@ export async function GET(request: NextRequest) {
         currency: validatedParams.currency,
         method: validatedParams.method,
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user?.email,
       },
     });
   } catch (error) {
     console.error('Cash Flow Statement error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate cash flow statement' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate cash flow statement', 500);
   }
-}
+});
 
 // Save Cash Flow Statement
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { startDate, endDate, currency = 'AED', method = 'indirect' } = body;
 
     if (!startDate || !endDate) {
-      return NextResponse.json(
-        { success: false, error: 'Start date and end date are required' },
-        { status: 400 }
-      );
+      return apiError('Start date and end date are required', 400);
     }
 
     // Generate cash flow statement
@@ -121,11 +100,11 @@ export async function POST(request: NextRequest) {
         ${JSON.stringify(cashFlowStatement.investingActivities)},
         ${JSON.stringify(cashFlowStatement.financingActivities)},
         ${cashFlowStatement.summary.netCashFlow}, ${cashFlowStatement.summary.openingCashBalance},
-        ${cashFlowStatement.summary.closingCashBalance}, ${new Date()}, ${session.user.id}
+        ${cashFlowStatement.summary.closingCashBalance}, ${new Date()}, ${user.id}
       )
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: cfId,
@@ -135,12 +114,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Cash Flow Statement POST error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to save cash flow statement' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to save cash flow statement', 500);
   }
-}
+});
 
 // Generate Cash Flow Statement data
 async function generateCashFlowStatement(startDate: string, endDate: string, currency: string, method: string) {
@@ -591,11 +570,7 @@ function generateCSVResponse(cashFlowStatement: any) {
 
 // Generate PDF export (placeholder)
 function generatePDFResponse(cashFlowStatement: any) {
-  return NextResponse.json({
-    success: false,
-    error: 'PDF export not implemented yet',
-    message: 'Please use CSV export or implement PDF generation library',
-  });
+  return apiError('PDF export not implemented yet', 501);
 }
 
 function generateId(): string {

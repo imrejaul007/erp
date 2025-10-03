@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -17,13 +16,9 @@ const balanceSheetSchema = z.object({
 });
 
 // Generate Balance Sheet
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const params = {
       asOfDate: searchParams.get('asOfDate') || new Date().toISOString().split('T')[0],
@@ -65,7 +60,7 @@ export async function GET(request: NextRequest) {
       return generatePDFResponse(reportData);
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: reportData,
       metadata: {
@@ -73,40 +68,27 @@ export async function GET(request: NextRequest) {
         comparisonDate: validatedParams.comparisonDate,
         currency: validatedParams.currency,
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user?.email,
       },
     });
   } catch (error) {
     console.error('Balance Sheet Report error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate balance sheet' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate balance sheet', 500);
   }
-}
+});
 
 // Save Balance Sheet
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { asOfDate, currency = 'AED' } = body;
 
     if (!asOfDate) {
-      return NextResponse.json(
-        { success: false, error: 'As of date is required' },
-        { status: 400 }
-      );
+      return apiError('As of date is required', 400);
     }
 
     // Generate balance sheet
@@ -125,11 +107,11 @@ export async function POST(request: NextRequest) {
         ${JSON.stringify(balanceSheet.assets)}, ${JSON.stringify(balanceSheet.liabilities)},
         ${JSON.stringify(balanceSheet.equity)}, ${balanceSheet.summary.totalAssets},
         ${balanceSheet.summary.totalLiabilitiesAndEquity}, ${balanceSheet.summary.isBalanced},
-        ${new Date()}, ${session.user.id}
+        ${new Date()}, ${user.id}
       )
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: bsId,
@@ -139,12 +121,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Balance Sheet POST error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to save balance sheet' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to save balance sheet', 500);
   }
-}
+});
 
 // Generate Balance Sheet data
 async function generateBalanceSheet(asOfDate: string, currency: string, includeZeroBalances: boolean = false) {
@@ -446,11 +428,7 @@ function generateCSVResponse(reportData: any) {
 
 // Generate PDF export (placeholder)
 function generatePDFResponse(reportData: any) {
-  return NextResponse.json({
-    success: false,
-    error: 'PDF export not implemented yet',
-    message: 'Please use CSV export or implement PDF generation library',
-  });
+  return apiError('PDF export not implemented yet', 501);
 }
 
 function generateId(): string {
