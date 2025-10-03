@@ -128,6 +128,8 @@ const navigationItems: NavItem[] = [
       { title: 'Wastage', href: '/production/wastage', icon: FileText, roles: ['OWNER', 'MANAGER'] },
       { title: 'R&D Experiments', href: '/production/rd-experiments', icon: Factory, roles: ['OWNER', 'MANAGER'] },
       { title: 'By-Products', href: '/production/by-products', icon: Package, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Cost Optimizer', href: '/production/cost-optimizer', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Compliance', href: '/production/compliance', icon: FileText, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -182,6 +184,7 @@ const navigationItems: NavItem[] = [
       { title: 'Performance', href: '/hr/performance', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
       { title: 'Scheduling', href: '/hr/scheduling', icon: FileText, roles: ['OWNER', 'MANAGER'] },
       { title: 'Leave Requests', href: '/hr/leave-requests', icon: FileText, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Training & Certs', href: '/hr/training', icon: Users, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
