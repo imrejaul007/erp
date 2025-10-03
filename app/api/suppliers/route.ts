@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
@@ -38,6 +38,7 @@ const supplierSchema = z.object({
 })
 
 export const GET = withTenant(async (request, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -158,6 +159,7 @@ export const GET = withTenant(async (request, { tenantId, user }) => {
 });
 
 export const POST = withTenant(async (request, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const body = await request.json()
     const validatedData = supplierSchema.parse(body)
@@ -185,7 +187,7 @@ export const POST = withTenant(async (request, { tenantId, user }) => {
     return apiResponse(supplier, 201)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return apiError('Validation error', 400, { details: error.errors })
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400)
     }
 
     console.error('Error creating supplier:', error)

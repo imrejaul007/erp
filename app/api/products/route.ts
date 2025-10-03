@@ -1,6 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
@@ -30,6 +28,7 @@ const ProductCreateSchema = z.object({
 
 // GET /api/products - List all products
 export const GET = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const url = new URL(req.url);
     const search = url.searchParams.get('search');
@@ -102,6 +101,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/products - Create new product
 export const POST = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(user.role)) {
@@ -177,7 +177,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return apiError('Validation error', 400, error.errors);
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating product:', error);
@@ -187,6 +187,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
 // PUT /api/products - Update product
 export const PUT = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(user.role)) {
@@ -237,6 +238,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
 
 // DELETE /api/products - Delete product (soft delete)
 export const DELETE = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN'].includes(user.role)) {

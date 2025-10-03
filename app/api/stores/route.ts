@@ -1,6 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
@@ -34,6 +32,7 @@ const StoreFiltersSchema = z.object({
 
 // GET /api/stores - List stores with filters
 export const GET = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Parse query parameters
     const url = new URL(req.url);
@@ -121,6 +120,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/stores - Create new store
 export const POST = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
@@ -161,7 +161,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return apiError('Validation error', 400, error.errors);
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating store:', error);
@@ -171,6 +171,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
 // PUT /api/stores - Bulk update stores
 export const PUT = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
@@ -205,6 +206,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
 
 // DELETE /api/stores - Bulk delete stores
 export const DELETE = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions (only owners/admins can delete stores)
     if (!['OWNER', 'SUPER_ADMIN'].includes(user.role)) {

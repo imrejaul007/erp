@@ -1,6 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
@@ -22,6 +20,7 @@ const CustomerCreateSchema = z.object({
 
 // GET /api/customers - List all customers
 export const GET = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const url = new URL(req.url);
     const search = url.searchParams.get('search');
@@ -90,6 +89,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/customers - Create new customer
 export const POST = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const body = await req.json();
     const customerData = CustomerCreateSchema.parse(body);
@@ -139,7 +139,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return apiError('Validation error', 400, error.errors);
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating customer:', error);
@@ -149,6 +149,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
 // PUT /api/customers - Update customer
 export const PUT = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const body = await req.json();
     const { id, ...updateData } = body;
@@ -185,6 +186,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
 
 // DELETE /api/customers - Delete customer
 export const DELETE = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN'].includes(user.role)) {

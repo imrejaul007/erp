@@ -1,6 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
@@ -12,6 +10,7 @@ const BrandCreateSchema = z.object({
 
 // GET /api/brands
 export const GET = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const brands = await prisma.brand.findMany({
       where: { tenantId },
@@ -35,6 +34,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/brands
 export const POST = withTenant(async (req, { tenantId, user }) => {
+  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(user.role)) {
       return apiError('Insufficient permissions', 403);
@@ -54,7 +54,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return apiError('Validation error', 400, error.errors);
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating brand:', error);
