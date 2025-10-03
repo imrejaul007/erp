@@ -53,7 +53,6 @@ const navigationItems: NavItem[] = [
     icon: ShoppingCart,
     roles: ['OWNER', 'MANAGER', 'SALES_STAFF'],
     children: [
-      { title: 'POS Terminal', href: '/pos/terminal', icon: Store, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Walk-in Sales', href: '/pos/walk-in', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Sales Overview', href: '/sales', icon: TrendingUp, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Retail Sales', href: '/sales/retail', icon: Store, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
@@ -65,12 +64,11 @@ const navigationItems: NavItem[] = [
     ],
   },
   {
-    title: 'CRM',
+    title: 'Customers',
     icon: Users,
     roles: ['OWNER', 'MANAGER', 'SALES_STAFF'],
     children: [
-      { title: 'All Customers', href: '/crm', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
-      { title: 'Add Customer', href: '/crm/add-customer', icon: UserSquare2, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'All Customers', href: '/customers', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'VIP Customers', href: '/crm/segments/vip', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Regular Customers', href: '/crm/segments/regular', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Tourist Customers', href: '/crm/segments/tourist', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
@@ -79,6 +77,7 @@ const navigationItems: NavItem[] = [
       { title: 'Campaigns', href: '/crm/campaigns', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
       { title: 'Purchase History', href: '/crm/purchase-history', icon: FileText, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Complaints', href: '/crm/complaints', icon: FileText, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Comprehensive CRM', href: '/crm/comprehensive', icon: Users, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -111,13 +110,12 @@ const navigationItems: NavItem[] = [
     icon: Factory,
     roles: ['OWNER', 'MANAGER'],
     children: [
-      { title: 'Overview', href: '/production', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Production Batches', href: '/production/batch', icon: Factory, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Tracking', href: '/production/tracking', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Batches', href: '/production/batches', icon: Factory, roles: ['OWNER', 'MANAGER'] },
       { title: 'Recipes', href: '/production/recipes', icon: FileText, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Quality Control', href: '/production/quality-control', icon: FileText, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Scheduling', href: '/production/scheduling', icon: FileText, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Yield Reports', href: '/production/yield-report', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Management', href: '/production/management', icon: Factory, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Quality Control', href: '/production/qc', icon: FileText, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Costing', href: '/production/costing', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Wastage', href: '/production/wastage', icon: FileText, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -138,18 +136,12 @@ const navigationItems: NavItem[] = [
     icon: DollarSign,
     roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'],
     children: [
-      { title: 'Overview', href: '/finance', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Accounting', href: '/finance/accounting', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'General Ledger', href: '/finance/ledger', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Accounts Payable', href: '/finance/payables', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Accounts Receivable', href: '/finance/receivables', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Bank Reconciliation', href: '/finance/bank-reconciliation', icon: Building2, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
+      { title: 'Transactions', href: '/finance/transactions', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
+      { title: 'Invoicing', href: '/finance/invoicing', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
+      { title: 'Expenses', href: '/finance/expenses', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'VAT Management', href: '/finance/vat', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Multi-Currency', href: '/finance/multi-currency', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Petty Cash', href: '/finance/petty-cash', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'P&L Report', href: '/finance/reports/pnl', icon: BarChart3, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Balance Sheet', href: '/finance/reports/balance-sheet', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Cash Flow', href: '/finance/reports/cash-flow', icon: TrendingUp, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
+      { title: 'Reports', href: '/finance/reports', icon: BarChart3, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
     ],
   },
   {
@@ -158,8 +150,6 @@ const navigationItems: NavItem[] = [
     roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'],
     children: [
       { title: 'Overview', href: '/purchasing', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
-      { title: 'Create Order', href: '/purchasing/create-order', icon: ShoppingCart, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
-      { title: 'Vendor Management', href: '/purchasing/vendor-management', icon: Building2, roles: ['OWNER', 'MANAGER'] },
       { title: 'Invoices', href: '/purchasing/invoices', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Payments', href: '/purchasing/payments', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Import Tracking', href: '/purchasing/import-tracking', icon: Truck, roles: ['OWNER', 'MANAGER'] },
@@ -171,13 +161,12 @@ const navigationItems: NavItem[] = [
     icon: UserSquare2,
     roles: ['OWNER', 'MANAGER'],
     children: [
-      { title: 'Overview', href: '/hr', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Staff Management', href: '/hr/staff-management', icon: Users, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Staff List', href: '/hr/staff', icon: Users, roles: ['OWNER', 'MANAGER'] },
       { title: 'Attendance', href: '/hr/attendance', icon: FileText, roles: ['OWNER', 'MANAGER'] },
       { title: 'Payroll', href: '/hr/payroll', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Commission', href: '/hr/commission', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
       { title: 'Performance', href: '/hr/performance', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Roles & Permissions', href: '/hr/roles', icon: Settings, roles: ['OWNER'] },
+      { title: 'Scheduling', href: '/hr/scheduling', icon: FileText, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Leave Requests', href: '/hr/leave-requests', icon: FileText, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -200,10 +189,13 @@ const navigationItems: NavItem[] = [
     children: [
       { title: 'Overview', href: '/multi-location', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER'] },
       { title: 'Store Management', href: '/multi-location/management', icon: Store, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Staff Management', href: '/multi-location/staff', icon: Users, roles: ['OWNER', 'MANAGER'] },
       { title: 'Transfers', href: '/multi-location/transfers', icon: Truck, roles: ['OWNER', 'MANAGER'] },
       { title: 'Pricing', href: '/multi-location/pricing', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
       { title: 'Promotions', href: '/multi-location/promotions', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
       { title: 'Staff Performance', href: '/multi-location/staff-performance', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Analytics', href: '/multi-location/analytics', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Settings', href: '/multi-location/settings', icon: Settings, roles: ['OWNER'] },
     ],
   },
   {
@@ -211,13 +203,11 @@ const navigationItems: NavItem[] = [
     icon: BarChart3,
     roles: ['OWNER', 'MANAGER'],
     children: [
-      { title: 'Dashboard', href: '/reports', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Analytics', href: '/analytics', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Analytics Dashboard', href: '/analytics', icon: LayoutDashboard, roles: ['OWNER', 'MANAGER'] },
       { title: 'Sales Reports', href: '/reports/sales', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
       { title: 'Inventory Reports', href: '/reports/inventory', icon: Package, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Stock Movement', href: '/reports/stock-movement', icon: Truck, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Profitability', href: '/reports/profitability', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Wastage Reports', href: '/reports/wastage', icon: FileText, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Financial Reports', href: '/reports/financial', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Customer Reports', href: '/reports/customer', icon: Users, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -226,12 +216,13 @@ const navigationItems: NavItem[] = [
     roles: ['OWNER', 'MANAGER'],
     children: [
       { title: 'General', href: '/settings', icon: Settings, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Branding', href: '/settings/branding', icon: Flower2, roles: ['OWNER'] },
       { title: 'Permissions', href: '/settings/permissions', icon: UserSquare2, roles: ['OWNER'] },
       { title: 'Tax Settings', href: '/settings/tax', icon: FileText, roles: ['OWNER', 'MANAGER'] },
       { title: 'Currency', href: '/settings/currency', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
       { title: 'Language', href: '/settings/language', icon: Globe, roles: ['OWNER', 'MANAGER'] },
       { title: 'Loyalty Settings', href: '/settings/loyalty', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Theme', href: '/settings/theme', icon: Settings, roles: ['OWNER', 'MANAGER'] },
+      { title: 'System', href: '/settings/system', icon: Settings, roles: ['OWNER'] },
     ],
   },
 ];
@@ -416,7 +407,7 @@ export function Sidebar() {
         {/* User Info */}
         {!isCollapsed && user && (
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-            <div className="flex items-center space-x-3">
+            <Link href="/profile" className="flex items-center space-x-3 hover:bg-amber-50 rounded-lg p-2 transition-colors">
               <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-white">
                   {user.name?.charAt(0) || user.email.charAt(0)}
@@ -430,7 +421,7 @@ export function Sidebar() {
                   {user.role.toLowerCase().replace('_', ' ')}
                 </p>
               </div>
-            </div>
+            </Link>
           </div>
         )}
       </div>
