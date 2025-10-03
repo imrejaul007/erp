@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,24 +24,25 @@ import {
   Activity,
   Clock,
   Award,
-  LogOut
+  LogOut,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [selectedTab, setSelectedTab] = useState('profile');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [profileData, setProfileData] = useState({
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@oudpalace.ae',
-    phone: '+971-50-123-4567',
-    address: 'Dubai, UAE',
-    role: 'Administrator',
-    department: 'Management',
-    joinDate: '2023-01-15',
-    bio: 'System administrator with full access to all modules.',
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    role: '',
+    createdAt: '',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -48,6 +50,29 @@ export default function ProfilePage() {
     newPassword: '',
     confirmPassword: '',
   });
+
+  // Fetch profile data on mount
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await fetch('/api/profile');
+      const data = await res.json();
+
+      if (res.ok) {
+        setProfileData(data);
+      } else {
+        toast.error(data.error || 'Failed to load profile');
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      toast.error('Failed to load profile');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const activityLog = [
     { action: 'Logged in', time: '2 hours ago', ip: '192.168.1.1' },
@@ -63,17 +88,71 @@ export default function ProfilePage() {
     { title: 'Perfect Month', description: 'Met all targets for a month', date: '2023-06-30' },
   ];
 
-  const handleSaveProfile = () => {
-    toast.success('Profile updated successfully');
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: profileData.name,
+          phone: profileData.phone,
+          address: profileData.address,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setProfileData(data);
+        toast.success('Profile updated successfully');
+      } else {
+        toast.error(data.error || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
-    toast.success('Password changed successfully');
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success('Password changed successfully');
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        toast.error(data.error || 'Failed to change password');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error('Failed to change password');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -98,36 +177,42 @@ export default function ProfilePage() {
       {/* Profile Header */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-start gap-4 sm:gap-6">
-            <div className="relative">
-              <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                {profileData.firstName[0]}{profileData.lastName[0]}
-              </div>
-              <Button
-                size="sm"
-                className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0"
-              >
-                <Camera className="h-4 w-4" />
-              </Button>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-oud-500" />
             </div>
-            <div className="flex-1">
-              <h2 className="text-xl sm:text-2xl font-bold">{profileData.firstName} {profileData.lastName}</h2>
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4" />
-                  {profileData.role}
+          ) : (
+            <div className="flex items-start gap-4 sm:gap-6">
+              <div className="relative">
+                <div className="w-24 h-24 bg-gradient-to-br from-oud-500 to-oud-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                  {profileData.name ? profileData.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  Joined {profileData.joinDate}
-                </div>
+                <Button
+                  size="sm"
+                  className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0"
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
               </div>
-              <div className="flex gap-2 mt-3">
-                <Badge className="bg-green-100 text-green-800">Active</Badge>
-                <Badge variant="outline">{profileData.department}</Badge>
+              <div className="flex-1">
+                <h2 className="text-xl sm:text-2xl font-bold luxury-text-gradient">{profileData.name || 'User'}</h2>
+                <div className="flex items-center gap-4 mt-2 text-sm text-oud-600">
+                  <div className="flex items-center gap-1">
+                    <Briefcase className="h-4 w-4" />
+                    {profileData.role || 'User'}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    Joined {profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : '-'}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Badge className="bg-green-100 text-green-800">Active</Badge>
+                  <Badge variant="outline">{profileData.role}</Badge>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
@@ -149,21 +234,13 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="name">Full Name</Label>
                   <Input
-                    id="firstName"
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                    id="name"
+                    value={profileData.name || ''}
+                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    placeholder="Enter your full name"
                   />
                 </div>
 
@@ -174,10 +251,12 @@ export default function ProfilePage() {
                     <Input
                       id="email"
                       type="email"
-                      value={profileData.email}
-                      onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                      value={profileData.email || ''}
+                      disabled
+                      className="bg-gray-50"
                     />
                   </div>
+                  <p className="text-xs text-gray-500">Email cannot be changed</p>
                 </div>
 
                 <div className="space-y-2">
@@ -186,8 +265,9 @@ export default function ProfilePage() {
                     <Phone className="h-4 w-4 text-gray-400" />
                     <Input
                       id="phone"
-                      value={profileData.phone}
+                      value={profileData.phone || ''}
                       onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                      placeholder="+971-XXX-XXXX"
                     />
                   </div>
                 </div>
@@ -198,27 +278,31 @@ export default function ProfilePage() {
                     <MapPin className="h-4 w-4 text-gray-400" />
                     <Input
                       id="address"
-                      value={profileData.address}
+                      value={profileData.address || ''}
                       onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                      placeholder="Enter your address"
                     />
                   </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={profileData.bio}
-                    onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-                    rows={3}
-                  />
                 </div>
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleSaveProfile} className="bg-blue-600 hover:bg-blue-700">
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                <Button
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
+                  variant="luxury"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
@@ -269,9 +353,22 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleChangePassword} className="bg-blue-600 hover:bg-blue-700">
-                  <Save className="h-4 w-4 mr-2" />
-                  Change Password
+                <Button
+                  onClick={handleChangePassword}
+                  disabled={isSaving}
+                  variant="luxury"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Changing...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Change Password
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
