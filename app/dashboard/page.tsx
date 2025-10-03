@@ -790,6 +790,50 @@ export default function DashboardPage() {
           </Card>
         </div>
 
+        {/* New Features Section */}
+        <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-amber-600" />
+              New Features & Advanced Tools
+            </CardTitle>
+            <CardDescription>Recently added capabilities to enhance your operations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {[
+                { name: 'Layaway', icon: CreditCard, href: '/sales/layaway', color: 'text-blue-600', badge: 'Sales' },
+                { name: 'Subscriptions', icon: RefreshCw, href: '/sales/subscriptions', color: 'text-purple-600', badge: 'Sales' },
+                { name: 'POS Offline', icon: Activity, href: '/sales/pos-offline', color: 'text-green-600', badge: 'Sales' },
+                { name: 'Dead Stock', icon: AlertTriangle, href: '/inventory/dead-stock', color: 'text-red-600', badge: 'Inventory' },
+                { name: 'Warehouse Bins', icon: MapPin, href: '/inventory/warehouse-bins', color: 'text-indigo-600', badge: 'Inventory' },
+                { name: 'Batch Recall', icon: AlertCircle, href: '/inventory/batch-recall', color: 'text-orange-600', badge: 'Inventory' },
+                { name: 'R&D Lab', icon: Beaker, href: '/production/rd-experiments', color: 'text-purple-600', badge: 'Production' },
+                { name: 'By-Products', icon: Package, href: '/production/by-products', color: 'text-green-600', badge: 'Production' },
+                { name: 'Events & Shows', icon: Calendar, href: '/crm/events', color: 'text-pink-600', badge: 'CRM' },
+                { name: 'Feedback', icon: Heart, href: '/crm/feedback', color: 'text-red-600', badge: 'CRM' },
+                { name: 'Customer Journey', icon: Target, href: '/crm/customer-journey', color: 'text-blue-600', badge: 'CRM' },
+                { name: 'Gift Registry', icon: Gift, href: '/crm/gift-registry', color: 'text-pink-600', badge: 'CRM' },
+                { name: 'Budgeting', icon: PiggyBank, href: '/finance/budgeting', color: 'text-green-600', badge: 'Finance' },
+                { name: 'Landed Cost', icon: Ship, href: '/procurement/landed-cost', color: 'text-blue-600', badge: 'Procurement' },
+                { name: 'Supplier Ratings', icon: Star, href: '/procurement/supplier-ratings', color: 'text-amber-600', badge: 'Procurement' }
+              ].map((feature) => (
+                <Link key={feature.name} href={feature.href}>
+                  <Card className="cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1 group bg-white">
+                    <CardContent className="p-4 text-center relative">
+                      <Badge className="absolute top-2 right-2 text-xs bg-amber-100 text-amber-700 hover:bg-amber-100">
+                        {feature.badge}
+                      </Badge>
+                      <feature.icon className={`h-8 w-8 mx-auto mb-2 ${feature.color}`} />
+                      <div className="text-sm font-medium text-gray-900 group-hover:text-gray-900">{feature.name}</div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Module Navigation Cards */}
         <Card>
           <CardHeader>

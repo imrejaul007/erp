@@ -58,6 +58,9 @@ const navigationItems: NavItem[] = [
       { title: 'Retail Sales', href: '/sales/retail', icon: Store, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Wholesale', href: '/sales/wholesale', icon: Building2, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Corporate Sales', href: '/sales/corporate', icon: Building2, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Layaway Payments', href: '/sales/layaway', icon: CreditCard, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Subscriptions', href: '/sales/subscriptions', icon: PackageSearch, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'POS Offline Mode', href: '/sales/pos-offline', icon: PackageSearch, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Returns & Refunds', href: '/sales/returns', icon: PackageSearch, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Gift Cards', href: '/sales/gift-cards', icon: CreditCard, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Day Closing', href: '/sales/closing', icon: FileText, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
@@ -78,6 +81,10 @@ const navigationItems: NavItem[] = [
       { title: 'Purchase History', href: '/crm/purchase-history', icon: FileText, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Complaints', href: '/crm/complaints', icon: FileText, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Comprehensive CRM', href: '/crm/comprehensive', icon: Users, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Events & Exhibitions', href: '/crm/events', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Feedback & Surveys', href: '/crm/feedback', icon: FileText, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Customer Journey', href: '/crm/customer-journey', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Gift Registry', href: '/crm/gift-registry', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
     ],
   },
   {
@@ -103,6 +110,9 @@ const navigationItems: NavItem[] = [
       { title: 'Unit Conversion', href: '/inventory/units', icon: Package, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
       { title: 'Pricing', href: '/inventory/pricing', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
       { title: 'Expiry Tracking', href: '/inventory/expiry', icon: FileText, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
+      { title: 'Dead Stock Analysis', href: '/inventory/dead-stock', icon: Package, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
+      { title: 'Warehouse Bins', href: '/inventory/warehouse-bins', icon: Package, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
+      { title: 'Batch Recall', href: '/inventory/batch-recall', icon: FileText, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
     ],
   },
   {
@@ -116,6 +126,8 @@ const navigationItems: NavItem[] = [
       { title: 'Quality Control', href: '/production/qc', icon: FileText, roles: ['OWNER', 'MANAGER'] },
       { title: 'Costing', href: '/production/costing', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
       { title: 'Wastage', href: '/production/wastage', icon: FileText, roles: ['OWNER', 'MANAGER'] },
+      { title: 'R&D Experiments', href: '/production/rd-experiments', icon: Factory, roles: ['OWNER', 'MANAGER'] },
+      { title: 'By-Products', href: '/production/by-products', icon: Package, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -142,6 +154,7 @@ const navigationItems: NavItem[] = [
       { title: 'Expenses', href: '/finance/expenses', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'VAT Management', href: '/finance/vat', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Reports', href: '/finance/reports', icon: BarChart3, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
+      { title: 'Budgeting & Forecasting', href: '/finance/budgeting', icon: TrendingUp, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
     ],
   },
   {
@@ -154,6 +167,8 @@ const navigationItems: NavItem[] = [
       { title: 'Payments', href: '/purchasing/payments', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Import Tracking', href: '/purchasing/import-tracking', icon: Truck, roles: ['OWNER', 'MANAGER'] },
       { title: 'Reports', href: '/purchasing/reports', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Landed Cost Calculator', href: '/procurement/landed-cost', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'INVENTORY_STAFF'] },
+      { title: 'Supplier Ratings', href: '/procurement/supplier-ratings', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
