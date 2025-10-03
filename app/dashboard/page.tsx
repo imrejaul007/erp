@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Search,
   Bell,
@@ -212,7 +213,7 @@ export default function DashboardPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search products, customers, invoices..."
-                className="pl-10 w-80"
+                className="pl-10 w-full sm:w-80"
               />
             </div>
           </div>
@@ -259,15 +260,15 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Dashboard Content */}
-      <div className="space-y-4 sm:space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
-          <h2 className="text-xl sm:text-xl sm:text-2xl font-bold mb-2">Welcome back! 👋</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">Welcome back! 👋</h2>
           <p className="text-sm sm:text-base opacity-90">Here's what's happening with your business today</p>
         </div>
 
         {/* KPI Cards Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
           {/* Today's Sales */}
           <Card
             className="cursor-pointer hover:bg-blue-50 transition-colors group"
@@ -374,7 +375,7 @@ export default function DashboardPage() {
             <CardDescription>One-click access to common tasks</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
               <Link href="/pos/terminal">
                 <Button className="h-20 w-full flex flex-col space-y-2 bg-blue-600 hover:bg-blue-700">
                   <CreditCard className="h-6 w-6" />
@@ -550,50 +551,46 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Receipt #</th>
-                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Customer</th>
-                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Items</th>
-                      <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Total</th>
-                      <th className="text-left py-2 px-3 text-sm font-medium text-gray-700">Payment</th>
-                      <th className="text-right py-2 px-3 text-sm font-medium text-gray-700">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Receipt #</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Items</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead>Payment</TableHead>
+                      <TableHead className="text-right">Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {recentSales.map((sale) => (
-                      <tr key={sale.id} className="border-b hover:bg-blue-50 transition-colors">
-                        <td className="py-3 px-3">
-                          <div className="font-medium text-gray-900">{sale.receiptNumber}</div>
-                        </td>
-                        <td className="py-3 px-3">
+                      <TableRow key={sale.id}>
+                        <TableCell className="font-medium">{sale.receiptNumber}</TableCell>
+                        <TableCell>
                           <div className="text-sm text-gray-900">
                             {sale.customer ? sale.customer.name : 'Walk-in'}
                           </div>
                           {sale.customer?.phone && (
                             <div className="text-xs text-gray-600">{sale.customer.phone}</div>
                           )}
-                        </td>
-                        <td className="py-3 px-3">
-                          <div className="text-sm text-gray-900">
-                            {sale.items?.length || 0} item{(sale.items?.length || 0) !== 1 ? 's' : ''}
-                          </div>
-                        </td>
-                        <td className="py-3 px-3 text-right">
+                        </TableCell>
+                        <TableCell>
+                          {sale.items?.length || 0} item{(sale.items?.length || 0) !== 1 ? 's' : ''}
+                        </TableCell>
+                        <TableCell className="text-right">
                           <div className="font-medium text-gray-900">
                             AED {sale.grandTotal?.toFixed(2) || '0.00'}
                           </div>
                           <div className="text-xs text-gray-600">
                             VAT: {sale.totalVat?.toFixed(2) || '0.00'}
                           </div>
-                        </td>
-                        <td className="py-3 px-3">
+                        </TableCell>
+                        <TableCell>
                           <Badge variant="secondary" className="text-xs">
                             {sale.paymentMethod?.toUpperCase() || 'N/A'}
                           </Badge>
-                        </td>
-                        <td className="py-3 px-3 text-right">
+                        </TableCell>
+                        <TableCell className="text-right">
                           <div className="text-sm text-gray-900">
                             {new Date(sale.createdAt).toLocaleDateString('en-GB')}
                           </div>
@@ -603,11 +600,11 @@ export default function DashboardPage() {
                               minute: '2-digit'
                             })}
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             )}
           </CardContent>
@@ -881,7 +878,7 @@ export default function DashboardPage() {
 
       {/* Production Batch Detail Dialog */}
       <Dialog open={isBatchDetailOpen} onOpenChange={setIsBatchDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-gray-900">Production Batch Details</DialogTitle>
             <DialogDescription className="text-gray-600">
@@ -962,7 +959,7 @@ export default function DashboardPage() {
 
       {/* Customer Detail Dialog */}
       <Dialog open={isCustomerDetailOpen} onOpenChange={setIsCustomerDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-gray-900">Customer Details</DialogTitle>
             <DialogDescription className="text-gray-600">
@@ -1043,7 +1040,7 @@ export default function DashboardPage() {
 
       {/* Store Detail Dialog */}
       <Dialog open={isStoreDetailOpen} onOpenChange={setIsStoreDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-gray-900">Store Performance Details</DialogTitle>
             <DialogDescription className="text-gray-600">
@@ -1131,7 +1128,7 @@ export default function DashboardPage() {
 
       {/* Daily Sales Detail Dialog */}
       <Dialog open={isDaySalesDetailOpen} onOpenChange={setIsDaySalesDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-gray-900">Daily Sales Details - {selectedDaySales?.period}</DialogTitle>
             <DialogDescription className="text-gray-600">
@@ -1232,7 +1229,7 @@ export default function DashboardPage() {
 
       {/* Sales Detail Dialog */}
       <Dialog open={isSaleDetailOpen} onOpenChange={setIsSaleDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-gray-900">Today's Sales Details</DialogTitle>
             <DialogDescription className="text-gray-600">

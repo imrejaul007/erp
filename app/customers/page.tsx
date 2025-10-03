@@ -170,7 +170,7 @@ export default function CustomersPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
               <Users className="h-8 w-8 text-oud-600" />
               Customer Management
             </h1>
@@ -396,7 +396,7 @@ export default function CustomersPage() {
                         </div>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="text-muted-foreground">Joined:</span>
                           <div className="font-medium">{customer.joinDate}</div>
@@ -585,7 +585,7 @@ export default function CustomersPage() {
 
       {/* Customer Detail Dialog */}
       <Dialog open={isCustomerDetailDialogOpen} onOpenChange={setIsCustomerDetailDialogOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl p-4 sm:p-6">
           {selectedCustomer && (
             <>
               <DialogHeader>
@@ -700,7 +700,8 @@ export default function CustomersPage() {
                   </CardHeader>
                   <CardContent>
                     {customerPurchases.length > 0 ? (
-                      <div className="space-y-3">
+                      <div className="overflow-x-auto">
+                        <div className="space-y-3">
                         {customerPurchases.map((purchase) => (
                           <div key={purchase.id} className="border rounded-lg p-4">
                             <div className="flex justify-between items-start mb-2">
@@ -723,6 +724,7 @@ export default function CustomersPage() {
                             </div>
                           </div>
                         ))}
+                        </div>
                       </div>
                     ) : (
                       <p className="text-muted-foreground text-center py-4">

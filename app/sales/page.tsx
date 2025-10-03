@@ -199,12 +199,11 @@ export default function SalesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-                  <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
 
-
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2 mt-2">
             <ShoppingCart className="h-8 w-8 text-oud-600" />
             Sales Management
           </h1>
@@ -212,7 +211,7 @@ export default function SalesPage() {
             Point of Sale, Order Management & Sales Analytics
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button
             variant={isPOSMode ? 'default' : 'outline'}
             onClick={() => setIsPOSMode(!isPOSMode)}
@@ -233,7 +232,7 @@ export default function SalesPage() {
       </div>
 
       {/* Sales Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
@@ -295,7 +294,7 @@ export default function SalesPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Select Products</CardTitle>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -323,7 +322,7 @@ export default function SalesPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {filteredProducts.map((product) => (
                     <Card
                       key={product.id}
@@ -458,7 +457,7 @@ export default function SalesPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border">
+                <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
