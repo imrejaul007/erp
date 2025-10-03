@@ -58,6 +58,7 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             image: user.image,
             role: user.role,
+            tenantId: user.tenantId,
           };
         } catch (error) {
           console.error('Authentication error:', error);
@@ -79,6 +80,7 @@ export const authOptions: NextAuthOptions = {
         if (dbUser) {
           token.role = dbUser.role;
           token.isActive = dbUser.isActive;
+          token.tenantId = dbUser.tenantId;
 
           // Update last login
           await prisma.user.update({
@@ -88,6 +90,11 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
+      // For credentials login, get tenantId from user object
+      if (user && 'tenantId' in user) {
+        token.tenantId = user.tenantId;
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -95,6 +102,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub;
         session.user.role = token.role as UserRole;
         session.user.isActive = token.isActive as boolean;
+        session.user.tenantId = token.tenantId as string | null;
       }
 
       return session;
