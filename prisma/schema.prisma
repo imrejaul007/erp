@@ -66,6 +66,10 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   accounts           Account[]
   sessions           Session[]
@@ -81,7 +85,10 @@ model User {
   supervisedBatches  ProductionBatch[]    @relation("SupervisedBy")
   operatedStages     ProcessingStage[]    @relation("OperatedBy")
   assignedComplaints CustomerComplaint[]  @relation("AssignedComplaints")
+  samplingSessions   SamplingSession[]    @relation("SamplingStaff")
+  testerRefills      TesterRefill[]       @relation("TesterRefilledBy")
 
+  @@index([tenantId])
   @@map("users")
 }
 
@@ -91,10 +98,16 @@ model UserStore {
   storeId String
   role    StoreRole
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, storeId])
+  @@index([tenantId])
   @@map("user_stores")
 }
 
@@ -119,6 +132,10 @@ model Customer {
   updatedAt       DateTime     @updatedAt
   createdById     String
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   createdBy           User                      @relation("CreatedBy", fields: [createdById], references: [id])
   orders              Order[]
@@ -128,7 +145,9 @@ model Customer {
   loyaltyTransactions LoyaltyPointsTransaction[]
   vipEvents           VIPEventAttendee[]
   campaignResponses   CampaignResponse[]
+  samplingSessions    SamplingSession[]
 
+  @@index([tenantId])
   @@map("customers")
 }
 
@@ -145,11 +164,16 @@ model Supplier {
   updatedAt   DateTime @updatedAt
   createdById String
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   createdBy    User      @relation("CreatedBy", fields: [createdById], references: [id])
   products     Product[]
   purchaseOrders PurchaseOrder[]
 
+  @@index([tenantId])
   @@map("suppliers")
 }
 
@@ -161,9 +185,14 @@ model Category {
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   products Product[]
 
+  @@index([tenantId])
   @@map("categories")
 }
 
@@ -176,9 +205,14 @@ model Brand {
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   products Product[]
 
+  @@index([tenantId])
   @@map("brands")
 }
 
@@ -208,6 +242,10 @@ model Product {
 
   isVIPExclusive Boolean     @default(false)
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   category       Category           @relation(fields: [categoryId], references: [id])
   brand          Brand?             @relation(fields: [brandId], references: [id])
@@ -217,7 +255,11 @@ model Product {
   stockMovements StockMovement[]
   productionBatches ProductionBatch[]
   storeInventory StoreInventory[]
+  samplingProducts SamplingProduct[]
+  testerStock TesterStock[]
+  testerRefills TesterRefill[]
 
+  @@index([tenantId])
   @@map("products")
 }
 
@@ -240,6 +282,10 @@ model Store {
   updatedAt   DateTime   @updatedAt
   createdById String
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   createdBy       User             @relation("CreatedBy", fields: [createdById], references: [id])
   userStores      UserStore[]
@@ -248,7 +294,9 @@ model Store {
   fromTransfers   Transfer[]       @relation("FromStore")
   toTransfers     Transfer[]       @relation("ToStore")
   stockMovements  StockMovement[]
+  samplingSessions SamplingSession[]
 
+  @@index([tenantId])
   @@map("stores")
 }
 
@@ -260,11 +308,16 @@ model StoreInventory {
   reservedQty   Int      @default(0)
   lastUpdated   DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([storeId, productId])
+  @@index([tenantId])
   @@map("store_inventory")
 }
 
@@ -281,12 +334,17 @@ model Transfer {
   receivedAt    DateTime?
   createdById   String
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   fromStore     Store         @relation("FromStore", fields: [fromStoreId], references: [id])
   toStore       Store         @relation("ToStore", fields: [toStoreId], references: [id])
   createdBy     User          @relation("CreatedBy", fields: [createdById], references: [id])
   items         TransferItem[]
 
+  @@index([tenantId])
   @@map("transfers")
 }
 
@@ -297,10 +355,15 @@ model TransferItem {
   quantity    Int
   receivedQty Int?
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   transfer Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
   product  Product  @relation(fields: [productId], references: [id])
 
+  @@index([tenantId])
   @@map("transfer_items")
 }
 
@@ -320,6 +383,10 @@ model Order {
   updatedAt    DateTime    @updatedAt
   createdById  String
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   customer            Customer?                @relation(fields: [customerId], references: [id])
   store               Store                    @relation(fields: [storeId], references: [id])
@@ -330,6 +397,7 @@ model Order {
   loyaltyTransactions LoyaltyPointsTransaction[]
   giftCardTransactions GiftCardTransaction[]
 
+  @@index([tenantId])
   @@map("orders")
 }
 
@@ -341,10 +409,15 @@ model OrderItem {
   unitPrice Decimal @db.Decimal(10, 2)
   total     Decimal @db.Decimal(10, 2)
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
 
+  @@index([tenantId])
   @@map("order_items")
 }
 
@@ -360,11 +433,16 @@ model Payment {
   createdAt     DateTime      @default(now())
   processedById String
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   order       Order?    @relation(fields: [orderId], references: [id])
   customer    Customer? @relation(fields: [customerId], references: [id])
   processedBy User      @relation("ProcessedBy", fields: [processedById], references: [id])
 
+  @@index([tenantId])
   @@map("payments")
 }
 
@@ -382,10 +460,15 @@ model PurchaseOrder {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   supplier Supplier            @relation(fields: [supplierId], references: [id])
   items    PurchaseOrderItem[]
 
+  @@index([tenantId])
   @@map("purchase_orders")
 }
 
@@ -397,10 +480,15 @@ model PurchaseOrderItem {
   unitPrice       Decimal @db.Decimal(10, 2)
   receivedQty     Int     @default(0)
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   product       Product       @relation(fields: [productId], references: [id])
 
+  @@index([tenantId])
   @@map("purchase_order_items")
 }
 
@@ -421,12 +509,17 @@ model Recipe {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   ingredients       RecipeIngredient[]
   versions          RecipeVersion[]
   boms              BOM[]
   productionBatches ProductionBatch[]
 
+  @@index([tenantId])
   @@map("recipes")
 }
 
@@ -441,10 +534,15 @@ model RecipeIngredient {
   notes      String?
   order      Int     @default(0)
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   recipe   Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   material Material @relation(fields: [materialId], references: [id])
 
+  @@index([tenantId])
   @@map("recipe_ingredients")
 }
 
@@ -456,9 +554,14 @@ model RecipeVersion {
   createdAt DateTime @default(now())
   createdBy String?
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@map("recipe_versions")
 }
 
@@ -479,6 +582,10 @@ model Material {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   category          Category           @relation(fields: [categoryId], references: [id])
   recipeIngredients RecipeIngredient[]
@@ -488,6 +595,7 @@ model Material {
   stockMovements    StockMovement[]
   wastageRecords    WastageRecord[]
 
+  @@index([tenantId])
   @@map("materials")
 }
 
@@ -501,10 +609,15 @@ model BOM {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   recipe Recipe    @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   items  BOMItem[]
 
+  @@index([tenantId])
   @@map("boms")
 }
 
@@ -518,10 +631,15 @@ model BOMItem {
   totalCost  Decimal @db.Decimal(10, 2)
   notes      String?
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   bom      BOM      @relation(fields: [bomId], references: [id], onDelete: Cascade)
   material Material @relation(fields: [materialId], references: [id])
 
+  @@index([tenantId])
   @@map("bom_items")
 }
 
@@ -545,6 +663,10 @@ model ProductionBatch {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   recipe          Recipe?            @relation(fields: [recipeId], references: [id])
   supervisor      User?              @relation("SupervisedBy", fields: [supervisorId], references: [id])
@@ -554,6 +676,7 @@ model ProductionBatch {
   wastageRecords  WastageRecord[]
   processingStages ProcessingStage[]
 
+  @@index([tenantId])
   @@map("production_batches")
 }
 
@@ -569,10 +692,15 @@ model ProductionInput {
   notes            String?
   createdAt        DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   batch    ProductionBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
   material Material        @relation(fields: [materialId], references: [id])
 
+  @@index([tenantId])
   @@map("production_inputs")
 }
 
@@ -587,10 +715,15 @@ model ProductionOutput {
   notes       String?
   createdAt   DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   batch    ProductionBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
   material Material        @relation(fields: [materialId], references: [id])
 
+  @@index([tenantId])
   @@map("production_outputs")
 }
 
@@ -607,9 +740,14 @@ model QualityControl {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   batch ProductionBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@map("quality_controls")
 }
 
@@ -625,10 +763,15 @@ model WastageRecord {
   notes      String?
   createdAt  DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   batch    ProductionBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
   material Material?        @relation(fields: [materialId], references: [id])
 
+  @@index([tenantId])
   @@map("wastage_records")
 }
 
@@ -651,10 +794,15 @@ model ProcessingStage {
   isIoTEnabled      Boolean     @default(false)
   sensorData        String?     // JSON for IoT sensor readings
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   productionBatch ProductionBatch @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
   operator        User?           @relation("OperatedBy", fields: [operatorId], references: [id])
 
+  @@index([tenantId])
   @@map("processing_stages")
 }
 
@@ -671,11 +819,16 @@ model StockMovement {
   createdAt     DateTime          @default(now())
   createdById   String
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   product   Product @relation(fields: [productId], references: [id])
   store     Store?  @relation(fields: [storeId], references: [id])
   createdBy User    @relation("CreatedBy", fields: [createdById], references: [id])
 
+  @@index([tenantId])
   @@map("stock_movements")
 }
 
@@ -814,11 +967,16 @@ model MarketingCampaign {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   segment   CustomerSegment?     @relation(fields: [targetSegment], references: [id])
   messages  CampaignMessage[]
   responses CampaignResponse[]
 
+  @@index([tenantId])
   @@map("marketing_campaigns")
 }
 
@@ -829,9 +987,14 @@ model CampaignMessage {
   body       String   @db.Text
   sentAt     DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   campaign MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@map("campaign_messages")
 }
 
@@ -842,10 +1005,15 @@ model CampaignResponse {
   responseType String  // OPENED, CLICKED, CONVERTED
   createdAt  DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   campaign MarketingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   customer Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
+  @@index([tenantId])
   @@map("campaign_responses")
 }
 
@@ -860,10 +1028,15 @@ model CustomerSegment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   campaigns MarketingCampaign[]
   customers CustomerSegmentMember[]
 
+  @@index([tenantId])
   @@map("customer_segments")
 }
 
@@ -873,11 +1046,16 @@ model CustomerSegmentMember {
   customerId String
   addedAt    DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   segment  CustomerSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
   customer Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@unique([segmentId, customerId])
+  @@index([tenantId])
   @@map("customer_segment_members")
 }
 
@@ -897,11 +1075,16 @@ model CustomerComplaint {
   resolvedAt  DateTime?
   updatedAt   DateTime         @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   customer   Customer @relation(fields: [customerId], references: [id])
   order      Order?   @relation(fields: [orderId], references: [id])
   assignedUser User?  @relation("AssignedComplaints", fields: [assignedTo], references: [id])
 
+  @@index([tenantId])
   @@map("customer_complaints")
 }
 
@@ -917,10 +1100,15 @@ model LoyaltyPointsTransaction {
   createdBy   String
   createdAt   DateTime            @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   customer Customer @relation(fields: [customerId], references: [id])
   order    Order?   @relation(fields: [orderId], references: [id])
 
+  @@index([tenantId])
   @@map("loyalty_points_transactions")
 }
 
@@ -937,9 +1125,14 @@ model VIPEvent {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   attendees VIPEventAttendee[]
 
+  @@index([tenantId])
   @@map("vip_events")
 }
 
@@ -950,11 +1143,16 @@ model VIPEventAttendee {
   registeredAt DateTime @default(now())
   attended   Boolean  @default(false)
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   event    VIPEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   customer Customer @relation(fields: [customerId], references: [id])
 
   @@unique([eventId, customerId])
+  @@index([tenantId])
   @@map("vip_event_attendees")
 }
 
@@ -975,6 +1173,11 @@ model VATReturn {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
   @@map("vat_returns")
 }
 
@@ -990,10 +1193,15 @@ model BankAccount {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   transactions     BankTransaction[]
   reconciliations  BankReconciliation[]
 
+  @@index([tenantId])
   @@map("bank_accounts")
 }
 
@@ -1010,10 +1218,15 @@ model BankTransaction {
   reconciliationId String?
   createdAt        DateTime  @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   bankAccount    BankAccount         @relation(fields: [bankAccountId], references: [id])
   reconciliation BankReconciliation? @relation(fields: [reconciliationId], references: [id])
 
+  @@index([tenantId])
   @@map("bank_transactions")
 }
 
@@ -1029,10 +1242,15 @@ model BankReconciliation {
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   bankAccount  BankAccount       @relation(fields: [bankAccountId], references: [id])
   transactions BankTransaction[]
 
+  @@index([tenantId])
   @@map("bank_reconciliations")
 }
 
@@ -1053,11 +1271,16 @@ model Employee {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   payrolls    Payroll[]
   attendances Attendance[]
   leaves      Leave[]
 
+  @@index([tenantId])
   @@map("employees")
 }
 
@@ -1079,9 +1302,14 @@ model Payroll {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   employee Employee @relation(fields: [employeeId], references: [id])
 
+  @@index([tenantId])
   @@map("payroll")
 }
 
@@ -1098,10 +1326,15 @@ model Attendance {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   employee Employee @relation(fields: [employeeId], references: [id])
 
   @@unique([employeeId, date])
+  @@index([tenantId])
   @@map("attendance")
 }
 
@@ -1119,9 +1352,14 @@ model Leave {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   employee Employee @relation(fields: [employeeId], references: [id])
 
+  @@index([tenantId])
   @@map("leaves")
 }
 
@@ -1139,9 +1377,14 @@ model GiftCard {
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   transactions GiftCardTransaction[]
 
+  @@index([tenantId])
   @@map("gift_cards")
 }
 
@@ -1154,10 +1397,15 @@ model GiftCardTransaction {
   description String?
   createdAt   DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   giftCard GiftCard @relation(fields: [giftCardId], references: [id])
   order    Order?   @relation(fields: [orderId], references: [id])
 
+  @@index([tenantId])
   @@map("gift_card_transactions")
 }
 
@@ -1179,6 +1427,11 @@ model Discount {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
   @@map("discounts")
 }
 
@@ -1196,6 +1449,11 @@ model Promotion {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
   @@map("promotions")
 }
 
@@ -1343,12 +1601,17 @@ model SamplingSession {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   customer       Customer?           @relation(fields: [customerId], references: [id])
   store          Store               @relation(fields: [storeId], references: [id])
   staff          User                @relation("SamplingStaff", fields: [staffId], references: [id])
   testedProducts SamplingProduct[]
 
+  @@index([tenantId])
   @@map("sampling_sessions")
 }
 
@@ -1365,10 +1628,15 @@ model SamplingProduct {
   totalCost     Decimal  @db.Decimal(10, 2)
   createdAt     DateTime @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   session SamplingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   product Product         @relation(fields: [productId], references: [id])
 
+  @@index([tenantId])
   @@map("sampling_products")
 }
 
@@ -1384,9 +1652,14 @@ model TesterStock {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   product Product @relation(fields: [productId], references: [id])
 
+  @@index([tenantId])
   @@map("tester_stock")
 }
 
@@ -1401,10 +1674,15 @@ model TesterRefill {
   notes       String?
   createdAt   DateTime         @default(now())
 
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   // Relations
   product    Product @relation(fields: [productId], references: [id])
   refilledByUser User @relation("TesterRefilledBy", fields: [refilledBy], references: [id])
 
+  @@index([tenantId])
   @@map("tester_refills")
 }
 
@@ -1416,4 +1694,231 @@ enum SamplingOutcome {
 enum TesterSourceType {
   MAIN_INVENTORY
   PURCHASE
+}
+
+// ============================================
+// MULTI-TENANT SAAS INFRASTRUCTURE
+// ============================================
+
+model Tenant {
+  id                String          @id @default(cuid())
+  name              String          // "Oud Palace Dubai"
+  nameArabic        String?
+  slug              String          @unique // "oud-palace-dubai"
+  domain            String?         @unique // custom domain
+
+  // Business Info
+  businessType      BusinessType    @default(RETAIL)
+  tradeLicense      String?
+  vatNumber         String?
+
+  // Contact
+  ownerName         String
+  ownerEmail        String
+  ownerPhone        String
+  address           String?
+  emirate           String?
+  city              String?
+
+  // Branding
+  logoUrl           String?
+  primaryColor      String?         @default("#FF6B35")
+  secondaryColor    String?         @default("#004E89")
+
+  // Subscription
+  plan              SubscriptionPlan @default(TRIAL)
+  planStartDate     DateTime        @default(now())
+  planEndDate       DateTime?
+  billingCycle      BillingCycle    @default(MONTHLY)
+  maxUsers          Int             @default(5)
+  maxStores         Int             @default(1)
+  maxProducts       Int             @default(500)
+
+  // Features
+  features          Json            // {pos: true, production: false, events: true}
+
+  // Status
+  status            TenantStatus    @default(TRIAL)
+  isActive          Boolean         @default(true)
+  trialEndsAt       DateTime?
+  suspendedAt       DateTime?
+  suspensionReason  String?
+
+  // Metrics
+  totalSales        Decimal         @default(0) @db.Decimal(15, 2)
+  totalOrders       Int             @default(0)
+  activeUsers       Int             @default(0)
+  storageUsed       BigInt          @default(0) // in bytes
+
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  categories        Category[]
+  brands            Brand[]
+  subscriptions     TenantSubscription[]
+  invoices          TenantInvoice[]
+  apiKeys           TenantApiKey[]
+  users             User[]
+  userStores        UserStore[]
+  customers         Customer[]
+  suppliers         Supplier[]
+  products          Product[]
+  stores            Store[]
+  storeInventory    StoreInventory[]
+  transfers         Transfer[]
+  transferItems     TransferItem[]
+  orders            Order[]
+  orderItems        OrderItem[]
+  payments          Payment[]
+  purchaseOrders    PurchaseOrder[]
+  purchaseOrderItems PurchaseOrderItem[]
+  recipes           Recipe[]
+  recipeIngredients RecipeIngredient[]
+  recipeVersions    RecipeVersion[]
+  materials         Material[]
+  boms              BOM[]
+  bomItems          BOMItem[]
+  productionBatches ProductionBatch[]
+  productionInputs  ProductionInput[]
+  productionOutputs ProductionOutput[]
+  qualityControls   QualityControl[]
+  wastageRecords    WastageRecord[]
+  processingStages  ProcessingStage[]
+  stockMovements    StockMovement[]
+  marketingCampaigns MarketingCampaign[]
+  campaignMessages  CampaignMessage[]
+  campaignResponses CampaignResponse[]
+  customerSegments  CustomerSegment[]
+  customerSegmentMembers CustomerSegmentMember[]
+  customerComplaints CustomerComplaint[]
+  loyaltyPointsTransactions LoyaltyPointsTransaction[]
+  vipEvents         VIPEvent[]
+  vipEventAttendees VIPEventAttendee[]
+  vatReturns        VATReturn[]
+  bankAccounts      BankAccount[]
+  bankTransactions  BankTransaction[]
+  bankReconciliations BankReconciliation[]
+  employees         Employee[]
+  payrolls          Payroll[]
+  attendances       Attendance[]
+  leaves            Leave[]
+  giftCards         GiftCard[]
+  giftCardTransactions GiftCardTransaction[]
+  discounts         Discount[]
+  promotions        Promotion[]
+  samplingSessions  SamplingSession[]
+  samplingProducts  SamplingProduct[]
+  testerStocks      TesterStock[]
+  testerRefills     TesterRefill[]
+
+  @@map("tenants")
+}
+
+model TenantSubscription {
+  id              String            @id @default(cuid())
+  tenantId        String
+  plan            SubscriptionPlan
+  status          SubscriptionStatus @default(ACTIVE)
+  startDate       DateTime          @default(now())
+  endDate         DateTime?
+  price           Decimal           @db.Decimal(10, 2)
+  currency        String            @default("AED")
+  billingCycle    BillingCycle
+  autoRenew       Boolean           @default(true)
+
+  // Payment
+  lastBilledAt    DateTime?
+  nextBillingDate DateTime?
+  paymentMethod   String?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_subscriptions")
+}
+
+model TenantInvoice {
+  id              String          @id @default(cuid())
+  tenantId        String
+  invoiceNumber   String          @unique
+  amount          Decimal         @db.Decimal(10, 2)
+  currency        String          @default("AED")
+  status          InvoiceStatus   @default(PENDING)
+  dueDate         DateTime
+  paidAt          DateTime?
+  description     String?
+  lineItems       Json            // Detailed breakdown
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_invoices")
+}
+
+model TenantApiKey {
+  id              String          @id @default(cuid())
+  tenantId        String
+  name            String
+  key             String          @unique
+  permissions     Json            // {read: true, write: false}
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  isActive        Boolean         @default(true)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_api_keys")
+}
+
+// ============================================
+// MULTI-TENANT ENUMS
+// ============================================
+
+enum BusinessType {
+  RETAIL
+  WHOLESALE
+  BOTH
+  PRODUCTION
+  DISTRIBUTION
+}
+
+enum SubscriptionPlan {
+  TRIAL           // 14 days free
+  BASIC           // 1 store, 5 users, POS + Inventory
+  PROFESSIONAL    // 5 stores, 20 users, + Production
+  ENTERPRISE      // Unlimited, + Events + API
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  SUSPENDED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
 }
