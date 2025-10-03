@@ -28,7 +28,6 @@ const ProductCreateSchema = z.object({
 
 // GET /api/products - List all products
 export const GET = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const url = new URL(req.url);
     const search = url.searchParams.get('search');
@@ -101,7 +100,6 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/products - Create new product
 export const POST = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(user.role)) {
@@ -187,7 +185,6 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
 // PUT /api/products - Update product
 export const PUT = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(user.role)) {
@@ -238,7 +235,6 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
 
 // DELETE /api/products - Delete product (soft delete)
 export const DELETE = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN'].includes(user.role)) {

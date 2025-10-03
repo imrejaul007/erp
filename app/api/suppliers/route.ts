@@ -38,7 +38,6 @@ const supplierSchema = z.object({
 })
 
 export const GET = withTenant(async (request, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -159,7 +158,6 @@ export const GET = withTenant(async (request, { tenantId, user }) => {
 });
 
 export const POST = withTenant(async (request, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const body = await request.json()
     const validatedData = supplierSchema.parse(body)

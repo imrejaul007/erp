@@ -10,7 +10,6 @@ const BrandCreateSchema = z.object({
 
 // GET /api/brands
 export const GET = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const brands = await prisma.brand.findMany({
       where: { tenantId },
@@ -34,7 +33,6 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/brands
 export const POST = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(user.role)) {
       return apiError('Insufficient permissions', 403);

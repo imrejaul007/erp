@@ -11,7 +11,6 @@ const CategoryCreateSchema = z.object({
 
 // GET /api/categories
 export const GET = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const categories = await prisma.category.findMany({
       where: { tenantId },
@@ -36,7 +35,6 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/categories
 export const POST = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(user.role)) {
       return apiError('Insufficient permissions', 403);

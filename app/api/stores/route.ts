@@ -32,7 +32,6 @@ const StoreFiltersSchema = z.object({
 
 // GET /api/stores - List stores with filters
 export const GET = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Parse query parameters
     const url = new URL(req.url);
@@ -120,7 +119,6 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
 // POST /api/stores - Create new store
 export const POST = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
@@ -171,7 +169,6 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
 // PUT /api/stores - Bulk update stores
 export const PUT = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions
     if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
@@ -206,7 +203,6 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
 
 // DELETE /api/stores - Bulk delete stores
 export const DELETE = withTenant(async (req, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     // Check permissions (only owners/admins can delete stores)
     if (!['OWNER', 'SUPER_ADMIN'].includes(user.role)) {
