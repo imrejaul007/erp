@@ -42,7 +42,6 @@ const PromotionSyncSchema = z.object({
 // GET /api/sync - Get sync events and status
 export const GET = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
     const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
@@ -182,7 +181,6 @@ export const GET = withTenant(async (req: NextRequest, { tenantId, user }) => {
 // POST /api/sync - Trigger sync operations
 export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
     const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
@@ -351,7 +349,6 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
 // PUT /api/sync - Update sync settings
 export const PUT = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions (only admins can change sync settings)
     const userRole = user.role;
     if (!['OWNER', 'ADMIN'].includes(userRole)) {

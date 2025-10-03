@@ -101,8 +101,7 @@ function enrichProductData(product: any, customerType?: string) {
 
 export const GET = withTenant(async (request: NextRequest, context: { tenantId: string; user: any; params: { barcode: string } }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
-    const { params, user } = context;
+    const { params, user, tenantId } = context;
     const { barcode } = params;
     const { searchParams } = new URL(request.url);
 
@@ -118,6 +117,7 @@ export const GET = withTenant(async (request: NextRequest, context: { tenantId: 
     // Search for product by SKU (using as barcode)
     const product = await prisma.product.findFirst({
       where: {
+        tenantId,
         OR: [
           { sku: barcode },
           { sku: { contains: barcode, mode: 'insensitive' } }
@@ -159,6 +159,7 @@ export const GET = withTenant(async (request: NextRequest, context: { tenantId: 
     if (includeAlternatives) {
       const alternatives = await prisma.product.findMany({
         where: {
+          tenantId,
           id: { not: product.id },
           isActive: true,
           OR: [
@@ -204,7 +205,6 @@ export const GET = withTenant(async (request: NextRequest, context: { tenantId: 
 // POST endpoint for bulk barcode lookup
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { barcodes, customerType = 'retail' } = await request.json();
 
     if (!Array.isArray(barcodes) || barcodes.length === 0) {
@@ -218,6 +218,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     // Fetch all products matching the barcodes/SKUs
     const products = await prisma.product.findMany({
       where: {
+        tenantId,
         sku: { in: barcodes },
         isActive: true
       },

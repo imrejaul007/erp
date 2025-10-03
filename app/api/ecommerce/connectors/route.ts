@@ -595,7 +595,6 @@ async function performSync(connectorId: string, operation: 'export' | 'import' |
 // GET endpoint - retrieve connectors
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const status = searchParams.get('status');
@@ -661,7 +660,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // POST endpoint - create connector or start sync
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { action, ...data } = await request.json();
 
     switch (action) {
@@ -731,7 +729,6 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 // PUT endpoint - update connector
 export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { connectorId, ...updates } = await request.json();
 
     const connectorIndex = connectors.findIndex(c => c.id === connectorId);
@@ -761,7 +758,6 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
 // DELETE endpoint - remove connector
 export const DELETE = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const connectorId = searchParams.get('connectorId');
 

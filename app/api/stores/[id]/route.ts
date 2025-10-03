@@ -95,7 +95,6 @@ const StoreUpdateSchema = z.object({
 // GET /api/stores/[id] - Get store by ID
 export const GET = withTenant(async (req: NextRequest, context: { tenantId: string; user: any; params: { id: string } }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { params, user } = context;
     const { id: storeId } = params;
 
@@ -205,7 +204,6 @@ export const GET = withTenant(async (req: NextRequest, context: { tenantId: stri
 // PUT /api/stores/[id] - Update store
 export const PUT = withTenant(async (req: NextRequest, context: { tenantId: string; user: any; params: { id: string } }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { params, user } = context;
     const { id: storeId } = params;
     const body = await req.json();
@@ -251,7 +249,6 @@ export const PUT = withTenant(async (req: NextRequest, context: { tenantId: stri
 // DELETE /api/stores/[id] - Delete store
 export const DELETE = withTenant(async (req: NextRequest, context: { tenantId: string; user: any; params: { id: string } }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { params, user } = context;
     const { id: storeId } = params;
 

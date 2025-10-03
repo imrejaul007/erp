@@ -3,7 +3,6 @@ import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { url } = await request.json();
 
     if (!url) {

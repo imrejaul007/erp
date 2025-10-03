@@ -7,7 +7,6 @@ import { DataValidator } from '@/lib/validation/data-validator';
 // API Gateway - Unified endpoint for all module communications
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Rate limiting
     const rateLimiter = new RateLimiter();
     const isAllowed = await rateLimiter.checkLimit(user.id, 'api_gateway');
@@ -87,7 +86,6 @@ async function routeToModule(module: string, action: string, data: any, session:
 // GET endpoint for health checks and module status
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const check = searchParams.get('check');
 

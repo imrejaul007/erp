@@ -6,7 +6,6 @@ import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 // GET /api/replenishment - Get replenishment suggestions based on real inventory
 export const GET = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
     const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
@@ -18,12 +17,12 @@ export const GET = withTenant(async (req: NextRequest, { tenantId, user }) => {
     const priority = url.searchParams.get('priority');
 
     // Build where clause
-    const whereClause: any = {};
+    const whereClause: any = { tenantId };
 
     // Filter by accessible stores if not admin/owner
     if (!['OWNER', 'ADMIN'].includes(userRole)) {
       const userStoreIds = await prisma.userStore.findMany({
-        where: { userId: user.id },
+        where: { tenantId, userId: user.id },
         select: { storeId: true }
       });
       const storeIds = userStoreIds.map(us => us.storeId);
@@ -161,7 +160,6 @@ export const GET = withTenant(async (req: NextRequest, { tenantId, user }) => {
 // POST /api/replenishment - Create replenishment order or update inventory settings
 export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
     const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
@@ -182,7 +180,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
       }
 
       const product = await prisma.product.update({
-        where: { id: productId },
+        where: { id: productId, tenantId },
         data: {
           minStock,
           maxStock
@@ -209,8 +207,8 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
 
       // Verify stores exist
       const [fromStore, toStore] = await Promise.all([
-        prisma.store.findUnique({ where: { id: createTransfer.fromStoreId } }),
-        prisma.store.findUnique({ where: { id: createTransfer.toStoreId } })
+        prisma.store.findFirst({ where: { id: createTransfer.fromStoreId, tenantId } }),
+        prisma.store.findFirst({ where: { id: createTransfer.toStoreId, tenantId } })
       ]);
 
       if (!fromStore || !toStore) {
@@ -219,17 +217,16 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
 
       // Check inventory availability at source store
       for (const item of createTransfer.items) {
-        const inventory = await prisma.storeInventory.findUnique({
+        const inventory = await prisma.storeInventory.findFirst({
           where: {
-            storeId_productId: {
-              storeId: createTransfer.fromStoreId,
-              productId: item.productId
-            }
+            tenantId,
+            storeId: createTransfer.fromStoreId,
+            productId: item.productId
           }
         });
 
         if (!inventory || inventory.quantity < item.quantity) {
-          const product = await prisma.product.findUnique({ where: { id: item.productId } });
+          const product = await prisma.product.findFirst({ where: { id: item.productId, tenantId } });
           return apiError(`Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`, 400);
         }
       }
@@ -238,6 +235,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
       const transfer = await prisma.$transaction(async (tx) => {
         const newTransfer = await tx.transfer.create({
           data: {
+            tenantId,
             fromStoreId: createTransfer.fromStoreId,
             toStoreId: createTransfer.toStoreId,
             notes: createTransfer.notes || 'Automated replenishment order',
@@ -252,6 +250,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
           createTransfer.items.map((item: any) =>
             tx.transferItem.create({
               data: {
+                tenantId,
                 transferId: newTransfer.id,
                 productId: item.productId,
                 quantity: item.quantity,
@@ -263,19 +262,24 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
 
         // Reserve inventory at source store
         await Promise.all(
-          createTransfer.items.map((item: any) =>
-            tx.storeInventory.update({
+          createTransfer.items.map(async (item: any) => {
+            const inventory = await tx.storeInventory.findFirst({
               where: {
-                storeId_productId: {
-                  storeId: createTransfer.fromStoreId,
-                  productId: item.productId
-                }
-              },
-              data: {
-                reservedQty: { increment: item.quantity }
+                tenantId,
+                storeId: createTransfer.fromStoreId,
+                productId: item.productId
               }
-            })
-          )
+            });
+
+            if (inventory) {
+              await tx.storeInventory.update({
+                where: { id: inventory.id, tenantId },
+                data: {
+                  reservedQty: { increment: item.quantity }
+                }
+              });
+            }
+          })
         );
 
         return newTransfer;
