@@ -1,6 +1,3 @@
-// Perfume & Oud ERP System - Comprehensive Prisma Schema
-// Supports UAE business requirements (VAT 5%, AED currency, multi-language)
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,332 +7,832 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================================
-// USER & AUTH MODELS
-// ============================================================================
-
-model User {
-  id          String    @id @default(cuid())
-  email       String    @unique
-  username    String    @unique
-  password    String
-  firstName   String
-  lastName    String
-  phone       String?
-  avatar      String?
-  isActive    Boolean   @default(true)
-  language    String    @default("en") // en, ar for UAE support
-  timezone    String    @default("Asia/Dubai")
-  lastLoginAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  // Relations
-  roles               UserRole[]
-  createdTransactions Transaction[]     @relation("CreatedBy")
-  updatedTransactions Transaction[]     @relation("UpdatedBy")
-  createdSales        Sale[]            @relation("CreatedBy")
-  updatedSales        Sale[]            @relation("UpdatedBy")
-  stockMovements      StockMovement[]
-  productionBatches   ProductionBatch[]
-  qualityControls     QualityControl[]
-  storeAssignments    UserStore[]
-  ProcessingStage     ProcessingStage[]
-
-  // Supply Chain Relations
-  requestedPurchaseOrders PurchaseOrder[]      @relation("RequestedBy")
-  approvedPurchaseOrders  PurchaseOrder[]      @relation("ApprovedBy")
-  goodsReceipts           GoodsReceipt[]
-  supplierEvaluations     SupplierEvaluation[]
-  qualityChecks           QualityCheck[]
-  shipmentDocuments       ShipmentDocument[]
-  requestedProcurements   ProcurementRequest[] @relation("ProcurementRequestedBy")
-  approvedProcurements    ProcurementRequest[] @relation("ProcurementApprovedBy")
-
-  @@map("users")
+model accounts {
+  id             String         @id
+  code           String         @unique
+  name           String
+  nameAr         String?
+  type           AccountType
+  currency       String         @default("AED")
+  balance        Decimal        @default(0)
+  isActive       Boolean        @default(true)
+  parentId       String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  accounts       accounts?      @relation("accountsToaccounts", fields: [parentId], references: [id])
+  other_accounts accounts[]     @relation("accountsToaccounts")
+  transactions   transactions[]
 }
 
-model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  isActive    Boolean  @default(true)
+model batches {
+  id                             String                           @id
+  batchNo                        String                           @unique
+  rawMaterialId                  String
+  origin                         String
+  grade                          String
+  quality                        String?
+  purchaseDate                   DateTime
+  expiryDate                     DateTime?
+  purchasePrice                  Decimal
+  quantity                       Decimal
+  unit                           String
+  supplier                       String
+  supplierInvoice                String?
+  notes                          String?
+  isActive                       Boolean                          @default(true)
+  createdAt                      DateTime                         @default(now())
+  updatedAt                      DateTime
+  raw_materials                  raw_materials                    @relation(fields: [rawMaterialId], references: [id])
+  production_batch_raw_materials production_batch_raw_materials[]
+  stock_movements                stock_movements[]
+}
+
+model bill_of_materials {
+  id                      String                    @id
+  recipeId                String
+  name                    String
+  version                 String                    @default("1.0")
+  isActive                Boolean                   @default(true)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime
+  recipes                 recipes                   @relation(fields: [recipeId], references: [id])
+  bill_of_materials_items bill_of_materials_items[]
+}
+
+model bill_of_materials_items {
+  id                String            @id
+  bomId             String
+  rawMaterialId     String
+  quantity          Decimal
+  unit              String
+  wastagePercent    Decimal           @default(0)
+  notes             String?
+  sortOrder         Int               @default(0)
+  bill_of_materials bill_of_materials @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  raw_materials     raw_materials     @relation(fields: [rawMaterialId], references: [id])
+}
+
+model branding {
+  id               String   @id
+  companyName      String   @default("Oud & Perfume ERP")
+  companyNameAr    String?
+  tagline          String?
+  taglineAr        String?
+  logoUrl          String?
+  logoWhiteUrl     String?
+  faviconUrl       String?
+  loginBgUrl       String?
+  primaryColor     String   @default("#d97706")
+  primaryHover     String   @default("#b45309")
+  accentColor      String   @default("#92400e")
+  bgLight          String   @default("#fffbeb")
+  bgDark           String   @default("#1f2937")
+  textPrimary      String   @default("#111827")
+  textSecondary    String   @default("#6b7280")
+  textLight        String   @default("#ffffff")
+  successColor     String   @default("#10b981")
+  warningColor     String   @default("#f59e0b")
+  errorColor       String   @default("#ef4444")
+  infoColor        String   @default("#3b82f6")
+  fontFamily       String   @default("Inter")
+  headingFont      String   @default("Inter")
+  fontSize         String   @default("medium")
+  sidebarStyle     String   @default("light")
+  headerStyle      String   @default("light")
+  borderRadius     String   @default("medium")
+  email            String?
+  phone            String?
+  whatsapp         String?
+  website          String?
+  address          String?
+  city             String?
+  country          String   @default("UAE")
+  facebookUrl      String?
+  instagramUrl     String?
+  twitterUrl       String?
+  linkedinUrl      String?
+  vatNumber        String?
+  tradeNumber      String?
+  licenseNumber    String?
+  invoicePrefix    String   @default("INV")
+  receiptPrefix    String   @default("RCP")
+  orderPrefix      String   @default("ORD")
+  invoiceFooter    String?
+  invoiceFooterAr  String?
+  invoiceNotes     String?
+  dateFormat       String   @default("DD/MM/YYYY")
+  timeFormat       String   @default("24h")
+  currency         String   @default("AED")
+  currencySymbol   String   @default("AED")
+  currencyPosition String   @default("before")
+  decimalPlaces    Int      @default(2)
+  showWhatsapp     Boolean  @default(true)
+  showSocial       Boolean  @default(true)
+  showVatNumber    Boolean  @default(true)
+  showCompanyInfo  Boolean  @default(true)
+  customCss        String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+}
+
+model conversion_units {
+  id                                                       String        @id
+  fromUnitId                                               String
+  toUnitId                                                 String
+  conversionRate                                           Decimal
+  isActive                                                 Boolean       @default(true)
+  createdAt                                                DateTime      @default(now())
+  updatedAt                                                DateTime
+  raw_materials_conversion_units_fromUnitIdToraw_materials raw_materials @relation("conversion_units_fromUnitIdToraw_materials", fields: [fromUnitId], references: [id])
+  raw_materials_conversion_units_toUnitIdToraw_materials   raw_materials @relation("conversion_units_toUnitIdToraw_materials", fields: [toUnitId], references: [id])
+
+  @@unique([fromUnitId, toUnitId])
+}
+
+model customer_loyalty {
+  id               String           @id
+  customerId       String
+  loyaltyProgramId String
+  points           Int              @default(0)
+  totalSpent       Decimal          @default(0)
+  totalEarned      Int              @default(0)
+  totalRedeemed    Int              @default(0)
+  joinedAt         DateTime         @default(now())
+  lastActivity     DateTime         @default(now())
+  customers        customers        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  loyalty_programs loyalty_programs @relation(fields: [loyaltyProgramId], references: [id])
+
+  @@unique([customerId, loyaltyProgramId])
+}
+
+model customer_segment_members {
+  id                String            @id
+  customerId        String
+  segmentId         String
+  assignedAt        DateTime          @default(now())
+  customers         customers         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer_segments customer_segments @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, segmentId])
+}
+
+model customer_segments {
+  id                       String                     @id
+  name                     String                     @unique
+  nameAr                   String?
+  description              String?
+  criteria                 Json
+  isActive                 Boolean                    @default(true)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime
+  customer_segment_members customer_segment_members[]
+}
+
+model customers {
+  id                       String                     @id
+  customerNo               String                     @unique
+  type                     CustomerType               @default(INDIVIDUAL)
+  firstName                String?
+  lastName                 String?
+  companyName              String?
+  email                    String?                    @unique
+  phone                    String?
+  whatsapp                 String?
+  dateOfBirth              DateTime?
+  gender                   Gender?
+  nationality              String?
+  address                  String?
+  city                     String?
+  emirate                  String?
+  country                  String                     @default("UAE")
+  postalCode               String?
+  vatNumber                String?
+  isActive                 Boolean                    @default(true)
+  language                 String                     @default("en")
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime
+  customer_loyalty         customer_loyalty[]
+  customer_segment_members customer_segment_members[]
+  sales                    sales[]
+}
+
+model goods_receipt_items {
+  id                   String               @id
+  goodsReceiptId       String
+  purchaseOrderItemId  String
+  orderedQty           Decimal
+  receivedQty          Decimal
+  acceptedQty          Decimal
+  rejectedQty          Decimal              @default(0)
+  batchNo              String?
+  expiryDate           DateTime?
+  quality              QualityGrade?
+  rejectReason         String?
+  notes                String?
+  goods_receipts       goods_receipts       @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+  purchase_order_items purchase_order_items @relation(fields: [purchaseOrderItemId], references: [id])
+}
+
+model goods_receipts {
+  id                  String                @id
+  receiptNo           String                @unique
+  purchaseOrderId     String
+  receivedById        String
+  receiptDate         DateTime              @default(now())
+  status              GoodsReceiptStatus    @default(PENDING)
+  totalReceived       Decimal               @default(0)
+  totalAccepted       Decimal               @default(0)
+  totalRejected       Decimal               @default(0)
+  notes               String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  goods_receipt_items goods_receipt_items[]
+  purchase_orders     purchase_orders       @relation(fields: [purchaseOrderId], references: [id])
+  users               users                 @relation(fields: [receivedById], references: [id])
+  quality_checks      quality_checks[]
+}
+
+model hs_codes {
+  id            String          @id
+  code          String          @unique
+  description   String
+  dutyRate      Decimal         @default(0)
+  vatRate       Decimal         @default(5)
+  restrictions  String?
+  documents     String[]
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  raw_materials raw_materials[]
+}
+
+model invoices {
+  id          String        @id
+  invoiceNo   String        @unique
+  saleId      String
+  issueDate   DateTime      @default(now())
+  dueDate     DateTime?
+  status      InvoiceStatus @default(DRAFT)
+  subtotal    Decimal
+  vatAmount   Decimal
+  totalAmount Decimal
+  currency    String        @default("AED")
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  sales       sales         @relation(fields: [saleId], references: [id])
+}
+
+model loyalty_programs {
+  id               String             @id
+  name             String             @unique
+  nameAr           String?
+  description      String?
+  pointsPerAED     Decimal            @default(1)
+  redemptionRate   Decimal            @default(1)
+  minSpendAmount   Decimal            @default(0)
+  isActive         Boolean            @default(true)
+  startDate        DateTime
+  endDate          DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  customer_loyalty customer_loyalty[]
+}
+
+model payments {
+  id          String        @id
+  paymentNo   String        @unique
+  saleId      String
+  amount      Decimal
+  currency    String        @default("AED")
+  method      PaymentMethod
+  status      PaymentStatus @default(PENDING)
+  paymentDate DateTime      @default(now())
+  reference   String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  sales       sales         @relation(fields: [saleId], references: [id])
+}
+
+model permissions {
+  id               String             @id
+  name             String             @unique
+  description      String?
+  module           String
+  action           String
+  createdAt        DateTime           @default(now())
+  role_permissions role_permissions[]
+}
+
+model processing_stages {
+  id                 String             @id
+  productionBatchId  String
+  stageName          String
+  stageOrder         Int
+  status             ProcessingStatus   @default(PENDING)
+  startTime          DateTime?
+  endTime            DateTime?
+  duration           Int?
+  temperature        String?
+  notes              String?
+  operatorId         String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime
+  users              users?             @relation(fields: [operatorId], references: [id])
+  production_batches production_batches @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
+}
+
+model procurement_request_items {
+  id                   String               @id
+  procurementRequestId String
+  rawMaterialId        String?
+  productId            String?
+  quantity             Decimal
+  unit                 String
+  estimatedUnitPrice   Decimal              @default(0)
+  estimatedTotalPrice  Decimal              @default(0)
+  specifications       String?
+  justification        String?
+  suggestedSupplierId  String?
+  procurement_requests procurement_requests @relation(fields: [procurementRequestId], references: [id], onDelete: Cascade)
+  products             products?            @relation(fields: [productId], references: [id])
+  raw_materials        raw_materials?       @relation(fields: [rawMaterialId], references: [id])
+  suppliers            suppliers?           @relation(fields: [suggestedSupplierId], references: [id])
+}
+
+model procurement_requests {
+  id                                              String                      @id
+  requestNo                                       String                      @unique
+  requestedById                                   String
+  approvedById                                    String?
+  storeId                                         String?
+  type                                            ProcurementRequestType      @default(REGULAR)
+  priority                                        Priority                    @default(MEDIUM)
+  status                                          ProcurementRequestStatus    @default(PENDING)
+  requestDate                                     DateTime                    @default(now())
+  requiredDate                                    DateTime
+  justification                                   String?
+  notes                                           String?
+  totalEstimatedCost                              Decimal                     @default(0)
+  currency                                        String                      @default("AED")
+  createdAt                                       DateTime                    @default(now())
+  updatedAt                                       DateTime
+  procurement_request_items                       procurement_request_items[]
+  users_procurement_requests_approvedByIdTousers  users?                      @relation("procurement_requests_approvedByIdTousers", fields: [approvedById], references: [id])
+  users_procurement_requests_requestedByIdTousers users                       @relation("procurement_requests_requestedByIdTousers", fields: [requestedById], references: [id])
+  stores                                          stores?                     @relation(fields: [storeId], references: [id])
+}
+
+model production_batch_raw_materials {
+  id                 String             @id
+  productionBatchId  String
+  batchId            String
+  plannedQty         Decimal
+  actualQty          Decimal            @default(0)
+  unit               String
+  cost               Decimal            @default(0)
+  batches            batches            @relation(fields: [batchId], references: [id])
+  production_batches production_batches @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
+
+  @@unique([productionBatchId, batchId])
+}
+
+model production_batches {
+  id                             String                           @id
+  batchNo                        String                           @unique
+  productId                      String
+  recipeId                       String?
+  plannedQty                     Decimal
+  actualQty                      Decimal                          @default(0)
+  unit                           String
+  status                         ProductionStatus                 @default(PLANNED)
+  startDate                      DateTime?
+  completionDate                 DateTime?
+  cost                           Decimal                          @default(0)
+  currency                       String                           @default("AED")
+  notes                          String?
+  supervisorId                   String
+  createdAt                      DateTime                         @default(now())
+  updatedAt                      DateTime
+  processing_stages              processing_stages[]
+  production_batch_raw_materials production_batch_raw_materials[]
+  products                       products                         @relation(fields: [productId], references: [id])
+  recipes                        recipes?                         @relation(fields: [recipeId], references: [id])
+  users                          users                            @relation(fields: [supervisorId], references: [id])
+  quality_controls               quality_controls[]
+}
+
+model products {
+  id                        String                      @id
+  code                      String                      @unique
+  name                      String
+  nameAr                    String?
+  description               String?
+  category                  String
+  subcategory               String?
+  baseUnit                  String
+  costPrice                 Decimal                     @default(0)
+  sellingPrice              Decimal                     @default(0)
+  currency                  String                      @default("AED")
+  vatRate                   Decimal                     @default(5)
+  minStockLevel             Decimal                     @default(0)
+  maxStockLevel             Decimal?
+  shelfLife                 Int?
+  barcode                   String?
+  sku                       String?                     @unique
+  imageUrl                  String?
+  isActive                  Boolean                     @default(true)
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime
+  procurement_request_items procurement_request_items[]
+  production_batches        production_batches[]
+  purchase_order_items      purchase_order_items[]
+  recipes                   recipes[]
+  reorder_points            reorder_points[]
+  sale_items                sale_items[]
+  stock_movements           stock_movements[]
+  store_inventory           store_inventory[]
+  supplier_products         supplier_products[]
+  transfer_items            transfer_items[]
+}
+
+model profit_tracking {
+  id          String   @id
+  period      String   @unique
+  revenue     Decimal  @default(0)
+  cogs        Decimal  @default(0)
+  grossProfit Decimal  @default(0)
+  expenses    Decimal  @default(0)
+  netProfit   Decimal  @default(0)
+  currency    String   @default("AED")
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  users       UserRole[]
-  permissions RolePermission[]
-
-  @@map("roles")
+  updatedAt   DateTime
 }
 
-model Permission {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  module      String // inventory, production, sales, finance, etc.
-  action      String // create, read, update, delete, manage
-  createdAt   DateTime @default(now())
-
-  // Relations
-  roles RolePermission[]
-
-  @@map("permissions")
+model promotions {
+  id                String            @id
+  code              String            @unique
+  name              String
+  nameAr            String?
+  description       String?
+  type              PromotionType
+  discountPercent   Decimal?
+  discountAmount    Decimal?
+  minPurchaseAmount Decimal?
+  maxDiscountAmount Decimal?
+  startDate         DateTime
+  endDate           DateTime
+  usageLimit        Int?
+  usageCount        Int               @default(0)
+  isActive          Boolean           @default(true)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
+  sale_promotions   sale_promotions[]
 }
 
-model UserRole {
-  id     String @id @default(cuid())
-  userId String
-  roleId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, roleId])
-  @@map("user_roles")
+model purchase_order_items {
+  id                  String                @id
+  purchaseOrderId     String
+  rawMaterialId       String?
+  productId           String?
+  quantity            Decimal
+  unit                String
+  unitPrice           Decimal
+  discountPercent     Decimal               @default(0)
+  discountAmount      Decimal               @default(0)
+  vatRate             Decimal               @default(5)
+  vatAmount           Decimal               @default(0)
+  totalAmount         Decimal
+  receivedQty         Decimal               @default(0)
+  pendingQty          Decimal
+  specifications      String?
+  notes               String?
+  goods_receipt_items goods_receipt_items[]
+  products            products?             @relation(fields: [productId], references: [id])
+  purchase_orders     purchase_orders       @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  raw_materials       raw_materials?        @relation(fields: [rawMaterialId], references: [id])
 }
 
-model RolePermission {
-  id           String @id @default(cuid())
-  roleId       String
-  permissionId String
+model purchase_orders {
+  id                                         String                 @id
+  poNumber                                   String                 @unique
+  supplierId                                 String
+  requestedById                              String
+  approvedById                               String?
+  storeId                                    String?
+  status                                     PurchaseOrderStatus    @default(DRAFT)
+  priority                                   Priority               @default(MEDIUM)
+  type                                       PurchaseOrderType      @default(REGULAR)
+  orderDate                                  DateTime               @default(now())
+  requestedDate                              DateTime
+  expectedDate                               DateTime?
+  deliveryDate                               DateTime?
+  subtotal                                   Decimal                @default(0)
+  discountAmount                             Decimal                @default(0)
+  vatAmount                                  Decimal                @default(0)
+  shippingCost                               Decimal                @default(0)
+  totalAmount                                Decimal                @default(0)
+  currency                                   String                 @default("AED")
+  paymentTerms                               String?
+  deliveryTerms                              String?
+  notes                                      String?
+  internalNotes                              String?
+  approvalWorkflow                           Json?
+  createdAt                                  DateTime               @default(now())
+  updatedAt                                  DateTime
+  goods_receipts                             goods_receipts[]
+  purchase_order_items                       purchase_order_items[]
+  users_purchase_orders_approvedByIdTousers  users?                 @relation("purchase_orders_approvedByIdTousers", fields: [approvedById], references: [id])
+  users_purchase_orders_requestedByIdTousers users                  @relation("purchase_orders_requestedByIdTousers", fields: [requestedById], references: [id])
+  stores                                     stores?                @relation(fields: [storeId], references: [id])
+  suppliers                                  suppliers              @relation(fields: [supplierId], references: [id])
+  shipments                                  shipments[]
+  supplier_invoices                          supplier_invoices[]
 
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([roleId, permissionId])
-  @@map("role_permissions")
+  @@index([orderDate])
+  @@index([status])
 }
 
-// ============================================================================
-// STORE & LOCATION MODELS
-// ============================================================================
-
-model Store {
-  id          String   @id @default(cuid())
-  code        String   @unique
-  name        String
-  nameAr      String? // Arabic name support
-  address     String
-  city        String
-  emirate     String // UAE emirates
-  country     String   @default("UAE")
-  postalCode  String?
-  phone       String?
-  email       String?
-  isActive    Boolean  @default(true)
-  isWarehouse Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  inventory     StoreInventory[]
-  sales         Sale[]
-  transfersFrom Transfer[]       @relation("FromStore")
-  transfersTo   Transfer[]       @relation("ToStore")
-  users         UserStore[]
-  StockMovement StockMovement[]
-
-  // Supply Chain Relations
-  purchaseOrders      PurchaseOrder[]
-  procurementRequests ProcurementRequest[]
-  reorderPoints       ReorderPoint[]
-
-  @@map("stores")
+model quality_checks {
+  id                 String           @id
+  goodsReceiptId     String
+  checkedById        String
+  checkType          QualityCheckType
+  result             QualityResult
+  visualInspection   String?
+  fragranceProfile   String?
+  alcoholContent     Decimal?
+  purityTest         String?
+  packagingCondition String?
+  passed             Boolean          @default(false)
+  grade              QualityGrade?
+  notes              String?
+  recommendations    String?
+  checkDate          DateTime         @default(now())
+  createdAt          DateTime         @default(now())
+  users              users            @relation(fields: [checkedById], references: [id])
+  goods_receipts     goods_receipts   @relation(fields: [goodsReceiptId], references: [id])
 }
 
-model UserStore {
-  id         String   @id @default(cuid())
-  userId     String
-  storeId    String
-  isDefault  Boolean  @default(false)
-  assignedAt DateTime @default(now())
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, storeId])
-  @@map("user_stores")
+model quality_controls {
+  id                 String             @id
+  productionBatchId  String
+  checkType          String
+  result             QualityResult
+  alcoholPercentage  Decimal?
+  fragranceNotes     String?
+  agingDays          Int?
+  visualInspection   String?
+  testDate           DateTime           @default(now())
+  testedById         String
+  notes              String?
+  recommendations    String?
+  createdAt          DateTime           @default(now())
+  production_batches production_batches @relation(fields: [productionBatchId], references: [id])
+  users              users              @relation(fields: [testedById], references: [id])
 }
 
-model Transfer {
-  id            String         @id @default(cuid())
-  transferNo    String         @unique
-  fromStoreId   String
-  toStoreId     String
-  status        TransferStatus @default(PENDING)
-  notes         String?
-  transferDate  DateTime       @default(now())
-  completedDate DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-
-  fromStore Store @relation("FromStore", fields: [fromStoreId], references: [id])
-  toStore   Store @relation("ToStore", fields: [toStoreId], references: [id])
-
-  // Relations
-  items TransferItem[]
-
-  @@map("transfers")
+model raw_materials {
+  id                                                          String                      @id
+  code                                                        String                      @unique
+  name                                                        String
+  nameAr                                                      String?
+  description                                                 String?
+  category                                                    String
+  subcategory                                                 String?
+  baseUnit                                                    String
+  costPrice                                                   Decimal                     @default(0)
+  currency                                                    String                      @default("AED")
+  supplier                                                    String?
+  supplierCode                                                String?
+  minStockLevel                                               Decimal                     @default(0)
+  maxStockLevel                                               Decimal?
+  shelfLife                                                   Int?
+  storageTemp                                                 String?
+  hsCodeId                                                    String?
+  supplierId                                                  String?
+  isActive                                                    Boolean                     @default(true)
+  createdAt                                                   DateTime                    @default(now())
+  updatedAt                                                   DateTime
+  batches                                                     batches[]
+  bill_of_materials_items                                     bill_of_materials_items[]
+  conversion_units_conversion_units_fromUnitIdToraw_materials conversion_units[]          @relation("conversion_units_fromUnitIdToraw_materials")
+  conversion_units_conversion_units_toUnitIdToraw_materials   conversion_units[]          @relation("conversion_units_toUnitIdToraw_materials")
+  procurement_request_items                                   procurement_request_items[]
+  purchase_order_items                                        purchase_order_items[]
+  hs_codes                                                    hs_codes?                   @relation(fields: [hsCodeId], references: [id])
+  suppliers                                                   suppliers?                  @relation(fields: [supplierId], references: [id])
+  reorder_points                                              reorder_points[]
+  stock_movements                                             stock_movements[]
+  store_inventory                                             store_inventory[]
+  supplier_products                                           supplier_products[]
+  transfer_items                                              transfer_items[]
 }
 
-model TransferItem {
-  id             String  @id @default(cuid())
-  transferId     String
-  rawMaterialId  String?
-  productId      String?
-  requestedQty   Decimal
-  transferredQty Decimal @default(0)
-  unit           String
-  notes          String?
+model recipes {
+  id                 String               @id
+  productId          String
+  version            String               @default("1.0")
+  name               String
+  description        String?
+  yieldQty           Decimal
+  yieldUnit          String
+  instructions       String?
+  notes              String?
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  bill_of_materials  bill_of_materials[]
+  production_batches production_batches[]
+  products           products             @relation(fields: [productId], references: [id])
 
-  transfer    Transfer     @relation(fields: [transferId], references: [id], onDelete: Cascade)
-  rawMaterial RawMaterial? @relation(fields: [rawMaterialId], references: [id])
-  product     Product?     @relation(fields: [productId], references: [id])
-
-  @@map("transfer_items")
+  @@unique([productId, version])
 }
 
-// ============================================================================
-// INVENTORY MODELS
-// ============================================================================
-
-model RawMaterial {
-  id            String   @id @default(cuid())
-  code          String   @unique
-  name          String
-  nameAr        String? // Arabic name
-  description   String?
-  category      String
-  subcategory   String?
-  baseUnit      String // grams, ml, pieces
-  costPrice     Decimal  @default(0)
-  currency      String   @default("AED")
-  supplier      String?
-  supplierCode  String?
-  minStockLevel Decimal  @default(0)
-  maxStockLevel Decimal?
-  shelfLife     Int? // days
-  storageTemp   String? // storage temperature requirements
-
-  // Supply Chain Fields
-  hsCodeId   String? // Harmonized System Code for international trade
-  supplierId String? // Primary supplier
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  batches           Batch[]
-  storeInventory    StoreInventory[]
-  stockMovements    StockMovement[]
-  bomItems          BillOfMaterialsItem[]
-  conversions       ConversionUnit[]      @relation("FromUnit")
-  conversionTargets ConversionUnit[]      @relation("ToUnit")
-  transferItems     TransferItem[]
-
-  // Supply Chain Relations
-  hsCode                  HSCode?                  @relation(fields: [hsCodeId], references: [id])
-  primarySupplier         Supplier?                @relation("SupplierRawMaterials", fields: [supplierId], references: [id])
-  supplierProducts        SupplierProduct[]
-  purchaseOrderItems      PurchaseOrderItem[]
-  procurementRequestItems ProcurementRequestItem[]
-  reorderPoints           ReorderPoint[]
-
-  @@map("raw_materials")
-}
-
-model Batch {
-  id              String    @id @default(cuid())
-  batchNo         String    @unique
-  rawMaterialId   String
-  origin          String // Country/region of origin
-  grade           String // A, B, C or custom grading
-  quality         String? // Additional quality notes
-  purchaseDate    DateTime
-  expiryDate      DateTime?
-  purchasePrice   Decimal
-  quantity        Decimal
-  unit            String
-  supplier        String
-  supplierInvoice String?
-  notes           String?
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  rawMaterial RawMaterial @relation(fields: [rawMaterialId], references: [id])
-
-  // Relations
-  stockMovements    StockMovement[]
-  productionBatches ProductionBatchRawMaterial[]
-
-  @@map("batches")
-}
-
-model Product {
-  id            String   @id @default(cuid())
-  code          String   @unique
-  name          String
-  nameAr        String? // Arabic name
-  description   String?
-  category      String
-  subcategory   String?
-  baseUnit      String // ml, pieces, sets
-  costPrice     Decimal  @default(0)
-  sellingPrice  Decimal  @default(0)
-  currency      String   @default("AED")
-  vatRate       Decimal  @default(5) // UAE VAT rate
-  minStockLevel Decimal  @default(0)
-  maxStockLevel Decimal?
-  shelfLife     Int? // days
-  barcode       String?
-  sku           String?  @unique
-  imageUrl      String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  recipes           Recipe[]
-  storeInventory    StoreInventory[]
-  stockMovements    StockMovement[]
-  saleItems         SaleItem[]
-  transferItems     TransferItem[]
-  productionBatches ProductionBatch[]
-
-  // Supply Chain Relations
-  supplierProducts        SupplierProduct[]
-  purchaseOrderItems      PurchaseOrderItem[]
-  procurementRequestItems ProcurementRequestItem[]
-  reorderPoints           ReorderPoint[]
-
-  @@map("products")
-}
-
-model StoreInventory {
-  id            String   @id @default(cuid())
-  storeId       String
+model reorder_points {
+  id            String         @id
+  storeId       String?
   rawMaterialId String?
   productId     String?
-  quantity      Decimal  @default(0)
-  reservedQty   Decimal  @default(0) // Reserved for orders/production
-  unit          String
-  lastUpdated   DateTime @default(now())
+  minLevel      Decimal
+  maxLevel      Decimal
+  reorderLevel  Decimal
+  reorderQty    Decimal
+  leadTime      Int            @default(0)
+  safetyStock   Decimal        @default(0)
+  isActive      Boolean        @default(true)
+  lastTriggered DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime
+  products      products?      @relation(fields: [productId], references: [id])
+  raw_materials raw_materials? @relation(fields: [rawMaterialId], references: [id])
+  stores        stores?        @relation(fields: [storeId], references: [id])
 
-  store       Store        @relation(fields: [storeId], references: [id])
-  rawMaterial RawMaterial? @relation(fields: [rawMaterialId], references: [id])
-  product     Product?     @relation(fields: [productId], references: [id])
-
-  @@unique([storeId, rawMaterialId])
   @@unique([storeId, productId])
-  @@map("store_inventory")
+  @@unique([storeId, rawMaterialId])
 }
 
-model StockMovement {
-  id            String            @id @default(cuid())
+model role_permissions {
+  id           String      @id
+  roleId       String
+  permissionId String
+  permissions  permissions @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  roles        roles       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model roles {
+  id               String             @id
+  name             String             @unique
+  description      String?
+  isActive         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  role_permissions role_permissions[]
+  user_roles       user_roles[]
+}
+
+model sale_items {
+  id              String   @id
+  saleId          String
+  productId       String
+  quantity        Decimal
+  unit            String
+  unitPrice       Decimal
+  discountPercent Decimal  @default(0)
+  discountAmount  Decimal  @default(0)
+  vatRate         Decimal  @default(5)
+  vatAmount       Decimal  @default(0)
+  totalAmount     Decimal
+  notes           String?
+  products        products @relation(fields: [productId], references: [id])
+  sales           sales    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+}
+
+model sale_promotions {
+  id             String     @id
+  saleId         String
+  promotionId    String
+  discountAmount Decimal
+  promotions     promotions @relation(fields: [promotionId], references: [id])
+  sales          sales      @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  @@unique([saleId, promotionId])
+}
+
+model sales {
+  id                             String            @id
+  saleNo                         String            @unique
+  storeId                        String
+  customerId                     String?
+  status                         SaleStatus        @default(PENDING)
+  saleDate                       DateTime          @default(now())
+  dueDate                        DateTime?
+  subtotal                       Decimal           @default(0)
+  discountAmount                 Decimal           @default(0)
+  vatAmount                      Decimal           @default(0)
+  totalAmount                    Decimal           @default(0)
+  currency                       String            @default("AED")
+  paymentStatus                  PaymentStatus     @default(PENDING)
+  paymentMethod                  String?
+  notes                          String?
+  createdById                    String
+  updatedById                    String?
+  createdAt                      DateTime          @default(now())
+  updatedAt                      DateTime
+  invoices                       invoices[]
+  payments                       payments[]
+  sale_items                     sale_items[]
+  sale_promotions                sale_promotions[]
+  users_sales_createdByIdTousers users             @relation("sales_createdByIdTousers", fields: [createdById], references: [id])
+  customers                      customers?        @relation(fields: [customerId], references: [id])
+  stores                         stores            @relation(fields: [storeId], references: [id])
+  users_sales_updatedByIdTousers users?            @relation("sales_updatedByIdTousers", fields: [updatedById], references: [id])
+
+  @@index([saleDate])
+  @@index([status])
+}
+
+model shipment_documents {
+  id           String       @id
+  shipmentId   String
+  type         DocumentType
+  fileName     String
+  fileUrl      String
+  fileSize     Int?
+  mimeType     String?
+  uploadedAt   DateTime     @default(now())
+  uploadedById String?
+  shipments    shipments    @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  users        users?       @relation(fields: [uploadedById], references: [id])
+}
+
+model shipment_tracking {
+  id          String    @id
+  shipmentId  String
+  location    String
+  status      String
+  description String?
+  eventDate   DateTime
+  latitude    Decimal?
+  longitude   Decimal?
+  createdAt   DateTime  @default(now())
+  shipments   shipments @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+}
+
+model shipments {
+  id                 String               @id
+  shipmentNo         String               @unique
+  purchaseOrderId    String?
+  supplierId         String
+  carrier            ShippingCarrier
+  trackingNumber     String?
+  awbNumber          String?
+  status             ShipmentStatus       @default(PREPARING)
+  priority           Priority             @default(MEDIUM)
+  originAddress      String
+  originCity         String
+  originCountry      String
+  destinationAddress String
+  destinationCity    String
+  destinationCountry String
+  shipDate           DateTime?
+  estimatedArrival   DateTime?
+  actualArrival      DateTime?
+  packages           Int                  @default(1)
+  totalWeight        Decimal?
+  totalVolume        Decimal?
+  dimensions         String?
+  shippingCost       Decimal              @default(0)
+  insurance          Decimal              @default(0)
+  customsDuty        Decimal              @default(0)
+  otherCharges       Decimal              @default(0)
+  totalCost          Decimal              @default(0)
+  currency           String               @default("AED")
+  hsCode             String?
+  customsDeclaration String?
+  commercialInvoice  String?
+  packingList        String?
+  certificateOrigin  String?
+  importLicense      String?
+  notes              String?
+  internalNotes      String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  shipment_documents shipment_documents[]
+  shipment_tracking  shipment_tracking[]
+  purchase_orders    purchase_orders?     @relation(fields: [purchaseOrderId], references: [id])
+  suppliers          suppliers            @relation(fields: [supplierId], references: [id])
+
+  @@index([status])
+  @@index([trackingNumber])
+}
+
+model stock_movements {
+  id            String            @id
   movementNo    String            @unique
   type          StockMovementType
   storeId       String?
@@ -348,485 +845,321 @@ model StockMovement {
   totalCost     Decimal?
   currency      String            @default("AED")
   reason        String?
-  referenceType String? // sale, purchase, production, transfer, adjustment
+  referenceType String?
   referenceId   String?
   notes         String?
   movementDate  DateTime          @default(now())
   createdById   String
   createdAt     DateTime          @default(now())
-
-  store       Store?       @relation(fields: [storeId], references: [id])
-  rawMaterial RawMaterial? @relation(fields: [rawMaterialId], references: [id])
-  product     Product?     @relation(fields: [productId], references: [id])
-  batch       Batch?       @relation(fields: [batchId], references: [id])
-  createdBy   User         @relation(fields: [createdById], references: [id])
+  batches       batches?          @relation(fields: [batchId], references: [id])
+  users         users             @relation(fields: [createdById], references: [id])
+  products      products?         @relation(fields: [productId], references: [id])
+  raw_materials raw_materials?    @relation(fields: [rawMaterialId], references: [id])
+  stores        stores?           @relation(fields: [storeId], references: [id])
 
   @@index([movementDate])
-  @@index([type])
   @@index([referenceType, referenceId])
-  @@map("stock_movements")
+  @@index([type])
 }
 
-model ConversionUnit {
-  id             String   @id @default(cuid())
-  fromUnitId     String
-  toUnitId       String
-  conversionRate Decimal // Rate to convert from unit to to unit
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model store_inventory {
+  id            String         @id
+  storeId       String
+  rawMaterialId String?
+  productId     String?
+  quantity      Decimal        @default(0)
+  reservedQty   Decimal        @default(0)
+  unit          String
+  lastUpdated   DateTime       @default(now())
+  products      products?      @relation(fields: [productId], references: [id])
+  raw_materials raw_materials? @relation(fields: [rawMaterialId], references: [id])
+  stores        stores         @relation(fields: [storeId], references: [id])
 
-  fromUnit RawMaterial @relation("FromUnit", fields: [fromUnitId], references: [id])
-  toUnit   RawMaterial @relation("ToUnit", fields: [toUnitId], references: [id])
-
-  @@unique([fromUnitId, toUnitId])
-  @@map("conversion_units")
+  @@unique([storeId, productId])
+  @@unique([storeId, rawMaterialId])
 }
 
-// ============================================================================
-// PRODUCTION MODELS
-// ============================================================================
-
-model Recipe {
-  id           String   @id @default(cuid())
-  productId    String
-  version      String   @default("1.0")
-  name         String
-  description  String?
-  yieldQty     Decimal // Expected output quantity
-  yieldUnit    String
-  instructions String?
-  notes        String?
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  product Product @relation(fields: [productId], references: [id])
-
-  // Relations
-  billOfMaterials BillOfMaterials[]
-  ProductionBatch ProductionBatch[]
-
-  @@unique([productId, version])
-  @@map("recipes")
+model stores {
+  id                                      String                 @id
+  code                                    String                 @unique
+  name                                    String
+  nameAr                                  String?
+  address                                 String
+  city                                    String
+  emirate                                 String
+  country                                 String                 @default("UAE")
+  postalCode                              String?
+  phone                                   String?
+  email                                   String?
+  isActive                                Boolean                @default(true)
+  isWarehouse                             Boolean                @default(false)
+  createdAt                               DateTime               @default(now())
+  updatedAt                               DateTime
+  procurement_requests                    procurement_requests[]
+  purchase_orders                         purchase_orders[]
+  reorder_points                          reorder_points[]
+  sales                                   sales[]
+  stock_movements                         stock_movements[]
+  store_inventory                         store_inventory[]
+  transfers_transfers_fromStoreIdTostores transfers[]            @relation("transfers_fromStoreIdTostores")
+  transfers_transfers_toStoreIdTostores   transfers[]            @relation("transfers_toStoreIdTostores")
+  user_stores                             user_stores[]
 }
 
-model BillOfMaterials {
-  id        String   @id @default(cuid())
-  recipeId  String
-  name      String
-  version   String   @default("1.0")
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model supplier_evaluations {
+  id                 String    @id
+  supplierId         String
+  evaluatedById      String
+  period             String
+  qualityScore       Decimal   @default(0)
+  deliveryScore      Decimal   @default(0)
+  serviceScore       Decimal   @default(0)
+  priceScore         Decimal   @default(0)
+  communicationScore Decimal   @default(0)
+  overallScore       Decimal   @default(0)
+  rating             Decimal   @default(0)
+  strengths          String?
+  weaknesses         String?
+  recommendations    String?
+  evaluationDate     DateTime  @default(now())
+  createdAt          DateTime  @default(now())
+  users              users     @relation(fields: [evaluatedById], references: [id])
+  suppliers          suppliers @relation(fields: [supplierId], references: [id])
 
-  recipe Recipe @relation(fields: [recipeId], references: [id])
-
-  // Relations
-  items BillOfMaterialsItem[]
-
-  @@map("bill_of_materials")
+  @@unique([supplierId, period])
 }
 
-model BillOfMaterialsItem {
-  id             String  @id @default(cuid())
-  bomId          String
-  rawMaterialId  String
-  quantity       Decimal
-  unit           String
-  wastagePercent Decimal @default(0)
-  notes          String?
-  sortOrder      Int     @default(0)
-
-  bom         BillOfMaterials @relation(fields: [bomId], references: [id], onDelete: Cascade)
-  rawMaterial RawMaterial     @relation(fields: [rawMaterialId], references: [id])
-
-  @@map("bill_of_materials_items")
-}
-
-model ProductionBatch {
-  id             String           @id @default(cuid())
-  batchNo        String           @unique
-  productId      String
-  recipeId       String?
-  plannedQty     Decimal
-  actualQty      Decimal          @default(0)
-  unit           String
-  status         ProductionStatus @default(PLANNED)
-  startDate      DateTime?
-  completionDate DateTime?
-  cost           Decimal          @default(0)
-  currency       String           @default("AED")
-  notes          String?
-  supervisorId   String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-
-  product    Product @relation(fields: [productId], references: [id])
-  recipe     Recipe? @relation(fields: [recipeId], references: [id])
-  supervisor User    @relation(fields: [supervisorId], references: [id])
-
-  // Relations
-  stages          ProcessingStage[]
-  rawMaterials    ProductionBatchRawMaterial[]
-  qualityControls QualityControl[]
-
-  @@map("production_batches")
-}
-
-model ProductionBatchRawMaterial {
-  id                String  @id @default(cuid())
-  productionBatchId String
-  batchId           String
-  plannedQty        Decimal
-  actualQty         Decimal @default(0)
-  unit              String
-  cost              Decimal @default(0)
-
-  productionBatch ProductionBatch @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
-  batch           Batch           @relation(fields: [batchId], references: [id])
-
-  @@unique([productionBatchId, batchId])
-  @@map("production_batch_raw_materials")
-}
-
-model ProcessingStage {
-  id                String           @id @default(cuid())
-  productionBatchId String
-  stageName         String
-  stageOrder        Int
-  status            ProcessingStatus @default(PENDING)
-  startTime         DateTime?
-  endTime           DateTime?
-  duration          Int? // minutes
-  temperature       String?
+model supplier_invoices {
+  id                String                @id
+  invoiceNo         String                @unique
+  supplierInvoiceNo String
+  purchaseOrderId   String?
+  supplierId        String
+  invoiceDate       DateTime
+  dueDate           DateTime?
+  status            SupplierInvoiceStatus @default(RECEIVED)
+  subtotal          Decimal
+  discountAmount    Decimal               @default(0)
+  vatAmount         Decimal               @default(0)
+  totalAmount       Decimal
+  paidAmount        Decimal               @default(0)
+  balanceAmount     Decimal
+  currency          String                @default("AED")
+  paymentTerms      String?
   notes             String?
-  operatorId        String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime
+  purchase_orders   purchase_orders?      @relation(fields: [purchaseOrderId], references: [id])
+  suppliers         suppliers             @relation(fields: [supplierId], references: [id])
+  supplier_payments supplier_payments[]
 
-  productionBatch ProductionBatch @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
-  operator        User?           @relation(fields: [operatorId], references: [id])
-
-  @@map("processing_stages")
-}
-
-model QualityControl {
-  id                String        @id @default(cuid())
-  productionBatchId String
-  checkType         String // fragrance, alcohol_percentage, aging, visual
-  result            QualityResult
-  alcoholPercentage Decimal?
-  fragranceNotes    String?
-  agingDays         Int?
-  visualInspection  String?
-  testDate          DateTime      @default(now())
-  testedById        String
-  notes             String?
-  recommendations   String?
-  createdAt         DateTime      @default(now())
-
-  productionBatch ProductionBatch @relation(fields: [productionBatchId], references: [id])
-  testedBy        User            @relation(fields: [testedById], references: [id])
-
-  @@map("quality_controls")
-}
-
-// ============================================================================
-// CUSTOMER MODELS
-// ============================================================================
-
-model Customer {
-  id          String       @id @default(cuid())
-  customerNo  String       @unique
-  type        CustomerType @default(INDIVIDUAL)
-  firstName   String?
-  lastName    String?
-  companyName String?
-  email       String?      @unique
-  phone       String?
-  whatsapp    String?
-  dateOfBirth DateTime?
-  gender      Gender?
-  nationality String?
-  address     String?
-  city        String?
-  emirate     String?
-  country     String       @default("UAE")
-  postalCode  String?
-  vatNumber   String? // For corporate customers
-  isActive    Boolean      @default(true)
-  language    String       @default("en")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  // Relations
-  sales           Sale[]
-  loyaltyPrograms CustomerLoyalty[]
-  segments        CustomerSegmentMember[]
-
-  @@map("customers")
-}
-
-model CustomerSegment {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  nameAr      String?
-  description String?
-  criteria    Json // JSON criteria for auto-assignment
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  members CustomerSegmentMember[]
-
-  @@map("customer_segments")
-}
-
-model CustomerSegmentMember {
-  id         String   @id @default(cuid())
-  customerId String
-  segmentId  String
-  assignedAt DateTime @default(now())
-
-  customer Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  segment  CustomerSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
-
-  @@unique([customerId, segmentId])
-  @@map("customer_segment_members")
-}
-
-model LoyaltyProgram {
-  id             String    @id @default(cuid())
-  name           String    @unique
-  nameAr         String?
-  description    String?
-  pointsPerAED   Decimal   @default(1) // Points earned per AED spent
-  redemptionRate Decimal   @default(1) // AED value per point
-  minSpendAmount Decimal   @default(0)
-  isActive       Boolean   @default(true)
-  startDate      DateTime
-  endDate        DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  // Relations
-  customers CustomerLoyalty[]
-
-  @@map("loyalty_programs")
-}
-
-model CustomerLoyalty {
-  id               String   @id @default(cuid())
-  customerId       String
-  loyaltyProgramId String
-  points           Int      @default(0)
-  totalSpent       Decimal  @default(0)
-  totalEarned      Int      @default(0)
-  totalRedeemed    Int      @default(0)
-  joinedAt         DateTime @default(now())
-  lastActivity     DateTime @default(now())
-
-  customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  loyaltyProgram LoyaltyProgram @relation(fields: [loyaltyProgramId], references: [id])
-
-  @@unique([customerId, loyaltyProgramId])
-  @@map("customer_loyalty")
-}
-
-// ============================================================================
-// SALES MODELS
-// ============================================================================
-
-model Sale {
-  id             String        @id @default(cuid())
-  saleNo         String        @unique
-  storeId        String
-  customerId     String?
-  status         SaleStatus    @default(PENDING)
-  saleDate       DateTime      @default(now())
-  dueDate        DateTime?
-  subtotal       Decimal       @default(0)
-  discountAmount Decimal       @default(0)
-  vatAmount      Decimal       @default(0)
-  totalAmount    Decimal       @default(0)
-  currency       String        @default("AED")
-  paymentStatus  PaymentStatus @default(PENDING)
-  paymentMethod  String?
-  notes          String?
-  createdById    String
-  updatedById    String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  store     Store     @relation(fields: [storeId], references: [id])
-  customer  Customer? @relation(fields: [customerId], references: [id])
-  createdBy User      @relation("CreatedBy", fields: [createdById], references: [id])
-  updatedBy User?     @relation("UpdatedBy", fields: [updatedById], references: [id])
-
-  // Relations
-  items      SaleItem[]
-  invoices   Invoice[]
-  payments   Payment[]
-  promotions SalePromotion[]
-
-  @@index([saleDate])
+  @@index([dueDate])
   @@index([status])
-  @@map("sales")
 }
 
-model SaleItem {
-  id              String  @id @default(cuid())
-  saleId          String
-  productId       String
-  quantity        Decimal
-  unit            String
-  unitPrice       Decimal
-  discountPercent Decimal @default(0)
-  discountAmount  Decimal @default(0)
-  vatRate         Decimal @default(5)
-  vatAmount       Decimal @default(0)
-  totalAmount     Decimal
-  notes           String?
-
-  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
-
-  @@map("sale_items")
+model supplier_payments {
+  id                String            @id
+  paymentNo         String            @unique
+  supplierInvoiceId String
+  amount            Decimal
+  currency          String            @default("AED")
+  paymentMethod     PaymentMethod
+  paymentDate       DateTime          @default(now())
+  reference         String?
+  notes             String?
+  createdAt         DateTime          @default(now())
+  supplier_invoices supplier_invoices @relation(fields: [supplierInvoiceId], references: [id])
 }
 
-model Invoice {
-  id          String        @id @default(cuid())
-  invoiceNo   String        @unique
-  saleId      String
-  issueDate   DateTime      @default(now())
-  dueDate     DateTime?
-  status      InvoiceStatus @default(DRAFT)
-  subtotal    Decimal
-  vatAmount   Decimal
-  totalAmount Decimal
-  currency    String        @default("AED")
-  notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+model supplier_products {
+  id            String         @id
+  supplierId    String
+  rawMaterialId String?
+  productId     String?
+  supplierSku   String?
+  supplierName  String
+  unitPrice     Decimal
+  currency      String         @default("AED")
+  minOrderQty   Decimal        @default(1)
+  leadTime      Int            @default(0)
+  isPreferred   Boolean        @default(false)
+  isActive      Boolean        @default(true)
+  lastUpdated   DateTime       @default(now())
+  products      products?      @relation(fields: [productId], references: [id])
+  raw_materials raw_materials? @relation(fields: [rawMaterialId], references: [id])
+  suppliers     suppliers      @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
-  sale Sale @relation(fields: [saleId], references: [id])
-
-  @@map("invoices")
+  @@unique([supplierId, productId])
+  @@unique([supplierId, rawMaterialId])
 }
 
-model Payment {
-  id          String        @id @default(cuid())
-  paymentNo   String        @unique
-  saleId      String
-  amount      Decimal
-  currency    String        @default("AED")
-  method      PaymentMethod
-  status      PaymentStatus @default(PENDING)
-  paymentDate DateTime      @default(now())
-  reference   String? // Bank reference, card last 4 digits, etc.
-  notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  sale Sale @relation(fields: [saleId], references: [id])
-
-  @@map("payments")
+model suppliers {
+  id                        String                      @id
+  code                      String                      @unique
+  name                      String
+  nameAr                    String?
+  type                      SupplierType                @default(LOCAL)
+  category                  String
+  contactPerson             String?
+  email                     String?
+  phone                     String?
+  whatsapp                  String?
+  website                   String?
+  address                   String?
+  city                      String?
+  state                     String?
+  country                   String
+  postalCode                String?
+  vatNumber                 String?
+  tradeNumber               String?
+  licenseNumber             String?
+  establishedYear           Int?
+  performanceScore          Decimal                     @default(0)
+  rating                    Decimal                     @default(0)
+  totalOrders               Int                         @default(0)
+  onTimeDeliveries          Int                         @default(0)
+  qualityScore              Decimal                     @default(0)
+  responseTime              Int                         @default(0)
+  paymentTerms              String?
+  creditLimit               Decimal                     @default(0)
+  currency                  String                      @default("AED")
+  discountPercent           Decimal                     @default(0)
+  certifications            Json?
+  complianceStatus          ComplianceStatus            @default(PENDING)
+  lastAuditDate             DateTime?
+  nextAuditDate             DateTime?
+  leadTime                  Int                         @default(0)
+  minOrderValue             Decimal                     @default(0)
+  isPreferred               Boolean                     @default(false)
+  isActive                  Boolean                     @default(true)
+  tags                      String[]
+  notes                     String?
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime
+  procurement_request_items procurement_request_items[]
+  purchase_orders           purchase_orders[]
+  raw_materials             raw_materials[]
+  shipments                 shipments[]
+  supplier_evaluations      supplier_evaluations[]
+  supplier_invoices         supplier_invoices[]
+  supplier_products         supplier_products[]
 }
 
-model Promotion {
-  id                String        @id @default(cuid())
-  code              String        @unique
-  name              String
-  nameAr            String?
-  description       String?
-  type              PromotionType
-  discountPercent   Decimal?
-  discountAmount    Decimal?
-  minPurchaseAmount Decimal?
-  maxDiscountAmount Decimal?
-  startDate         DateTime
-  endDate           DateTime
-  usageLimit        Int?
-  usageCount        Int           @default(0)
-  isActive          Boolean       @default(true)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+model transactions {
+  id                                    String            @id
+  transactionNo                         String            @unique
+  type                                  TransactionType
+  accountId                             String
+  amount                                Decimal
+  currency                              String            @default("AED")
+  description                           String
+  referenceType                         String?
+  referenceId                           String?
+  transactionDate                       DateTime          @default(now())
+  vatAmount                             Decimal           @default(0)
+  status                                TransactionStatus @default(PENDING)
+  createdById                           String
+  updatedById                           String?
+  createdAt                             DateTime          @default(now())
+  updatedAt                             DateTime
+  accounts                              accounts          @relation(fields: [accountId], references: [id])
+  users_transactions_createdByIdTousers users             @relation("transactions_createdByIdTousers", fields: [createdById], references: [id])
+  users_transactions_updatedByIdTousers users?            @relation("transactions_updatedByIdTousers", fields: [updatedById], references: [id])
 
-  // Relations
-  sales SalePromotion[]
-
-  @@map("promotions")
-}
-
-model SalePromotion {
-  id             String  @id @default(cuid())
-  saleId         String
-  promotionId    String
-  discountAmount Decimal
-
-  sale      Sale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  promotion Promotion @relation(fields: [promotionId], references: [id])
-
-  @@unique([saleId, promotionId])
-  @@map("sale_promotions")
-}
-
-// ============================================================================
-// FINANCE MODELS
-// ============================================================================
-
-model Account {
-  id        String      @id @default(cuid())
-  code      String      @unique
-  name      String
-  nameAr    String?
-  type      AccountType
-  currency  String      @default("AED")
-  balance   Decimal     @default(0)
-  isActive  Boolean     @default(true)
-  parentId  String? // For account hierarchy
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  parent       Account?      @relation("AccountHierarchy", fields: [parentId], references: [id])
-  children     Account[]     @relation("AccountHierarchy")
-  transactions Transaction[]
-
-  @@map("accounts")
-}
-
-model Transaction {
-  id              String            @id @default(cuid())
-  transactionNo   String            @unique
-  type            TransactionType
-  accountId       String
-  amount          Decimal
-  currency        String            @default("AED")
-  description     String
-  referenceType   String? // sale, purchase, expense, etc.
-  referenceId     String?
-  transactionDate DateTime          @default(now())
-  vatAmount       Decimal           @default(0)
-  status          TransactionStatus @default(PENDING)
-  createdById     String
-  updatedById     String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  account   Account @relation(fields: [accountId], references: [id])
-  createdBy User    @relation("CreatedBy", fields: [createdById], references: [id])
-  updatedBy User?   @relation("UpdatedBy", fields: [updatedById], references: [id])
-
+  @@index([referenceType, referenceId])
   @@index([transactionDate])
   @@index([type])
-  @@index([referenceType, referenceId])
-  @@map("transactions")
 }
 
-model VATRecord {
-  id            String    @id @default(cuid())
+model transfer_items {
+  id             String         @id
+  transferId     String
+  rawMaterialId  String?
+  productId      String?
+  requestedQty   Decimal
+  transferredQty Decimal        @default(0)
+  unit           String
+  notes          String?
+  products       products?      @relation(fields: [productId], references: [id])
+  raw_materials  raw_materials? @relation(fields: [rawMaterialId], references: [id])
+  transfers      transfers      @relation(fields: [transferId], references: [id], onDelete: Cascade)
+}
+
+model transfers {
+  id                                   String           @id
+  transferNo                           String           @unique
+  fromStoreId                          String
+  toStoreId                            String
+  status                               TransferStatus   @default(PENDING)
+  notes                                String?
+  transferDate                         DateTime         @default(now())
+  completedDate                        DateTime?
+  createdAt                            DateTime         @default(now())
+  updatedAt                            DateTime
+  transfer_items                       transfer_items[]
+  stores_transfers_fromStoreIdTostores stores           @relation("transfers_fromStoreIdTostores", fields: [fromStoreId], references: [id])
+  stores_transfers_toStoreIdTostores   stores           @relation("transfers_toStoreIdTostores", fields: [toStoreId], references: [id])
+}
+
+model user_roles {
+  id     String @id
+  userId String
+  roleId String
+  roles  roles  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  users  users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model user_stores {
+  id         String   @id
+  userId     String
+  storeId    String
+  isDefault  Boolean  @default(false)
+  assignedAt DateTime @default(now())
+  stores     stores   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  users      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storeId])
+}
+
+model users {
+  id                                                             String                 @id
+  email                                                          String                 @unique
+  username                                                       String                 @unique
+  password                                                       String
+  firstName                                                      String
+  lastName                                                       String
+  phone                                                          String?
+  avatar                                                         String?
+  isActive                                                       Boolean                @default(true)
+  language                                                       String                 @default("en")
+  timezone                                                       String                 @default("Asia/Dubai")
+  lastLoginAt                                                    DateTime?
+  createdAt                                                      DateTime               @default(now())
+  updatedAt                                                      DateTime
+  goods_receipts                                                 goods_receipts[]
+  processing_stages                                              processing_stages[]
+  procurement_requests_procurement_requests_approvedByIdTousers  procurement_requests[] @relation("procurement_requests_approvedByIdTousers")
+  procurement_requests_procurement_requests_requestedByIdTousers procurement_requests[] @relation("procurement_requests_requestedByIdTousers")
+  production_batches                                             production_batches[]
+  purchase_orders_purchase_orders_approvedByIdTousers            purchase_orders[]      @relation("purchase_orders_approvedByIdTousers")
+  purchase_orders_purchase_orders_requestedByIdTousers           purchase_orders[]      @relation("purchase_orders_requestedByIdTousers")
+  quality_checks                                                 quality_checks[]
+  quality_controls                                               quality_controls[]
+  sales_sales_createdByIdTousers                                 sales[]                @relation("sales_createdByIdTousers")
+  sales_sales_updatedByIdTousers                                 sales[]                @relation("sales_updatedByIdTousers")
+  shipment_documents                                             shipment_documents[]
+  stock_movements                                                stock_movements[]
+  supplier_evaluations                                           supplier_evaluations[]
+  transactions_transactions_createdByIdTousers                   transactions[]         @relation("transactions_createdByIdTousers")
+  transactions_transactions_updatedByIdTousers                   transactions[]         @relation("transactions_updatedByIdTousers")
+  user_roles                                                     user_roles[]
+  user_stores                                                    user_stores[]
+}
+
+model vat_records {
+  id            String    @id
   recordNo      String    @unique
   type          VATType
   amount        Decimal
@@ -837,80 +1170,47 @@ model VATRecord {
   referenceType String
   referenceId   String
   recordDate    DateTime  @default(now())
-  period        String // YYYY-MM format
+  period        String
   status        VATStatus @default(ACTIVE)
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  updatedAt     DateTime
 
   @@index([period])
   @@index([type])
-  @@map("vat_records")
 }
 
-model ProfitTracking {
-  id          String   @id @default(cuid())
-  period      String // YYYY-MM format
-  revenue     Decimal  @default(0)
-  cogs        Decimal  @default(0) // Cost of Goods Sold
-  grossProfit Decimal  @default(0)
-  expenses    Decimal  @default(0)
-  netProfit   Decimal  @default(0)
-  currency    String   @default("AED")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([period])
-  @@map("profit_tracking")
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
 }
 
-// ============================================================================
-// ENUMS
-// ============================================================================
-
-enum TransferStatus {
+enum ComplianceStatus {
   PENDING
-  IN_TRANSIT
-  COMPLETED
-  CANCELLED
-}
-
-enum StockMovementType {
-  IN // Stock received
-  OUT // Stock issued/sold
-  TRANSFER_IN
-  TRANSFER_OUT
-  ADJUSTMENT // Manual adjustment
-  PRODUCTION_IN // From production
-  PRODUCTION_OUT // Used in production
-  EXPIRED // Expired stock removal
-  DAMAGED // Damaged stock removal
-}
-
-enum ProductionStatus {
-  PLANNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  ON_HOLD
-}
-
-enum ProcessingStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  FAILED
-}
-
-enum QualityResult {
-  PASSED
-  FAILED
+  APPROVED
   CONDITIONAL
-  PENDING
+  REJECTED
+  EXPIRED
 }
 
 enum CustomerType {
   INDIVIDUAL
   CORPORATE
+}
+
+enum DocumentType {
+  COMMERCIAL_INVOICE
+  PACKING_LIST
+  CERTIFICATE_ORIGIN
+  IMPORT_LICENSE
+  CUSTOMS_DECLARATION
+  INSPECTION_CERTIFICATE
+  INSURANCE_CERTIFICATE
+  BILL_OF_LADING
+  AIR_WAYBILL
+  OTHER
 }
 
 enum Gender {
@@ -919,17 +1219,18 @@ enum Gender {
   OTHER
 }
 
-enum SaleStatus {
+enum GoodsReceiptStatus {
   PENDING
-  CONFIRMED
-  COMPLETED
-  CANCELLED
-  RETURNED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  QUALITY_CHECK
+  ACCEPTED
+  REJECTED
 }
 
-enum PaymentStatus {
-  PENDING
-  PARTIAL
+enum InvoiceStatus {
+  DRAFT
+  SENT
   PAID
   OVERDUE
   CANCELLED
@@ -943,631 +1244,57 @@ enum PaymentMethod {
   DIGITAL_WALLET
 }
 
-enum InvoiceStatus {
-  DRAFT
-  SENT
+enum PaymentStatus {
+  PENDING
+  PARTIAL
   PAID
   OVERDUE
   CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ProcessingStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum ProcurementRequestStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CONVERTED_TO_PO
+  CANCELLED
+}
+
+enum ProcurementRequestType {
+  REGULAR
+  URGENT
+  CAPITAL
+  SERVICE
+  MAINTENANCE
+}
+
+enum ProductionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ON_HOLD
 }
 
 enum PromotionType {
   PERCENTAGE
   FIXED_AMOUNT
   BUY_X_GET_Y
-}
-
-enum AccountType {
-  ASSET
-  LIABILITY
-  EQUITY
-  REVENUE
-  EXPENSE
-}
-
-enum TransactionType {
-  DEBIT
-  CREDIT
-}
-
-enum TransactionStatus {
-  PENDING
-  COMPLETED
-  CANCELLED
-}
-
-enum VATType {
-  INPUT // VAT on purchases
-  OUTPUT // VAT on sales
-}
-
-enum VATStatus {
-  ACTIVE
-  REVERSED
-  CANCELLED
-}
-
-// ============================================================================
-// SUPPLY CHAIN & PROCUREMENT MODELS
-// ============================================================================
-
-model Supplier {
-  id            String       @id @default(cuid())
-  code          String       @unique
-  name          String
-  nameAr        String? // Arabic name support
-  type          SupplierType @default(LOCAL)
-  category      String // Raw materials, Packaging, Services, etc.
-  contactPerson String?
-  email         String?
-  phone         String?
-  whatsapp      String?
-  website       String?
-
-  // Address Details
-  address    String?
-  city       String?
-  state      String?
-  country    String
-  postalCode String?
-
-  // Business Details
-  vatNumber       String?
-  tradeNumber     String?
-  licenseNumber   String?
-  establishedYear Int?
-
-  // Performance Metrics
-  performanceScore Decimal @default(0) // 0-100 scale
-  rating           Decimal @default(0) // 0-5 stars
-  totalOrders      Int     @default(0)
-  onTimeDeliveries Int     @default(0)
-  qualityScore     Decimal @default(0) // 0-100 scale
-  responseTime     Int     @default(0) // Average response time in hours
-
-  // Financial Terms
-  paymentTerms    String? // Net 30, Net 60, etc.
-  creditLimit     Decimal @default(0)
-  currency        String  @default("AED")
-  discountPercent Decimal @default(0)
-
-  // Compliance & Certifications
-  certifications   Json? // Array of certifications
-  complianceStatus ComplianceStatus @default(PENDING)
-  lastAuditDate    DateTime?
-  nextAuditDate    DateTime?
-
-  // Operational Details
-  leadTime      Int      @default(0) // Days
-  minOrderValue Decimal  @default(0)
-  isPreferred   Boolean  @default(false)
-  isActive      Boolean  @default(true)
-  tags          String[] // Searchable tags
-  notes         String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  purchaseOrders          PurchaseOrder[]
-  supplierProducts        SupplierProduct[]
-  evaluations             SupplierEvaluation[]
-  shipments               Shipment[]
-  invoices                SupplierInvoice[]
-  rawMaterials            RawMaterial[]            @relation("SupplierRawMaterials")
-  procurementRequestItems ProcurementRequestItem[]
-
-  @@map("suppliers")
-}
-
-model SupplierProduct {
-  id            String   @id @default(cuid())
-  supplierId    String
-  rawMaterialId String?
-  productId     String?
-  supplierSku   String? // Supplier's product code
-  supplierName  String // Supplier's name for the product
-  unitPrice     Decimal
-  currency      String   @default("AED")
-  minOrderQty   Decimal  @default(1)
-  leadTime      Int      @default(0) // Days
-  isPreferred   Boolean  @default(false)
-  isActive      Boolean  @default(true)
-  lastUpdated   DateTime @default(now())
-
-  supplier    Supplier     @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  rawMaterial RawMaterial? @relation(fields: [rawMaterialId], references: [id])
-  product     Product?     @relation(fields: [productId], references: [id])
-
-  @@unique([supplierId, rawMaterialId])
-  @@unique([supplierId, productId])
-  @@map("supplier_products")
-}
-
-model PurchaseOrder {
-  id            String  @id @default(cuid())
-  poNumber      String  @unique
-  supplierId    String
-  requestedById String
-  approvedById  String?
-  storeId       String? // Delivery location
-
-  status   PurchaseOrderStatus @default(DRAFT)
-  priority Priority            @default(MEDIUM)
-  type     PurchaseOrderType   @default(REGULAR)
-
-  // Dates
-  orderDate     DateTime  @default(now())
-  requestedDate DateTime
-  expectedDate  DateTime?
-  deliveryDate  DateTime?
-
-  // Financial
-  subtotal       Decimal @default(0)
-  discountAmount Decimal @default(0)
-  vatAmount      Decimal @default(0)
-  shippingCost   Decimal @default(0)
-  totalAmount    Decimal @default(0)
-  currency       String  @default("AED")
-
-  // Terms & Conditions
-  paymentTerms  String?
-  deliveryTerms String? // FOB, CIF, etc.
-  notes         String?
-  internalNotes String? // Not visible to supplier
-
-  // Tracking
-  approvalWorkflow Json? // Approval history
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  supplier    Supplier @relation(fields: [supplierId], references: [id])
-  requestedBy User     @relation("RequestedBy", fields: [requestedById], references: [id])
-  approvedBy  User?    @relation("ApprovedBy", fields: [approvedById], references: [id])
-  store       Store?   @relation(fields: [storeId], references: [id])
-
-  // Relations
-  items     PurchaseOrderItem[]
-  receipts  GoodsReceipt[]
-  invoices  SupplierInvoice[]
-  shipments Shipment[]
-
-  @@index([status])
-  @@index([orderDate])
-  @@map("purchase_orders")
-}
-
-model PurchaseOrderItem {
-  id              String  @id @default(cuid())
-  purchaseOrderId String
-  rawMaterialId   String?
-  productId       String?
-
-  quantity        Decimal
-  unit            String
-  unitPrice       Decimal
-  discountPercent Decimal @default(0)
-  discountAmount  Decimal @default(0)
-  vatRate         Decimal @default(5)
-  vatAmount       Decimal @default(0)
-  totalAmount     Decimal
-
-  receivedQty Decimal @default(0)
-  pendingQty  Decimal
-
-  specifications String? // Technical specifications
-  notes          String?
-
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  rawMaterial   RawMaterial?  @relation(fields: [rawMaterialId], references: [id])
-  product       Product?      @relation(fields: [productId], references: [id])
-
-  // Relations
-  receiptItems GoodsReceiptItem[]
-
-  @@map("purchase_order_items")
-}
-
-model GoodsReceipt {
-  id              String @id @default(cuid())
-  receiptNo       String @unique
-  purchaseOrderId String
-  receivedById    String
-
-  receiptDate DateTime           @default(now())
-  status      GoodsReceiptStatus @default(PENDING)
-
-  totalReceived Decimal @default(0)
-  totalAccepted Decimal @default(0)
-  totalRejected Decimal @default(0)
-
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
-  receivedBy    User          @relation(fields: [receivedById], references: [id])
-
-  // Relations
-  items         GoodsReceiptItem[]
-  qualityChecks QualityCheck[]
-
-  @@map("goods_receipts")
-}
-
-model GoodsReceiptItem {
-  id                  String @id @default(cuid())
-  goodsReceiptId      String
-  purchaseOrderItemId String
-
-  orderedQty  Decimal
-  receivedQty Decimal
-  acceptedQty Decimal
-  rejectedQty Decimal @default(0)
-
-  batchNo    String?
-  expiryDate DateTime?
-  quality    QualityGrade?
-
-  rejectReason String?
-  notes        String?
-
-  goodsReceipt      GoodsReceipt      @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
-  purchaseOrderItem PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
-
-  @@map("goods_receipt_items")
-}
-
-model Shipment {
-  id              String  @id @default(cuid())
-  shipmentNo      String  @unique
-  purchaseOrderId String?
-  supplierId      String
-
-  carrier        ShippingCarrier
-  trackingNumber String?
-  awbNumber      String? // Air Waybill Number
-
-  status   ShipmentStatus @default(PREPARING)
-  priority Priority       @default(MEDIUM)
-
-  // Shipping Details
-  originAddress String
-  originCity    String
-  originCountry String
-
-  destinationAddress String
-  destinationCity    String
-  destinationCountry String
-
-  // Dates & Times
-  shipDate         DateTime?
-  estimatedArrival DateTime?
-  actualArrival    DateTime?
-
-  // Package Details
-  packages    Int      @default(1)
-  totalWeight Decimal?
-  totalVolume Decimal?
-  dimensions  String? // JSON string
-
-  // Costs
-  shippingCost Decimal @default(0)
-  insurance    Decimal @default(0)
-  customsDuty  Decimal @default(0)
-  otherCharges Decimal @default(0)
-  totalCost    Decimal @default(0)
-  currency     String  @default("AED")
-
-  // Import/Export Documentation
-  hsCode             String? // Harmonized System Code
-  customsDeclaration String?
-  commercialInvoice  String? // Document URL
-  packingList        String? // Document URL
-  certificateOrigin  String? // Document URL
-  importLicense      String? // Document URL
-
-  notes         String?
-  internalNotes String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
-  supplier      Supplier       @relation(fields: [supplierId], references: [id])
-
-  // Relations
-  trackingEvents ShipmentTracking[]
-  documents      ShipmentDocument[]
-
-  @@index([status])
-  @@index([trackingNumber])
-  @@map("shipments")
-}
-
-model ShipmentTracking {
-  id         String @id @default(cuid())
-  shipmentId String
-
-  location    String
-  status      String
-  description String?
-  eventDate   DateTime
-
-  latitude  Decimal?
-  longitude Decimal?
-
-  createdAt DateTime @default(now())
-
-  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
-
-  @@map("shipment_tracking")
-}
-
-model ShipmentDocument {
-  id         String @id @default(cuid())
-  shipmentId String
-
-  type     DocumentType
-  fileName String
-  fileUrl  String
-  fileSize Int?
-  mimeType String?
-
-  uploadedAt   DateTime @default(now())
-  uploadedById String?
-
-  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
-  uploadedBy User?    @relation(fields: [uploadedById], references: [id])
-
-  @@map("shipment_documents")
-}
-
-model SupplierInvoice {
-  id                String  @id @default(cuid())
-  invoiceNo         String  @unique
-  supplierInvoiceNo String // Supplier's invoice number
-  purchaseOrderId   String?
-  supplierId        String
-
-  invoiceDate DateTime
-  dueDate     DateTime?
-  status      SupplierInvoiceStatus @default(RECEIVED)
-
-  subtotal       Decimal
-  discountAmount Decimal @default(0)
-  vatAmount      Decimal @default(0)
-  totalAmount    Decimal
-  paidAmount     Decimal @default(0)
-  balanceAmount  Decimal
-  currency       String  @default("AED")
-
-  paymentTerms String?
-  notes        String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
-  supplier      Supplier       @relation(fields: [supplierId], references: [id])
-
-  // Relations
-  payments SupplierPayment[]
-
-  @@index([status])
-  @@index([dueDate])
-  @@map("supplier_invoices")
-}
-
-model SupplierPayment {
-  id                String @id @default(cuid())
-  paymentNo         String @unique
-  supplierInvoiceId String
-
-  amount        Decimal
-  currency      String        @default("AED")
-  paymentMethod PaymentMethod
-  paymentDate   DateTime      @default(now())
-
-  reference String? // Bank reference, cheque number, etc.
-  notes     String?
-
-  createdAt DateTime @default(now())
-
-  supplierInvoice SupplierInvoice @relation(fields: [supplierInvoiceId], references: [id])
-
-  @@map("supplier_payments")
-}
-
-model SupplierEvaluation {
-  id            String @id @default(cuid())
-  supplierId    String
-  evaluatedById String
-
-  period String // YYYY-MM format
-
-  // Performance Metrics (0-100 scale)
-  qualityScore       Decimal @default(0)
-  deliveryScore      Decimal @default(0)
-  serviceScore       Decimal @default(0)
-  priceScore         Decimal @default(0)
-  communicationScore Decimal @default(0)
-
-  overallScore Decimal @default(0)
-  rating       Decimal @default(0) // 0-5 stars
-
-  // Comments
-  strengths       String?
-  weaknesses      String?
-  recommendations String?
-
-  evaluationDate DateTime @default(now())
-  createdAt      DateTime @default(now())
-
-  supplier    Supplier @relation(fields: [supplierId], references: [id])
-  evaluatedBy User     @relation(fields: [evaluatedById], references: [id])
-
-  @@unique([supplierId, period])
-  @@map("supplier_evaluations")
-}
-
-model QualityCheck {
-  id             String @id @default(cuid())
-  goodsReceiptId String
-  checkedById    String
-
-  checkType QualityCheckType
-  result    QualityResult
-
-  // Specific Checks
-  visualInspection   String?
-  fragranceProfile   String?
-  alcoholContent     Decimal?
-  purityTest         String?
-  packagingCondition String?
-
-  // Results
-  passed Boolean       @default(false)
-  grade  QualityGrade?
-
-  notes           String?
-  recommendations String?
-
-  checkDate DateTime @default(now())
-  createdAt DateTime @default(now())
-
-  goodsReceipt GoodsReceipt @relation(fields: [goodsReceiptId], references: [id])
-  checkedBy    User         @relation(fields: [checkedById], references: [id])
-
-  @@map("quality_checks")
-}
-
-model ProcurementRequest {
-  id            String  @id @default(cuid())
-  requestNo     String  @unique
-  requestedById String
-  approvedById  String?
-  storeId       String?
-
-  type     ProcurementRequestType   @default(REGULAR)
-  priority Priority                 @default(MEDIUM)
-  status   ProcurementRequestStatus @default(PENDING)
-
-  requestDate  DateTime @default(now())
-  requiredDate DateTime
-
-  justification String?
-  notes         String?
-
-  totalEstimatedCost Decimal @default(0)
-  currency           String  @default("AED")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  requestedBy User   @relation("ProcurementRequestedBy", fields: [requestedById], references: [id])
-  approvedBy  User?  @relation("ProcurementApprovedBy", fields: [approvedById], references: [id])
-  store       Store? @relation(fields: [storeId], references: [id])
-
-  // Relations
-  items ProcurementRequestItem[]
-
-  @@map("procurement_requests")
-}
-
-model ProcurementRequestItem {
-  id                   String  @id @default(cuid())
-  procurementRequestId String
-  rawMaterialId        String?
-  productId            String?
-
-  quantity            Decimal
-  unit                String
-  estimatedUnitPrice  Decimal @default(0)
-  estimatedTotalPrice Decimal @default(0)
-
-  specifications String?
-  justification  String?
-
-  suggestedSupplierId String?
-
-  procurementRequest ProcurementRequest @relation(fields: [procurementRequestId], references: [id], onDelete: Cascade)
-  rawMaterial        RawMaterial?       @relation(fields: [rawMaterialId], references: [id])
-  product            Product?           @relation(fields: [productId], references: [id])
-  suggestedSupplier  Supplier?          @relation(fields: [suggestedSupplierId], references: [id])
-
-  @@map("procurement_request_items")
-}
-
-model ReorderPoint {
-  id            String  @id @default(cuid())
-  storeId       String?
-  rawMaterialId String?
-  productId     String?
-
-  minLevel     Decimal
-  maxLevel     Decimal
-  reorderLevel Decimal
-  reorderQty   Decimal
-
-  leadTime    Int     @default(0) // Days
-  safetyStock Decimal @default(0)
-
-  isActive      Boolean   @default(true)
-  lastTriggered DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  store       Store?       @relation(fields: [storeId], references: [id])
-  rawMaterial RawMaterial? @relation(fields: [rawMaterialId], references: [id])
-  product     Product?     @relation(fields: [productId], references: [id])
-
-  @@unique([storeId, rawMaterialId])
-  @@unique([storeId, productId])
-  @@map("reorder_points")
-}
-
-model HSCode {
-  id          String  @id @default(cuid())
-  code        String  @unique
-  description String
-  dutyRate    Decimal @default(0) // UAE import duty rate
-  vatRate     Decimal @default(5) // UAE VAT rate
-
-  // Restrictions & Requirements
-  restrictions String? // Import restrictions/licenses required
-  documents    String[] // Required documents
-
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  rawMaterials RawMaterial[]
-
-  @@map("hs_codes")
-}
-
-// ============================================================================
-// SUPPLY CHAIN ENUMS
-// ============================================================================
-
-enum SupplierType {
-  LOCAL // UAE suppliers
-  REGIONAL // GCC suppliers
-  INTERNATIONAL // Global suppliers
-  MANUFACTURER
-  DISTRIBUTOR
-  AGENT
-}
-
-enum ComplianceStatus {
-  PENDING
-  APPROVED
-  CONDITIONAL
-  REJECTED
-  EXPIRED
 }
 
 enum PurchaseOrderStatus {
@@ -1585,31 +1312,8 @@ enum PurchaseOrderStatus {
 enum PurchaseOrderType {
   REGULAR
   URGENT
-  BLANKET // Framework agreement
-  CONTRACT // Long-term contract
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-enum GoodsReceiptStatus {
-  PENDING
-  PARTIALLY_RECEIVED
-  RECEIVED
-  QUALITY_CHECK
-  ACCEPTED
-  REJECTED
-}
-
-enum QualityGrade {
-  A_PREMIUM
-  B_STANDARD
-  C_BASIC
-  REJECTED
+  BLANKET
+  CONTRACT
 }
 
 enum QualityCheckType {
@@ -1621,16 +1325,26 @@ enum QualityCheckType {
   COMPLETE
 }
 
-enum ShippingCarrier {
-  ARAMEX
-  DHL
-  FEDEX
-  UPS
-  EMIRATES_POST
-  ROAD_TRANSPORT
-  SEA_FREIGHT
-  AIR_FREIGHT
-  OTHER
+enum QualityGrade {
+  A_PREMIUM
+  B_STANDARD
+  C_BASIC
+  REJECTED
+}
+
+enum QualityResult {
+  PASSED
+  FAILED
+  CONDITIONAL
+  PENDING
+}
+
+enum SaleStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  RETURNED
 }
 
 enum ShipmentStatus {
@@ -1645,17 +1359,28 @@ enum ShipmentStatus {
   RETURNED
 }
 
-enum DocumentType {
-  COMMERCIAL_INVOICE
-  PACKING_LIST
-  CERTIFICATE_ORIGIN
-  IMPORT_LICENSE
-  CUSTOMS_DECLARATION
-  INSPECTION_CERTIFICATE
-  INSURANCE_CERTIFICATE
-  BILL_OF_LADING
-  AIR_WAYBILL
+enum ShippingCarrier {
+  ARAMEX
+  DHL
+  FEDEX
+  UPS
+  EMIRATES_POST
+  ROAD_TRANSPORT
+  SEA_FREIGHT
+  AIR_FREIGHT
   OTHER
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  TRANSFER_IN
+  TRANSFER_OUT
+  ADJUSTMENT
+  PRODUCTION_IN
+  PRODUCTION_OUT
+  EXPIRED
+  DAMAGED
 }
 
 enum SupplierInvoiceStatus {
@@ -1668,121 +1393,40 @@ enum SupplierInvoiceStatus {
   CANCELLED
 }
 
-enum ProcurementRequestType {
-  REGULAR
-  URGENT
-  CAPITAL // Capital expenditure
-  SERVICE
-  MAINTENANCE
+enum SupplierType {
+  LOCAL
+  REGIONAL
+  INTERNATIONAL
+  MANUFACTURER
+  DISTRIBUTOR
+  AGENT
 }
 
-enum ProcurementRequestStatus {
+enum TransactionStatus {
   PENDING
-  UNDER_REVIEW
-  APPROVED
-  REJECTED
-  CONVERTED_TO_PO
+  COMPLETED
   CANCELLED
 }
 
-// ============================================================================
-// BRANDING & CUSTOMIZATION MODELS
-// ============================================================================
+enum TransactionType {
+  DEBIT
+  CREDIT
+}
 
-model Branding {
-  id String @id @default(cuid())
+enum TransferStatus {
+  PENDING
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
 
-  // Company Information
-  companyName   String  @default("Oud & Perfume ERP")
-  companyNameAr String?
-  tagline       String?
-  taglineAr     String?
+enum VATStatus {
+  ACTIVE
+  REVERSED
+  CANCELLED
+}
 
-  // Logos & Images
-  logoUrl      String? // Main logo
-  logoWhiteUrl String? // White logo for dark backgrounds
-  faviconUrl   String?
-  loginBgUrl   String? // Login page background
-
-  // Primary Colors
-  primaryColor String @default("#d97706") // Amber-600
-  primaryHover String @default("#b45309") // Amber-700
-  accentColor  String @default("#92400e") // Amber-800
-
-  // Background Colors
-  bgLight String @default("#fffbeb") // Amber-50
-  bgDark  String @default("#1f2937") // Gray-800
-
-  // Text Colors
-  textPrimary   String @default("#111827") // Gray-900
-  textSecondary String @default("#6b7280") // Gray-500
-  textLight     String @default("#ffffff")
-
-  // Status Colors
-  successColor String @default("#10b981") // Green
-  warningColor String @default("#f59e0b") // Amber
-  errorColor   String @default("#ef4444") // Red
-  infoColor    String @default("#3b82f6") // Blue
-
-  // Typography
-  fontFamily  String @default("Inter")
-  headingFont String @default("Inter")
-  fontSize    String @default("medium") // small, medium, large
-
-  // Layout
-  sidebarStyle String @default("light") // light, dark, colored
-  headerStyle  String @default("light")
-  borderRadius String @default("medium") // small, medium, large, none
-
-  // Contact Information
-  email    String?
-  phone    String?
-  whatsapp String?
-  website  String?
-  address  String?
-  city     String?
-  country  String  @default("UAE")
-
-  // Social Media
-  facebookUrl  String?
-  instagramUrl String?
-  twitterUrl   String?
-  linkedinUrl  String?
-
-  // Business Details
-  vatNumber     String?
-  tradeNumber   String?
-  licenseNumber String?
-
-  // Invoice/Receipt Customization
-  invoicePrefix   String  @default("INV")
-  receiptPrefix   String  @default("RCP")
-  orderPrefix     String  @default("ORD")
-  invoiceFooter   String?
-  invoiceFooterAr String?
-  invoiceNotes    String?
-
-  // System Settings
-  dateFormat       String @default("DD/MM/YYYY")
-  timeFormat       String @default("24h") // 12h, 24h
-  currency         String @default("AED")
-  currencySymbol   String @default("AED")
-  currencyPosition String @default("before") // before, after
-  decimalPlaces    Int    @default(2)
-
-  // Feature Toggles
-  showWhatsapp    Boolean @default(true)
-  showSocial      Boolean @default(true)
-  showVatNumber   Boolean @default(true)
-  showCompanyInfo Boolean @default(true)
-
-  // Custom CSS
-  customCss String? @db.Text
-
-  // Metadata
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("branding")
+enum VATType {
+  INPUT
+  OUTPUT
 }
