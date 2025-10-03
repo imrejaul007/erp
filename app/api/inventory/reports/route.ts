@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { differenceInDays, subDays, subMonths, format } from 'date-fns'
@@ -27,14 +28,16 @@ const generateReportSchema = z.object({
 })
 
 // GET /api/inventory/reports - Get saved reports
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest, { tenantId, user }: { tenantId: string; user: any }) {
   try {
     const { searchParams } = new URL(request.url)
     const reportType = searchParams.get('reportType')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const where: any = {}
+    const where: any = {
+      tenantId
+    }
     if (reportType) {
       where.reportType = reportType
     }
@@ -51,8 +54,7 @@ export async function GET(request: NextRequest) {
 
     const pages = Math.ceil(total / limit)
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: reports,
       pagination: {
         page,
@@ -63,15 +65,12 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching reports:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch reports' },
-      { status: 500 }
-    )
+    return apiError('Failed to fetch reports: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
 
 // POST /api/inventory/reports - Generate new report
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest, { tenantId, user }: { tenantId: string; user: any }) {
   try {
     const body = await request.json()
     const validatedData = generateReportSchema.parse(body)
@@ -86,103 +85,90 @@ export async function POST(request: NextRequest) {
 
     switch (validatedData.reportType) {
       case 'STOCK_LEVELS':
-        reportData = await generateStockLevelsReport(filters)
+        reportData = await generateStockLevelsReport(filters, tenantId)
         title = 'Current Stock Levels Report'
         description = 'Overview of all material stock levels and statuses'
         break
 
       case 'LOW_STOCK':
-        reportData = await generateLowStockReport(filters)
+        reportData = await generateLowStockReport(filters, tenantId)
         title = 'Low Stock Alert Report'
         description = 'Materials requiring immediate attention due to low stock'
         break
 
       case 'AGING_ANALYSIS':
-        reportData = await generateAgingAnalysisReport(filters)
+        reportData = await generateAgingAnalysisReport(filters, tenantId)
         title = 'Inventory Aging Analysis'
         description = 'Analysis of inventory age and expiry status'
         break
 
       case 'COST_ANALYSIS':
-        reportData = await generateCostAnalysisReport(filters, dateFrom, dateTo)
+        reportData = await generateCostAnalysisReport(filters, dateFrom, dateTo, tenantId)
         title = 'Inventory Cost Analysis'
         description = 'Financial analysis of inventory value and costs'
         break
 
       case 'BATCH_TRACKING':
-        reportData = await generateBatchTrackingReport(filters)
+        reportData = await generateBatchTrackingReport(filters, tenantId)
         title = 'Batch Tracking Report'
         description = 'Detailed batch information and movement history'
         break
 
       case 'MOVEMENT_HISTORY':
-        reportData = await generateMovementHistoryReport(filters, dateFrom, dateTo)
+        reportData = await generateMovementHistoryReport(filters, dateFrom, dateTo, tenantId)
         title = 'Stock Movement History'
         description = 'Historical analysis of stock movements and transactions'
         break
 
       case 'CONSUMPTION_TRENDS':
-        reportData = await generateConsumptionTrendsReport(filters, dateFrom, dateTo)
+        reportData = await generateConsumptionTrendsReport(filters, dateFrom, dateTo, tenantId)
         title = 'Material Consumption Trends'
         description = 'Analysis of material usage patterns and forecasting'
         break
 
       case 'SUPPLIER_PERFORMANCE':
-        reportData = await generateSupplierPerformanceReport(filters, dateFrom, dateTo)
+        reportData = await generateSupplierPerformanceReport(filters, dateFrom, dateTo, tenantId)
         title = 'Supplier Performance Analysis'
         description = 'Evaluation of supplier reliability and cost performance'
         break
 
       default:
-        return NextResponse.json(
-          { success: false, error: 'Invalid report type' },
-          { status: 400 }
-        )
+        return apiError('Invalid report type', 400)
     }
 
     // Save report to database
     const savedReport = await prisma.inventoryReport.create({
       data: {
+        tenantId,
         reportType: validatedData.reportType,
         title,
         description,
         data: reportData,
         filters: validatedData.filters || {},
-        generatedBy: 'current-user', // In real app, get from auth context
+        generatedBy: user.id,
       },
     })
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        report: savedReport,
-        ...(validatedData.format === 'JSON' ? { reportData } : {}),
-      },
-      message: 'Report generated successfully',
-    }, { status: 201 })
+    return apiResponse({
+      report: savedReport,
+      ...(validatedData.format === 'JSON' ? { reportData } : {}),
+    }, 201)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + JSON.stringify(error.errors), 400)
     }
 
     console.error('Error generating report:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate report' },
-      { status: 500 }
-    )
+    return apiError('Failed to generate report: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
 
 // Report generation functions
-async function generateStockLevelsReport(filters: any) {
-  const where: any = { isActive: true }
+async function generateStockLevelsReport(filters: any, tenantId: string) {
+  const where: any = {
+    isActive: true,
+    tenantId
+  }
 
   if (filters.categoryIds?.length) {
     where.categoryId = { in: filters.categoryIds }
@@ -261,9 +247,10 @@ async function generateStockLevelsReport(filters: any) {
   }
 }
 
-async function generateLowStockReport(filters: any) {
+async function generateLowStockReport(filters: any, tenantId: string) {
   const where: any = {
     isActive: true,
+    tenantId,
     OR: [
       { currentStock: { lte: 0 } },
       { currentStock: { lte: { reorderLevel: true } } },
@@ -316,8 +303,10 @@ async function generateLowStockReport(filters: any) {
   }
 }
 
-async function generateAgingAnalysisReport(filters: any) {
-  const where: any = {}
+async function generateAgingAnalysisReport(filters: any, tenantId: string) {
+  const where: any = {
+    material: { tenantId }
+  }
 
   if (filters.materialIds?.length) {
     where.materialId = { in: filters.materialIds }
@@ -392,11 +381,12 @@ async function generateAgingAnalysisReport(filters: any) {
   return { summary, batches: agingAnalysis }
 }
 
-async function generateCostAnalysisReport(filters: any, dateFrom: Date, dateTo: Date) {
+async function generateCostAnalysisReport(filters: any, dateFrom: Date, dateTo: Date, tenantId: string) {
   // Get materials with cost information
   const materials = await prisma.material.findMany({
     where: {
       isActive: true,
+      tenantId,
       ...(filters.categoryIds?.length && { categoryId: { in: filters.categoryIds } }),
     },
     include: { category: true },
@@ -407,6 +397,7 @@ async function generateCostAnalysisReport(filters: any, dateFrom: Date, dateTo: 
     where: {
       createdAt: { gte: dateFrom, lte: dateTo },
       type: { in: ['IN', 'OUT', 'PRODUCTION_OUT'] },
+      material: { tenantId },
       ...(filters.materialIds?.length && { materialId: { in: filters.materialIds } }),
     },
     include: {
@@ -451,8 +442,10 @@ async function generateCostAnalysisReport(filters: any, dateFrom: Date, dateTo: 
   }
 }
 
-async function generateBatchTrackingReport(filters: any) {
-  const where: any = {}
+async function generateBatchTrackingReport(filters: any, tenantId: string) {
+  const where: any = {
+    material: { tenantId }
+  }
 
   if (filters.materialIds?.length) {
     where.materialId = { in: filters.materialIds }
@@ -511,9 +504,10 @@ async function generateBatchTrackingReport(filters: any) {
   }
 }
 
-async function generateMovementHistoryReport(filters: any, dateFrom: Date, dateTo: Date) {
+async function generateMovementHistoryReport(filters: any, dateFrom: Date, dateTo: Date, tenantId: string) {
   const where: any = {
     createdAt: { gte: dateFrom, lte: dateTo },
+    material: { tenantId }
   }
 
   if (filters.materialIds?.length) {
@@ -562,12 +556,12 @@ async function generateMovementHistoryReport(filters: any, dateFrom: Date, dateT
   }
 }
 
-async function generateConsumptionTrendsReport(filters: any, dateFrom: Date, dateTo: Date) {
-  // This is a simplified version - in a real app, you'd have more sophisticated analytics
+async function generateConsumptionTrendsReport(filters: any, dateFrom: Date, dateTo: Date, tenantId: string) {
   const movements = await prisma.stockMovement.findMany({
     where: {
       type: { in: ['OUT', 'PRODUCTION_OUT', 'WASTE'] },
       createdAt: { gte: dateFrom, lte: dateTo },
+      material: { tenantId },
       ...(filters.materialIds?.length && { materialId: { in: filters.materialIds } }),
     },
     include: {
@@ -613,11 +607,12 @@ async function generateConsumptionTrendsReport(filters: any, dateFrom: Date, dat
   }
 }
 
-async function generateSupplierPerformanceReport(filters: any, dateFrom: Date, dateTo: Date) {
+async function generateSupplierPerformanceReport(filters: any, dateFrom: Date, dateTo: Date, tenantId: string) {
   // Get materials grouped by supplier
   const materials = await prisma.material.findMany({
     where: {
       isActive: true,
+      tenantId,
       supplier: { not: null },
       ...(filters.materialIds?.length && { id: { in: filters.materialIds } }),
     },
@@ -676,3 +671,6 @@ async function generateSupplierPerformanceReport(filters: any, dateFrom: Date, d
     suppliers: Object.values(supplierData).sort((a: any, b: any) => b.totalValue - a.totalValue),
   }
 }
+
+export const GET = withTenant(getHandler);
+export const POST = withTenant(postHandler);

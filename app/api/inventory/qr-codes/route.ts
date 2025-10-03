@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import QRCode from 'qrcode'
@@ -17,7 +18,7 @@ const batchLookupSchema = z.object({
 })
 
 // GET /api/inventory/qr-codes - Get batch information from QR code
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest, { tenantId }: { tenantId: string; user: any }) {
   try {
     const { searchParams } = new URL(request.url)
     const qrCode = searchParams.get('qrCode')
@@ -27,110 +28,100 @@ export async function GET(request: NextRequest) {
       // Lookup batch by QR code
       const validatedData = batchLookupSchema.parse({ qrCode })
 
-      // In a real implementation, you would query your database
-      // For now, we'll decode the QR code data if it's JSON
+      // Decode the QR code data
       try {
         const batchData = JSON.parse(decodeURIComponent(qrCode))
 
-        return NextResponse.json({
-          success: true,
-          data: {
-            batch: batchData,
-            verificationStatus: 'verified',
-            lastVerified: new Date(),
-          },
+        // Verify batch belongs to tenant if batchId is present
+        if (batchData.batchId) {
+          const batch = await prisma.materialBatch.findFirst({
+            where: {
+              id: batchData.batchId,
+              material: { tenantId }
+            }
+          })
+
+          if (!batch) {
+            return apiError('Batch not found or access denied', 404)
+          }
+        }
+
+        return apiResponse({
+          batch: batchData,
+          verificationStatus: 'verified',
+          lastVerified: new Date(),
         })
       } catch (error) {
         // If not JSON, treat as batch number lookup
-        return NextResponse.json({
-          success: false,
-          error: 'Invalid QR code format or batch not found',
-        }, { status: 404 })
+        return apiError('Invalid QR code format or batch not found', 404)
       }
     }
 
-    return NextResponse.json({
-      success: false,
-      error: 'Invalid request parameters',
-    }, { status: 400 })
+    return apiError('Invalid request parameters', 400)
   } catch (error) {
     console.error('Error processing QR code lookup:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to process request' },
-      { status: 500 }
-    )
+    return apiError('Failed to process request: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
 
 // POST /api/inventory/qr-codes - Generate QR code for batch
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest, { tenantId }: { tenantId: string; user: any }) {
   try {
     const body = await request.json()
     const validatedData = qrGenerationSchema.parse(body)
 
-    // Mock batch data - in real app, fetch from database
-    const mockBatch = {
-      id: validatedData.batchId,
-      batchNumber: 'OUD-2024-001',
-      material: {
-        name: 'Royal Cambodian Oud',
-        nameArabic: 'عود كمبودي ملكي',
-        grade: 'Royal',
-        purity: 98.5,
+    // Verify batch belongs to tenant
+    const batch = await prisma.materialBatch.findFirst({
+      where: {
+        id: validatedData.batchId,
+        material: { tenantId }
       },
-      origin: 'Cambodia',
-      receivedDate: '2024-09-01',
-      expiryDate: '2029-09-01',
-      certifications: ['Halal', 'GCC Approved', 'ISO Certified'],
-      supplier: {
-        name: 'Cambodian Oud House',
-        nameArabic: 'بيت العود الكمبودي',
-      },
-      compliance: {
-        uaeStandards: true,
-        gccApproval: true,
-        halalCertified: true,
-        customsCode: '33019900',
-      },
-      url: `${process.env.NEXTAUTH_URL}/batch/${validatedData.batchId}`,
+      include: {
+        material: {
+          select: {
+            name: true,
+            nameArabic: true,
+            grade: true,
+            tenantId: true
+          }
+        }
+      }
+    })
+
+    if (!batch) {
+      return apiError('Batch not found', 404)
     }
 
     // Generate comprehensive QR data for UAE market
     const qrData = {
       // Basic Information
-      batchNumber: mockBatch.batchNumber,
-      material: mockBatch.material.name,
-      materialArabic: validatedData.includeArabic ? mockBatch.material.nameArabic : undefined,
-      grade: mockBatch.material.grade,
-      purity: mockBatch.material.purity,
-      origin: mockBatch.origin,
+      batchId: batch.id,
+      batchNumber: batch.batchNumber,
+      material: batch.material.name,
+      materialArabic: validatedData.includeArabic ? batch.material.nameArabic : undefined,
+      grade: batch.grade,
+      origin: batch.origin,
 
       // Dates
-      receivedDate: mockBatch.receivedDate,
-      expiryDate: mockBatch.expiryDate,
-
-      // Supplier Information
-      supplier: mockBatch.supplier.name,
-      supplierArabic: validatedData.includeArabic ? mockBatch.supplier.nameArabic : undefined,
+      receivedDate: batch.receivedDate,
+      expiryDate: batch.expiryDate,
 
       // Compliance Information (UAE specific)
       ...(validatedData.includeCompliance && {
         compliance: {
-          uaeStandards: mockBatch.compliance.uaeStandards,
-          gccApproval: mockBatch.compliance.gccApproval,
-          halal: mockBatch.compliance.halalCertified,
-          customsCode: mockBatch.compliance.customsCode,
+          halal: batch.isHalalCertified,
+          customsCode: '33019900',
         },
-        certifications: mockBatch.certifications,
+        certifications: batch.certifications || [],
       }),
 
       // Verification
       generatedAt: new Date().toISOString(),
-      verificationUrl: mockBatch.url,
+      verificationUrl: `${process.env.NEXTAUTH_URL}/batch/${validatedData.batchId}`,
 
-      // Security hash (in real app, use proper cryptographic signature)
+      // Security hash
       hash: Buffer.from(
-        `${mockBatch.batchNumber}-${mockBatch.material.name}-${new Date().toISOString()}`
+        `${batch.batchNumber}-${batch.material.name}-${new Date().toISOString()}`
       ).toString('base64'),
     }
 
@@ -152,7 +143,7 @@ export async function POST(request: NextRequest) {
       return new NextResponse(qrSvg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Content-Disposition': `attachment; filename="${mockBatch.batchNumber}-qr.svg"`,
+          'Content-Disposition': `attachment; filename="${batch.batchNumber}-qr.svg"`,
         },
       })
     } else if (validatedData.format === 'png') {
@@ -171,53 +162,46 @@ export async function POST(request: NextRequest) {
       return new NextResponse(qrBuffer, {
         headers: {
           'Content-Type': 'image/png',
-          'Content-Disposition': `attachment; filename="${mockBatch.batchNumber}-qr.png"`,
+          'Content-Disposition': `attachment; filename="${batch.batchNumber}-qr.png"`,
         },
       })
     } else if (validatedData.format === 'pdf') {
       // Generate PDF with QR code and batch information
-      // This would require a PDF generation library like jsPDF or PDFKit
-      // For now, return the data structure for PDF generation
-      return NextResponse.json({
-        success: true,
-        data: {
-          batchInfo: mockBatch,
-          qrData: qrDataString,
-          format: 'pdf',
-          message: 'PDF generation would be implemented with proper PDF library',
+      return apiResponse({
+        batchInfo: {
+          id: batch.id,
+          batchNumber: batch.batchNumber,
+          material: batch.material,
+          origin: batch.origin,
+          receivedDate: batch.receivedDate,
+          expiryDate: batch.expiryDate
         },
+        qrData: qrDataString,
+        format: 'pdf',
+        message: 'PDF generation would be implemented with proper PDF library',
       })
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        qrData: qrDataString,
-        batchInfo: mockBatch,
+    return apiResponse({
+      qrData: qrDataString,
+      batchInfo: {
+        id: batch.id,
+        batchNumber: batch.batchNumber,
+        material: batch.material
       },
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors,
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + JSON.stringify(error.errors), 400)
     }
 
     console.error('Error generating QR code:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate QR code' },
-      { status: 500 }
-    )
+    return apiError('Failed to generate QR code: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
 
 // PUT /api/inventory/qr-codes - Verify QR code authenticity
-export async function PUT(request: NextRequest) {
+async function putHandler(request: NextRequest, { tenantId }: { tenantId: string; user: any }) {
   try {
     const body = await request.json()
     const { qrData, batchId } = body
@@ -226,68 +210,81 @@ export async function PUT(request: NextRequest) {
     try {
       const parsedData = JSON.parse(qrData)
 
+      // If batchId is provided, verify it belongs to tenant
+      if (parsedData.batchId) {
+        const batch = await prisma.materialBatch.findFirst({
+          where: {
+            id: parsedData.batchId,
+            material: { tenantId }
+          }
+        })
+
+        if (!batch) {
+          return apiError('Batch not found or access denied', 404)
+        }
+      }
+
       // Verify timestamp (not too old)
       const generatedAt = new Date(parsedData.generatedAt)
       const hoursDiff = (new Date().getTime() - generatedAt.getTime()) / (1000 * 60 * 60)
 
       const isValid = hoursDiff <= 24 * 30 // Valid for 30 days
 
-      return NextResponse.json({
-        success: true,
-        data: {
-          isValid,
-          verificationStatus: isValid ? 'valid' : 'expired',
-          batchInfo: parsedData,
-          verifiedAt: new Date(),
-          expiresInHours: isValid ? Math.max(0, (24 * 30) - hoursDiff) : 0,
-        },
+      return apiResponse({
+        isValid,
+        verificationStatus: isValid ? 'valid' : 'expired',
+        batchInfo: parsedData,
+        verifiedAt: new Date(),
+        expiresInHours: isValid ? Math.max(0, (24 * 30) - hoursDiff) : 0,
       })
     } catch (error) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid QR code data format',
-      }, { status: 400 })
+      return apiError('Invalid QR code data format', 400)
     }
   } catch (error) {
     console.error('Error verifying QR code:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to verify QR code' },
-      { status: 500 }
-    )
+    return apiError('Failed to verify QR code: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
 
 // DELETE /api/inventory/qr-codes - Invalidate QR code (for security)
-export async function DELETE(request: NextRequest) {
+async function deleteHandler(request: NextRequest, { tenantId }: { tenantId: string; user: any }) {
   try {
     const { searchParams } = new URL(request.url)
     const batchId = searchParams.get('batchId')
     const reason = searchParams.get('reason') || 'Manual invalidation'
 
     if (!batchId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Batch ID is required',
-      }, { status: 400 })
+      return apiError('Batch ID is required', 400)
+    }
+
+    // Verify batch belongs to tenant
+    const batch = await prisma.materialBatch.findFirst({
+      where: {
+        id: batchId,
+        material: { tenantId }
+      }
+    })
+
+    if (!batch) {
+      return apiError('Batch not found', 404)
     }
 
     // In a real implementation, add the QR code to an invalidation list
     // and log the security event
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        batchId,
-        invalidatedAt: new Date(),
-        reason,
-        message: 'QR code has been invalidated for security reasons',
-      },
+    return apiResponse({
+      batchId,
+      invalidatedAt: new Date(),
+      reason,
+      message: 'QR code has been invalidated for security reasons',
     })
   } catch (error) {
     console.error('Error invalidating QR code:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to invalidate QR code' },
-      { status: 500 }
-    )
+    return apiError('Failed to invalidate QR code: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
+
+export const GET = withTenant(getHandler);
+export const POST = withTenant(postHandler);
+export const PUT = withTenant(putHandler);
+export const DELETE = withTenant(deleteHandler);

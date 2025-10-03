@@ -1,39 +1,89 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
+import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
-export async function POST(request: NextRequest) {
+async function handler(request: NextRequest, { tenantId, user }: { tenantId: string; user: any }) {
   try {
     const body = await request.json();
     const { productId, testerStock, updateType, reference } = body;
 
-    // In production, this would:
-    // 1. Validate the request
-    // 2. Check if product exists
-    // 3. Check if sufficient tester stock available
-    // 4. Deduct from tester stock in database
-    // 5. Log the transaction
-    // 6. Check for low stock alerts
+    // Validate required fields
+    if (!productId || !testerStock?.deduct) {
+      return apiError('Missing required fields: productId or testerStock.deduct', 400);
+    }
 
-    // Simulated response
+    // Check if product exists and belongs to tenant
+    const product = await prisma.product.findFirst({
+      where: {
+        id: productId,
+        tenantId
+      }
+    });
+
+    if (!product) {
+      return apiError('Product not found', 404);
+    }
+
+    // Get tester stock
+    const testerStockRecord = await prisma.testerStock.findFirst({
+      where: {
+        productId,
+        product: { tenantId }
+      }
+    });
+
+    if (!testerStockRecord) {
+      return apiError('Tester stock not found for this product', 404);
+    }
+
+    // Check if sufficient tester stock available
+    const currentStock = parseFloat(testerStockRecord.currentStock.toString());
+    const deductAmount = parseFloat(testerStock.deduct);
+
+    if (currentStock < deductAmount) {
+      return apiError('Insufficient tester stock available', 400);
+    }
+
+    // Deduct from tester stock
+    const updatedStock = await prisma.testerStock.update({
+      where: { id: testerStockRecord.id },
+      data: {
+        currentStock: {
+          decrement: new Prisma.Decimal(deductAmount)
+        }
+      }
+    });
+
+    // Create tester usage record
+    await prisma.testerUsage.create({
+      data: {
+        productId,
+        quantity: new Prisma.Decimal(deductAmount),
+        unit: testerStock.unit || 'ml',
+        usedBy: user.id,
+        updateType: updateType || 'MANUAL',
+        reference: reference || null,
+        notes: `Deducted ${deductAmount} ${testerStock.unit || 'ml'}`
+      }
+    });
+
     const response = {
       success: true,
       productId,
-      deductedQuantity: testerStock.deduct,
-      unit: testerStock.unit,
-      remainingStock: 0, // Would be fetched from database
+      deductedQuantity: deductAmount,
+      unit: testerStock.unit || 'ml',
+      remainingStock: parseFloat(updatedStock.currentStock.toString()),
       updateType,
       reference,
       timestamp: new Date().toISOString()
     };
 
-    // Log for demo purposes
-    console.log('Tester stock deduction:', response);
-
-    return NextResponse.json(response, { status: 200 });
+    return apiResponse(response);
   } catch (error) {
     console.error('Error deducting tester stock:', error);
-    return NextResponse.json(
-      { error: 'Failed to deduct tester stock' },
-      { status: 500 }
-    );
+    return apiError('Failed to deduct tester stock: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
 }
+
+export const POST = withTenant(handler);

@@ -1,53 +1,60 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { prisma } from '@/lib/prisma';
 import { Prisma, TesterSourceType } from '@prisma/client';
 
-export async function POST(request: NextRequest) {
+async function handler(request: NextRequest, { tenantId, user }: { tenantId: string; user: any }) {
   try {
     const body = await request.json();
     const { productId, quantity, sourceType, refillBy, notes, unit, costPerUnit } = body;
 
     // Validate required fields
     if (!productId || !quantity || !sourceType || !refillBy) {
-      return NextResponse.json(
-        { error: 'Missing required fields: productId, quantity, sourceType, or refillBy' },
-        { status: 400 }
-      );
+      return apiError('Missing required fields: productId, quantity, sourceType, or refillBy', 400);
     }
 
     // Validate quantity is positive
     if (parseFloat(quantity) <= 0) {
-      return NextResponse.json(
-        { error: 'Quantity must be greater than 0' },
-        { status: 400 }
-      );
+      return apiError('Quantity must be greater than 0', 400);
     }
 
-    // Check if product exists
-    const product = await prisma.product.findUnique({
-      where: { id: productId }
+    // Check if product exists and belongs to tenant
+    const product = await prisma.product.findFirst({
+      where: {
+        id: productId,
+        tenantId
+      }
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return apiError('Product not found', 404);
+    }
+
+    // Verify refillBy user belongs to tenant
+    const refillUser = await prisma.user.findFirst({
+      where: {
+        id: refillBy,
+        tenantId
+      }
+    });
+
+    if (!refillUser) {
+      return apiError('Refill user not found', 404);
     }
 
     // If refilling from main inventory, check stock availability
     if (sourceType === 'main_inventory') {
       const productStock = parseFloat(product.stock?.toString() || '0');
       if (productStock < parseFloat(quantity)) {
-        return NextResponse.json(
-          { error: 'Insufficient stock in main inventory' },
-          { status: 400 }
-        );
+        return apiError('Insufficient stock in main inventory', 400);
       }
 
       // Deduct from main inventory
       await prisma.product.update({
-        where: { id: productId },
+        where: {
+          id: productId,
+          tenantId
+        },
         data: {
           stock: {
             decrement: new Prisma.Decimal(quantity)
@@ -77,7 +84,8 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            code: true
+            code: true,
+            tenantId: true
           }
         },
         refilledByUser: {
@@ -90,9 +98,17 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Verify the refill was created for the correct tenant
+    if (refill.product.tenantId !== tenantId) {
+      return apiError('Tenant mismatch', 403);
+    }
+
     // Update or create tester stock
-    const existingTesterStock = await prisma.testerStock.findUnique({
-      where: { productId }
+    const existingTesterStock = await prisma.testerStock.findFirst({
+      where: {
+        productId,
+        product: { tenantId }
+      }
     });
 
     let updatedTesterStock;
@@ -100,7 +116,7 @@ export async function POST(request: NextRequest) {
     if (existingTesterStock) {
       // Update existing tester stock
       updatedTesterStock = await prisma.testerStock.update({
-        where: { productId },
+        where: { id: existingTesterStock.id },
         data: {
           currentStock: {
             increment: new Prisma.Decimal(quantity)
@@ -124,21 +140,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
-      refill,
+      refill: {
+        ...refill,
+        product: {
+          id: refill.product.id,
+          name: refill.product.name,
+          code: refill.product.code
+        }
+      },
       newTesterStock: parseFloat(updatedTesterStock.currentStock.toString()),
       deductedFromMainStock: sourceType === 'main_inventory' ? parseFloat(quantity) : 0
-    }, { status: 200 });
+    });
 
   } catch (error) {
     console.error('Error refilling tester stock:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to refill tester stock',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to refill tester stock: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
 }
+
+export const POST = withTenant(handler);

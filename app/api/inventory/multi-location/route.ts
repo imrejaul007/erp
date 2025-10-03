@@ -1,6 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
@@ -41,18 +40,12 @@ const StockMovementSchema = z.object({
 });
 
 // GET /api/inventory/multi-location - Get inventory across all locations
-export async function GET(req: NextRequest) {
+async function getHandler(req: NextRequest, { tenantId, user }: { tenantId: string; user: any }) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     // Parse query parameters
@@ -61,22 +54,47 @@ export async function GET(req: NextRequest) {
     const filters = InventoryFiltersSchema.parse(params);
 
     // Build where clause for database query
-    const whereClause: any = {};
+    const whereClause: any = {
+      store: { tenantId }  // Filter by tenant
+    };
 
     // Filter by accessible stores
     if (!['OWNER', 'ADMIN'].includes(userRole)) {
       const userStoreIds = await prisma.userStore.findMany({
-        where: { userId: session.user.id },
+        where: {
+          userId: user.id,
+          store: { tenantId }
+        },
         select: { storeId: true }
       });
       whereClause.storeId = { in: userStoreIds.map(us => us.storeId) };
     }
 
     if (filters.storeId) {
+      // Verify store belongs to tenant
+      const store = await prisma.store.findFirst({
+        where: {
+          id: filters.storeId,
+          tenantId
+        }
+      });
+      if (!store) {
+        return apiError('Store not found', 404);
+      }
       whereClause.storeId = filters.storeId;
     }
 
     if (filters.productId) {
+      // Verify product belongs to tenant
+      const product = await prisma.product.findFirst({
+        where: {
+          id: filters.productId,
+          tenantId
+        }
+      });
+      if (!product) {
+        return apiError('Product not found', 404);
+      }
       whereClause.productId = filters.productId;
     }
 
@@ -90,7 +108,8 @@ export async function GET(req: NextRequest) {
             name: true,
             code: true,
             city: true,
-            emirate: true
+            emirate: true,
+            tenantId: true
           }
         },
         product: {
@@ -128,7 +147,13 @@ export async function GET(req: NextRequest) {
       return {
         id: inv.id,
         storeId: inv.storeId,
-        store: inv.store,
+        store: {
+          id: inv.store.id,
+          name: inv.store.name,
+          code: inv.store.code,
+          city: inv.store.city,
+          emirate: inv.store.emirate
+        },
         productId: inv.productId,
         product: {
           id: inv.product.id,
@@ -167,7 +192,7 @@ export async function GET(req: NextRequest) {
 
     if (filters.categoryId) {
       filteredInventories = filteredInventories.filter(inv =>
-        inv.product.category.id === filters.categoryId
+        inv.product.category?.id === filters.categoryId
       );
     }
 
@@ -209,7 +234,7 @@ export async function GET(req: NextRequest) {
     const startIndex = (filters.page - 1) * filters.limit;
     const paginatedInventories = filteredInventories.slice(startIndex, startIndex + filters.limit);
 
-    const response = {
+    return apiResponse({
       data: paginatedInventories,
       pagination: {
         total: filteredInventories.length,
@@ -225,32 +250,24 @@ export async function GET(req: NextRequest) {
         lowStockItems: filteredInventories.filter(inv => inv.status === 'LOW_STOCK').length,
         outOfStockItems: filteredInventories.filter(inv => inv.status === 'OUT_OF_STOCK').length
       }
-    };
-
-    return NextResponse.json(response);
+    });
 
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + JSON.stringify(error.errors), 400);
+    }
     console.error('Error fetching multi-location inventory:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
 }
 
 // POST /api/inventory/multi-location - Update inventory across locations
-export async function POST(req: NextRequest) {
+async function postHandler(req: NextRequest, { tenantId, user }: { tenantId: string; user: any }) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
@@ -260,17 +277,42 @@ export async function POST(req: NextRequest) {
       case 'stock_movement':
         const movementData = StockMovementSchema.parse(data);
 
+        // Verify store belongs to tenant
+        const store = await prisma.store.findFirst({
+          where: {
+            id: movementData.storeId,
+            tenantId
+          }
+        });
+
+        if (!store) {
+          return apiError('Store not found', 404);
+        }
+
         // Check store access
         if (!['OWNER', 'ADMIN'].includes(userRole)) {
           const hasAccess = await prisma.userStore.findFirst({
             where: {
-              userId: session.user.id,
-              storeId: movementData.storeId
+              userId: user.id,
+              storeId: movementData.storeId,
+              store: { tenantId }
             }
           });
           if (!hasAccess) {
-            return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 });
+            return apiError('Access denied to this store', 403);
           }
+        }
+
+        // Verify product belongs to tenant
+        const product = await prisma.product.findFirst({
+          where: {
+            id: movementData.productId,
+            tenantId
+          }
+        });
+
+        if (!product) {
+          return apiError('Product not found', 404);
         }
 
         // Get or create store inventory record
@@ -284,7 +326,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (!inventory && movementData.type === 'OUT') {
-          return NextResponse.json({ error: 'Product not found in store inventory' }, { status: 400 });
+          return apiError('Product not found in store inventory', 400);
         }
 
         // Calculate new quantity based on movement type
@@ -300,7 +342,7 @@ export async function POST(req: NextRequest) {
           case 'DAMAGE':
             newQty = currentQty - movementData.quantity;
             if (newQty < 0) {
-              return NextResponse.json({ error: 'Insufficient stock' }, { status: 400 });
+              return apiError('Insufficient stock', 400);
             }
             break;
           case 'ADJUSTMENT':
@@ -341,14 +383,14 @@ export async function POST(req: NextRequest) {
               referenceNo: movementData.reference || `MOV-${Date.now()}`,
               reason: movementData.reason,
               notes: movementData.notes,
-              createdById: session.user.id
+              createdById: user.id
             }
           });
 
           return { inventory: updatedInventory, movement };
         });
 
-        return NextResponse.json(result, { status: 201 });
+        return apiResponse(result, 201);
 
       case 'bulk_update':
         const updates = z.array(StockUpdateSchema).parse(data);
@@ -356,19 +398,45 @@ export async function POST(req: NextRequest) {
         // Check store access for all updates
         const allStoreIds = [...new Set(updates.map(u => u.storeId))];
 
+        // Verify all stores belong to tenant
+        const stores = await prisma.store.findMany({
+          where: {
+            id: { in: allStoreIds },
+            tenantId
+          }
+        });
+
+        if (stores.length !== allStoreIds.length) {
+          return apiError('One or more stores not found', 404);
+        }
+
         if (!['OWNER', 'ADMIN'].includes(userRole)) {
           const userStoreAccess = await prisma.userStore.findMany({
             where: {
-              userId: session.user.id,
-              storeId: { in: allStoreIds }
+              userId: user.id,
+              storeId: { in: allStoreIds },
+              store: { tenantId }
             },
             select: { storeId: true }
           });
           const accessibleStoreIds = userStoreAccess.map(us => us.storeId);
 
           if (accessibleStoreIds.length !== allStoreIds.length) {
-            return NextResponse.json({ error: 'Access denied to some stores' }, { status: 403 });
+            return apiError('Access denied to some stores', 403);
           }
+        }
+
+        // Verify all products belong to tenant
+        const allProductIds = [...new Set(updates.map(u => u.productId))];
+        const products = await prisma.product.findMany({
+          where: {
+            id: { in: allProductIds },
+            tenantId
+          }
+        });
+
+        if (products.length !== allProductIds.length) {
+          return apiError('One or more products not found', 404);
         }
 
         // Bulk update inventory
@@ -397,7 +465,10 @@ export async function POST(req: NextRequest) {
               // Update product min/max stock if provided
               if (update.minLevel !== undefined || update.maxLevel !== undefined) {
                 await prisma.product.update({
-                  where: { id: update.productId },
+                  where: {
+                    id: update.productId,
+                    tenantId
+                  },
                   data: {
                     ...(update.minLevel !== undefined && { minStock: update.minLevel }),
                     ...(update.maxLevel !== undefined && { maxStock: update.maxLevel })
@@ -420,7 +491,7 @@ export async function POST(req: NextRequest) {
           })
         );
 
-        return NextResponse.json({
+        return apiResponse({
           message: `${bulkResults.filter(r => r.success).length}/${updates.length} inventory records updated`,
           results: bulkResults
         });
@@ -429,6 +500,7 @@ export async function POST(req: NextRequest) {
         // Generate reorder suggestions based on stock levels
         const lowStockItems = await prisma.storeInventory.findMany({
           where: {
+            store: { tenantId },
             quantity: {
               lte: prisma.raw(`(SELECT "minStock" FROM "products" WHERE id = "store_inventory"."productId")`)
             }
@@ -437,7 +509,8 @@ export async function POST(req: NextRequest) {
             store: {
               select: {
                 id: true,
-                name: true
+                name: true,
+                tenantId: true
               }
             },
             product: {
@@ -446,7 +519,8 @@ export async function POST(req: NextRequest) {
                 name: true,
                 minStock: true,
                 maxStock: true,
-                costPrice: true
+                costPrice: true,
+                tenantId: true
               }
             }
           }
@@ -470,24 +544,21 @@ export async function POST(req: NextRequest) {
           };
         });
 
-        return NextResponse.json({ suggestions });
+        return apiResponse({ suggestions });
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return apiError('Invalid action', 400);
     }
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + JSON.stringify(error.errors), 400);
     }
 
     console.error('Error updating multi-location inventory:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
 }
+
+export const GET = withTenant(getHandler);
+export const POST = withTenant(postHandler);

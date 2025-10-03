@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -62,7 +63,7 @@ const MATERIAL_DENSITIES: Record<string, number> = {
 }
 
 // GET /api/inventory/conversions - Convert units
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest, { tenantId }: { tenantId: string; user: any }) {
   try {
     const { searchParams } = new URL(request.url)
 
@@ -81,17 +82,14 @@ export async function GET(request: NextRequest) {
     })
 
     if (validatedData.fromUnit === validatedData.toUnit) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          originalValue: validatedData.value,
-          convertedValue: validatedData.value,
-          fromUnit: validatedData.fromUnit,
-          toUnit: validatedData.toUnit,
-          factor: 1,
-          method: 'direct',
-          formula: `${validatedData.value} ${validatedData.fromUnit} = ${validatedData.value} ${validatedData.toUnit}`,
-        },
+      return apiResponse({
+        originalValue: validatedData.value,
+        convertedValue: validatedData.value,
+        fromUnit: validatedData.fromUnit,
+        toUnit: validatedData.toUnit,
+        factor: 1,
+        method: 'direct',
+        formula: `${validatedData.value} ${validatedData.fromUnit} = ${validatedData.value} ${validatedData.toUnit}`,
       })
     }
 
@@ -101,11 +99,24 @@ export async function GET(request: NextRequest) {
 
     // 1. Try material-specific conversion first
     if (validatedData.materialId) {
+      // Verify material belongs to tenant
+      const material = await prisma.material.findFirst({
+        where: {
+          id: validatedData.materialId,
+          tenantId
+        }
+      })
+
+      if (!material) {
+        return apiError('Material not found', 404)
+      }
+
       const materialConversion = await prisma.unitConversion.findFirst({
         where: {
           fromUnit: validatedData.fromUnit,
           toUnit: validatedData.toUnit,
           materialId: validatedData.materialId,
+          material: { tenantId }
         },
       })
 
@@ -183,63 +194,55 @@ export async function GET(request: NextRequest) {
     }
 
     if (conversionFactor === null) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `No conversion available from ${validatedData.fromUnit} to ${validatedData.toUnit}`,
-          availableConversions: {
-            from: Object.keys(STANDARD_CONVERSIONS[validatedData.fromUnit] || {}),
-            to: Object.keys(STANDARD_CONVERSIONS).filter(unit =>
-              STANDARD_CONVERSIONS[unit][validatedData.fromUnit]
-            ),
-          }
-        },
-        { status: 400 }
+      return apiError(
+        `No conversion available from ${validatedData.fromUnit} to ${validatedData.toUnit}. Available conversions from ${validatedData.fromUnit}: ${Object.keys(STANDARD_CONVERSIONS[validatedData.fromUnit] || {}).join(', ')}`,
+        400
       )
     }
 
     const convertedValue = validatedData.value * conversionFactor
     const formula = `${validatedData.value} ${validatedData.fromUnit} × ${conversionFactor} = ${convertedValue.toFixed(4)} ${validatedData.toUnit}`
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        originalValue: validatedData.value,
-        convertedValue,
-        fromUnit: validatedData.fromUnit,
-        toUnit: validatedData.toUnit,
-        factor: conversionFactor,
-        method,
-        formula,
-        notes,
-        accuracy: method === 'material_specific' ? 'high' : method === 'standard' ? 'high' : 'estimated',
-      },
+    return apiResponse({
+      originalValue: validatedData.value,
+      convertedValue,
+      fromUnit: validatedData.fromUnit,
+      toUnit: validatedData.toUnit,
+      factor: conversionFactor,
+      method,
+      formula,
+      notes,
+      accuracy: method === 'material_specific' ? 'high' : method === 'standard' ? 'high' : 'estimated',
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + JSON.stringify(error.errors), 400)
     }
 
     console.error('Error performing conversion:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to perform conversion' },
-      { status: 500 }
-    )
+    return apiError('Failed to perform conversion: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
 
 // POST /api/inventory/conversions - Create custom conversion rule
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest, { tenantId }: { tenantId: string; user: any }) {
   try {
     const body = await request.json()
     const validatedData = createConversionRuleSchema.parse(body)
+
+    // Validate material exists if materialId provided
+    if (validatedData.materialId) {
+      const material = await prisma.material.findFirst({
+        where: {
+          id: validatedData.materialId,
+          tenantId
+        },
+      })
+
+      if (!material) {
+        return apiError('Material not found', 404)
+      }
+    }
 
     // Check if conversion rule already exists
     const existingConversion = await prisma.unitConversion.findFirst({
@@ -247,74 +250,87 @@ export async function POST(request: NextRequest) {
         fromUnit: validatedData.fromUnit,
         toUnit: validatedData.toUnit,
         materialId: validatedData.materialId || null,
+        ...(validatedData.materialId && {
+          material: { tenantId }
+        })
       },
     })
 
     if (existingConversion) {
-      return NextResponse.json(
-        { success: false, error: 'Conversion rule already exists' },
-        { status: 400 }
-      )
-    }
-
-    // Validate material exists if materialId provided
-    if (validatedData.materialId) {
-      const material = await prisma.material.findUnique({
-        where: { id: validatedData.materialId },
-      })
-
-      if (!material) {
-        return NextResponse.json(
-          { success: false, error: 'Material not found' },
-          { status: 404 }
-        )
-      }
+      return apiError('Conversion rule already exists', 400)
     }
 
     // Create conversion rule
     const conversion = await prisma.unitConversion.create({
       data: validatedData,
       include: {
-        material: true,
+        material: {
+          select: {
+            id: true,
+            name: true,
+            sku: true,
+            tenantId: true
+          }
+        },
       },
     })
 
-    return NextResponse.json({
-      success: true,
-      data: conversion,
-      message: 'Conversion rule created successfully',
-    }, { status: 201 })
+    // Verify tenant if material-specific
+    if (conversion.material && conversion.material.tenantId !== tenantId) {
+      return apiError('Tenant mismatch', 403)
+    }
+
+    return apiResponse({
+      ...conversion,
+      material: conversion.material ? {
+        id: conversion.material.id,
+        name: conversion.material.name,
+        sku: conversion.material.sku
+      } : null
+    }, 201)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + JSON.stringify(error.errors), 400)
     }
 
     console.error('Error creating conversion rule:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to create conversion rule' },
-      { status: 500 }
-    )
+    return apiError('Failed to create conversion rule: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
 
-// GET /api/inventory/conversions/rules - Get all conversion rules
-export async function PUT(request: NextRequest) {
+// PUT /api/inventory/conversions - Get all conversion rules
+async function putHandler(request: NextRequest, { tenantId }: { tenantId: string; user: any }) {
   try {
     const { searchParams } = new URL(request.url)
     const materialId = searchParams.get('materialId') || undefined
 
     const where: any = {}
+
     if (materialId) {
+      // Verify material belongs to tenant
+      const material = await prisma.material.findFirst({
+        where: {
+          id: materialId,
+          tenantId
+        }
+      })
+
+      if (!material) {
+        return apiError('Material not found', 404)
+      }
+
       where.OR = [
-        { materialId },
+        {
+          materialId,
+          material: { tenantId }
+        },
         { materialId: null }, // Include global rules
+      ]
+    } else {
+      // Only show global rules or rules for materials belonging to this tenant
+      where.OR = [
+        { materialId: null },
+        { material: { tenantId } }
       ]
     }
 
@@ -326,6 +342,7 @@ export async function PUT(request: NextRequest) {
             id: true,
             name: true,
             sku: true,
+            tenantId: true
           },
         },
       },
@@ -336,13 +353,22 @@ export async function PUT(request: NextRequest) {
       ],
     })
 
+    // Filter out any that don't belong to tenant (extra safety)
+    const filteredConversions = conversions.filter(c =>
+      !c.material || c.material.tenantId === tenantId
+    )
+
     // Group by material
-    const groupedConversions = conversions.reduce((acc, conversion) => {
+    const groupedConversions = filteredConversions.reduce((acc, conversion) => {
       const key = conversion.materialId || 'global'
       if (!acc[key]) {
         acc[key] = {
           materialId: conversion.materialId,
-          material: conversion.material,
+          material: conversion.material ? {
+            id: conversion.material.id,
+            name: conversion.material.name,
+            sku: conversion.material.sku
+          } : null,
           conversions: [],
         }
       }
@@ -356,20 +382,18 @@ export async function PUT(request: NextRequest) {
       return acc
     }, {} as Record<string, any>)
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        grouped: groupedConversions,
-        total: conversions.length,
-        standardUnits: Object.keys(STANDARD_CONVERSIONS),
-        supportedConversions: STANDARD_CONVERSIONS,
-      },
+    return apiResponse({
+      grouped: groupedConversions,
+      total: filteredConversions.length,
+      standardUnits: Object.keys(STANDARD_CONVERSIONS),
+      supportedConversions: STANDARD_CONVERSIONS,
     })
   } catch (error) {
     console.error('Error fetching conversion rules:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch conversion rules' },
-      { status: 500 }
-    )
+    return apiError('Failed to fetch conversion rules: ' + (error instanceof Error ? error.message : 'Unknown error'), 500)
   }
 }
+
+export const GET = withTenant(getHandler);
+export const POST = withTenant(postHandler);
+export const PUT = withTenant(putHandler);
