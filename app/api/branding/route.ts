@@ -1,11 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
 // GET - Fetch branding settings
-export async function GET() {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Get the first (and should be only) branding record
     let branding = await prisma.branding.findFirst({
       where: { isActive: true },
@@ -23,25 +25,20 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: branding,
     });
   } catch (error) {
     console.error('Error fetching branding:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch branding settings',
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch branding settings', 500);
   }
-}
+});
 
 // PUT - Update branding settings
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
 
     // Get existing branding or create new one
@@ -64,19 +61,13 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: branding,
       message: 'Branding updated successfully',
     });
   } catch (error) {
     console.error('Error updating branding:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to update branding settings',
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to update branding settings', 500);
   }
-}
+});

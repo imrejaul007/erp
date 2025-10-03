@@ -1,11 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { url } = await request.json();
 
     if (!url) {
-      return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+      return apiError('URL is required', 400);
     }
 
     console.log('Scraping URL:', url);
@@ -15,7 +17,7 @@ export async function POST(request: NextRequest) {
     try {
       targetUrl = new URL(url);
     } catch {
-      return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
+      return apiError('Invalid URL format', 400);
     }
 
     // Detect if this is a single product page or listing page
@@ -155,7 +157,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`Final result: ${products.length} products extracted`);
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       products: products.slice(0, 50),
       totalFound: products.length,
@@ -166,13 +168,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Scraping error:', error);
 
-    return NextResponse.json({
-      error: 'Failed to scrape products',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      success: false
-    }, { status: 500 });
+    return apiError('Failed to scrape products: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
-}
+});
 
 // Helper functions
 function extractProductInfo(html: string, baseUrl: URL) {

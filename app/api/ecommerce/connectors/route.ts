@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 export interface EcommerceConnector {
   id: string;
@@ -592,8 +593,9 @@ async function performSync(connectorId: string, operation: 'export' | 'import' |
 }
 
 // GET endpoint - retrieve connectors
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const status = searchParams.get('status');
@@ -638,7 +640,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
+    return apiResponse({
       connectors: responseConnectors,
       total: responseConnectors.length,
       supportedPlatforms: [
@@ -652,16 +654,14 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Get connectors message:', error);
-    return NextResponse.json(
-      { message: 'Failed to retrieve connectors' },
-      { status: 500 }
-    );
+    return apiError('Failed to retrieve connectors', 500);
   }
-}
+});
 
 // POST endpoint - create connector or start sync
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { action, ...data } = await request.json();
 
     switch (action) {
@@ -677,7 +677,7 @@ export async function POST(request: NextRequest) {
 
         connectors.push(newConnector);
 
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           connector: newConnector,
           message: 'Connector created successfully'
@@ -689,10 +689,7 @@ export async function POST(request: NextRequest) {
         const connector = connectors.find(c => c.id === connectorId);
 
         if (!connector) {
-          return NextResponse.json(
-            { message: 'Connector not found' },
-            { status: 404 }
-          );
+          return apiError('Connector not found', 404);
         }
 
         // Mock connection test
@@ -707,7 +704,7 @@ export async function POST(request: NextRequest) {
           }
         };
 
-        return NextResponse.json(testResult);
+        return apiResponse(testResult);
 
       case 'start_sync':
         // Start synchronization
@@ -715,39 +712,31 @@ export async function POST(request: NextRequest) {
 
         const syncOperation = await performSync(syncConnectorId, operation);
 
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           syncOperation,
           message: 'Sync started successfully'
         });
 
       default:
-        return NextResponse.json(
-          { message: 'Invalid action' },
-          { status: 400 }
-        );
+        return apiError('Invalid action', 400);
     }
 
   } catch (error) {
     console.error('Connector operation message:', error);
-    return NextResponse.json(
-      { message: 'Failed to process request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process request', 500);
   }
-}
+});
 
 // PUT endpoint - update connector
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { connectorId, ...updates } = await request.json();
 
     const connectorIndex = connectors.findIndex(c => c.id === connectorId);
     if (connectorIndex === -1) {
-      return NextResponse.json(
-        { message: 'Connector not found' },
-        { status: 404 }
-      );
+      return apiError('Connector not found', 404);
     }
 
     // Update connector
@@ -757,7 +746,7 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date().toISOString()
     };
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       connector: connectors[connectorIndex],
       message: 'Connector updated successfully'
@@ -765,47 +754,36 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     console.error('Update connector message:', error);
-    return NextResponse.json(
-      { message: 'Failed to update connector' },
-      { status: 500 }
-    );
+    return apiError('Failed to update connector', 500);
   }
-}
+});
 
 // DELETE endpoint - remove connector
-export async function DELETE(request: NextRequest) {
+export const DELETE = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const connectorId = searchParams.get('connectorId');
 
     if (!connectorId) {
-      return NextResponse.json(
-        { message: 'Connector ID is required' },
-        { status: 400 }
-      );
+      return apiError('Connector ID is required', 400);
     }
 
     const connectorIndex = connectors.findIndex(c => c.id === connectorId);
     if (connectorIndex === -1) {
-      return NextResponse.json(
-        { message: 'Connector not found' },
-        { status: 404 }
-      );
+      return apiError('Connector not found', 404);
     }
 
     // Remove connector
     connectors.splice(connectorIndex, 1);
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       message: 'Connector deleted successfully'
     });
 
   } catch (error) {
     console.error('Delete connector message:', error);
-    return NextResponse.json(
-      { message: 'Failed to delete connector' },
-      { status: 500 }
-    );
+    return apiError('Failed to delete connector', 500);
   }
-}
+});
