@@ -16,7 +16,6 @@ const cashFlowSchema = z.object({
 
 // Generate Cash Flow Statement
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const { searchParams } = new URL(request.url);
     const params = {
@@ -35,6 +34,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     // Generate cash flow statement
     const cashFlowStatement = await generateCashFlowStatement(
+      tenantId,
       validatedParams.startDate,
       validatedParams.endDate,
       validatedParams.currency,
@@ -73,7 +73,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
 // Save Cash Flow Statement
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const body = await request.json();
     const { startDate, endDate, currency = 'AED', method = 'indirect' } = body;
@@ -83,7 +82,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Generate cash flow statement
-    const cashFlowStatement = await generateCashFlowStatement(startDate, endDate, currency, method);
+    const cashFlowStatement = await generateCashFlowStatement(tenantId, startDate, endDate, currency, method);
 
     // Save to database
     const cfId = generateId();
@@ -91,11 +90,11 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 
     await prisma.$executeRaw`
       INSERT INTO cash_flow_statements (
-        id, period, start_date, end_date, currency, operating_activities,
+        id, tenant_id, period, start_date, end_date, currency, operating_activities,
         investing_activities, financing_activities, net_cash_flow,
         opening_cash_balance, closing_cash_balance, generated_at, generated_by
       ) VALUES (
-        ${cfId}, ${period}, ${new Date(startDate)}, ${new Date(endDate)}, ${currency},
+        ${cfId}, ${tenantId}, ${period}, ${new Date(startDate)}, ${new Date(endDate)}, ${currency},
         ${JSON.stringify(cashFlowStatement.operatingActivities)},
         ${JSON.stringify(cashFlowStatement.investingActivities)},
         ${JSON.stringify(cashFlowStatement.financingActivities)},
@@ -122,28 +121,28 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 });
 
 // Generate Cash Flow Statement data
-async function generateCashFlowStatement(startDate: string, endDate: string, currency: string, method: string) {
+async function generateCashFlowStatement(tenantId: string, startDate: string, endDate: string, currency: string, method: string) {
   const start = new Date(startDate);
   const end = new Date(endDate);
   end.setHours(23, 59, 59, 999);
 
   // Get opening and closing cash balances
-  const openingCashBalance = await getCashBalance(start, currency, false);
-  const closingCashBalance = await getCashBalance(end, currency, true);
+  const openingCashBalance = await getCashBalance(tenantId, start, currency, false);
+  const closingCashBalance = await getCashBalance(tenantId, end, currency, true);
 
   let operatingActivities: any;
 
   if (method === 'direct') {
-    operatingActivities = await generateDirectCashFlow(start, end, currency);
+    operatingActivities = await generateDirectCashFlow(tenantId, start, end, currency);
   } else {
-    operatingActivities = await generateIndirectCashFlow(start, end, currency);
+    operatingActivities = await generateIndirectCashFlow(tenantId, start, end, currency);
   }
 
   // Generate investing activities
-  const investingActivities = await generateInvestingActivities(start, end, currency);
+  const investingActivities = await generateInvestingActivities(tenantId, start, end, currency);
 
   // Generate financing activities
-  const financingActivities = await generateFinancingActivities(start, end, currency);
+  const financingActivities = await generateFinancingActivities(tenantId, start, end, currency);
 
   // Calculate net cash flow
   const netCashFlow = operatingActivities.total + investingActivities.total + financingActivities.total;
@@ -169,7 +168,7 @@ async function generateCashFlowStatement(startDate: string, endDate: string, cur
 }
 
 // Get cash balance at a specific date
-async function getCashBalance(date: Date, currency: string, inclusive: boolean = true) {
+async function getCashBalance(tenantId: string, date: Date, currency: string, inclusive: boolean = true) {
   const operator = inclusive ? '<=' : '<';
 
   const cashAccounts = await prisma.$queryRaw`
@@ -180,15 +179,17 @@ async function getCashBalance(date: Date, currency: string, inclusive: boolean =
       AND t.status = 'COMPLETED'
       AND t.transaction_date ${operator} ${date}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
     WHERE a.code IN ('1110', '1120') -- Cash in Hand and Bank Accounts
       AND a.is_active = true
+      AND a.tenant_id = ${tenantId}
   ` as any[];
 
   return Number(cashAccounts[0]?.balance || 0);
 }
 
 // Generate operating activities using indirect method
-async function generateIndirectCashFlow(start: Date, end: Date, currency: string) {
+async function generateIndirectCashFlow(tenantId: string, start: Date, end: Date, currency: string) {
   // Start with net income
   const netIncome = await prisma.$queryRaw`
     SELECT
@@ -207,7 +208,8 @@ async function generateIndirectCashFlow(start: Date, end: Date, currency: string
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
-    WHERE a.type IN ('REVENUE', 'EXPENSE') AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type IN ('REVENUE', 'EXPENSE') AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   // Get depreciation expense
@@ -220,11 +222,12 @@ async function generateIndirectCashFlow(start: Date, end: Date, currency: string
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
-    WHERE a.name ILIKE '%depreciation%' AND a.type = 'EXPENSE' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.name ILIKE '%depreciation%' AND a.type = 'EXPENSE' AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   // Calculate changes in working capital
-  const workingCapitalChanges = await calculateWorkingCapitalChanges(start, end, currency);
+  const workingCapitalChanges = await calculateWorkingCapitalChanges(tenantId, start, end, currency);
 
   const items = [
     {
@@ -249,7 +252,7 @@ async function generateIndirectCashFlow(start: Date, end: Date, currency: string
 }
 
 // Generate operating activities using direct method
-async function generateDirectCashFlow(start: Date, end: Date, currency: string) {
+async function generateDirectCashFlow(tenantId: string, start: Date, end: Date, currency: string) {
   // Cash receipts from customers
   const cashFromCustomers = await prisma.$queryRaw`
     SELECT
@@ -260,7 +263,9 @@ async function generateDirectCashFlow(start: Date, end: Date, currency: string) 
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND a.code IN ('1110', '1120') -- Cash accounts
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'DEBIT'
       AND t.reference_type = 'sale'
   ` as any[];
@@ -275,7 +280,9 @@ async function generateDirectCashFlow(start: Date, end: Date, currency: string) 
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND a.code IN ('1110', '1120') -- Cash accounts
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'CREDIT'
       AND t.reference_type = 'purchase'
   ` as any[];
@@ -290,7 +297,9 @@ async function generateDirectCashFlow(start: Date, end: Date, currency: string) 
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND a.code IN ('1110', '1120') -- Cash accounts
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'CREDIT'
       AND t.reference_type = 'expense'
   ` as any[];
@@ -322,7 +331,7 @@ async function generateDirectCashFlow(start: Date, end: Date, currency: string) 
 }
 
 // Generate investing activities
-async function generateInvestingActivities(start: Date, end: Date, currency: string) {
+async function generateInvestingActivities(tenantId: string, start: Date, end: Date, currency: string) {
   // Purchase of property, plant, and equipment
   const assetPurchases = await prisma.$queryRaw`
     SELECT
@@ -333,7 +342,9 @@ async function generateInvestingActivities(start: Date, end: Date, currency: str
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND a.code LIKE '121%' -- Fixed assets
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'DEBIT'
   ` as any[];
 
@@ -347,7 +358,9 @@ async function generateInvestingActivities(start: Date, end: Date, currency: str
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND a.code LIKE '121%' -- Fixed assets
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'CREDIT'
   ` as any[];
 
@@ -378,7 +391,7 @@ async function generateInvestingActivities(start: Date, end: Date, currency: str
 }
 
 // Generate financing activities
-async function generateFinancingActivities(start: Date, end: Date, currency: string) {
+async function generateFinancingActivities(tenantId: string, start: Date, end: Date, currency: string) {
   // Proceeds from loans
   const loanProceeds = await prisma.$queryRaw`
     SELECT
@@ -389,7 +402,9 @@ async function generateFinancingActivities(start: Date, end: Date, currency: str
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND (a.code LIKE '214%' OR a.code LIKE '221%') -- Loans
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'CREDIT'
   ` as any[];
 
@@ -403,7 +418,9 @@ async function generateFinancingActivities(start: Date, end: Date, currency: str
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND (a.code LIKE '214%' OR a.code LIKE '221%') -- Loans
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'DEBIT'
   ` as any[];
 
@@ -417,7 +434,9 @@ async function generateFinancingActivities(start: Date, end: Date, currency: str
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
       AND a.code LIKE '310%' -- Share capital
+      AND a.tenant_id = ${tenantId}
       AND t.type = 'CREDIT'
   ` as any[];
 
@@ -456,7 +475,7 @@ async function generateFinancingActivities(start: Date, end: Date, currency: str
 }
 
 // Calculate changes in working capital
-async function calculateWorkingCapitalChanges(start: Date, end: Date, currency: string) {
+async function calculateWorkingCapitalChanges(tenantId: string, start: Date, end: Date, currency: string) {
   const startDate = new Date(start);
   startDate.setDate(startDate.getDate() - 1); // Previous day
 
@@ -474,7 +493,8 @@ async function calculateWorkingCapitalChanges(start: Date, end: Date, currency: 
         AND t.status = 'COMPLETED'
         AND t.transaction_date <= ${startDate}
         AND t.currency = ${currency}
-      WHERE a.code = ${accountCode} AND a.is_active = true
+        AND t.tenant_id = ${tenantId}
+      WHERE a.code = ${accountCode} AND a.is_active = true AND a.tenant_id = ${tenantId}
     ` as any[];
 
     const endBalance = await prisma.$queryRaw`
@@ -485,7 +505,8 @@ async function calculateWorkingCapitalChanges(start: Date, end: Date, currency: 
         AND t.status = 'COMPLETED'
         AND t.transaction_date <= ${end}
         AND t.currency = ${currency}
-      WHERE a.code = ${accountCode} AND a.is_active = true
+        AND t.tenant_id = ${tenantId}
+      WHERE a.code = ${accountCode} AND a.is_active = true AND a.tenant_id = ${tenantId}
     ` as any[];
 
     const change = Number(endBalance[0]?.balance || 0) - Number(startBalance[0]?.balance || 0);

@@ -17,7 +17,6 @@ const balanceSheetSchema = z.object({
 
 // Generate Balance Sheet
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const { searchParams } = new URL(request.url);
     const params = {
@@ -33,6 +32,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     // Generate balance sheet
     const balanceSheet = await generateBalanceSheet(
+      tenantId,
       validatedParams.asOfDate,
       validatedParams.currency,
       validatedParams.includeZeroBalances
@@ -41,6 +41,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     let comparisonBalanceSheet = null;
     if (validatedParams.comparison && validatedParams.comparisonDate) {
       comparisonBalanceSheet = await generateBalanceSheet(
+        tenantId,
         validatedParams.comparisonDate,
         validatedParams.currency,
         validatedParams.includeZeroBalances
@@ -82,7 +83,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
 // Save Balance Sheet
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const body = await request.json();
     const { asOfDate, currency = 'AED' } = body;
@@ -92,18 +92,18 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Generate balance sheet
-    const balanceSheet = await generateBalanceSheet(asOfDate, currency, true);
+    const balanceSheet = await generateBalanceSheet(tenantId, asOfDate, currency, true);
 
     // Save to database
     const bsId = generateId();
 
     await prisma.$executeRaw`
       INSERT INTO balance_sheets (
-        id, as_of_date, currency, assets, liabilities, equity,
+        id, tenant_id, as_of_date, currency, assets, liabilities, equity,
         total_assets, total_liabilities_and_equity, is_balanced,
         generated_at, generated_by
       ) VALUES (
-        ${bsId}, ${new Date(asOfDate)}, ${currency},
+        ${bsId}, ${tenantId}, ${new Date(asOfDate)}, ${currency},
         ${JSON.stringify(balanceSheet.assets)}, ${JSON.stringify(balanceSheet.liabilities)},
         ${JSON.stringify(balanceSheet.equity)}, ${balanceSheet.summary.totalAssets},
         ${balanceSheet.summary.totalLiabilitiesAndEquity}, ${balanceSheet.summary.isBalanced},
@@ -129,7 +129,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 });
 
 // Generate Balance Sheet data
-async function generateBalanceSheet(asOfDate: string, currency: string, includeZeroBalances: boolean = false) {
+async function generateBalanceSheet(tenantId: string, asOfDate: string, currency: string, includeZeroBalances: boolean = false) {
   const cutoffDate = new Date(asOfDate);
   cutoffDate.setHours(23, 59, 59, 999);
 
@@ -147,7 +147,8 @@ async function generateBalanceSheet(asOfDate: string, currency: string, includeZ
       AND t.status = 'COMPLETED'
       AND t.transaction_date <= ${cutoffDate}
       AND t.currency = ${currency}
-    WHERE a.type = 'ASSET' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'ASSET' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar, a.parent_id
     ORDER BY a.code
   ` as any[];
@@ -166,7 +167,8 @@ async function generateBalanceSheet(asOfDate: string, currency: string, includeZ
       AND t.status = 'COMPLETED'
       AND t.transaction_date <= ${cutoffDate}
       AND t.currency = ${currency}
-    WHERE a.type = 'LIABILITY' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'LIABILITY' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar, a.parent_id
     ORDER BY a.code
   ` as any[];
@@ -185,13 +187,14 @@ async function generateBalanceSheet(asOfDate: string, currency: string, includeZ
       AND t.status = 'COMPLETED'
       AND t.transaction_date <= ${cutoffDate}
       AND t.currency = ${currency}
-    WHERE a.type = 'EQUITY' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'EQUITY' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar, a.parent_id
     ORDER BY a.code
   ` as any[];
 
   // Calculate retained earnings (Net Income from previous periods)
-  const retainedEarnings = await calculateRetainedEarnings(cutoffDate, currency);
+  const retainedEarnings = await calculateRetainedEarnings(tenantId, cutoffDate, currency);
 
   // Format account data
   const formatAccounts = (accounts: any[]) => {
@@ -323,7 +326,7 @@ async function generateBalanceSheet(asOfDate: string, currency: string, includeZ
 }
 
 // Calculate retained earnings
-async function calculateRetainedEarnings(cutoffDate: Date, currency: string): Promise<number> {
+async function calculateRetainedEarnings(tenantId: string, cutoffDate: Date, currency: string): Promise<number> {
   // Calculate net income from revenue and expense accounts up to cutoff date
   const netIncome = await prisma.$queryRaw`
     SELECT
@@ -341,7 +344,8 @@ async function calculateRetainedEarnings(cutoffDate: Date, currency: string): Pr
       AND t.status = 'COMPLETED'
       AND t.transaction_date <= ${cutoffDate}
       AND t.currency = ${currency}
-    WHERE a.type IN ('REVENUE', 'EXPENSE') AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type IN ('REVENUE', 'EXPENSE') AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   return Number(netIncome[0]?.net_income || 0);

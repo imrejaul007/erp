@@ -18,7 +18,6 @@ const profitLossSchema = z.object({
 
 // Generate Profit & Loss Statement
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const { searchParams } = new URL(request.url);
     const params = {
@@ -39,6 +38,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     // Generate P&L statement
     const profitLossStatement = await generateProfitLossStatement(
+      tenantId,
       validatedParams.startDate,
       validatedParams.endDate,
       validatedParams.currency
@@ -47,6 +47,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     let comparisonStatement = null;
     if (validatedParams.comparison && validatedParams.comparisonStartDate && validatedParams.comparisonEndDate) {
       comparisonStatement = await generateProfitLossStatement(
+        tenantId,
         validatedParams.comparisonStartDate,
         validatedParams.comparisonEndDate,
         validatedParams.currency
@@ -94,7 +95,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
 // Save Profit & Loss Statement
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
-  // TODO: Add tenantId filter to all Prisma queries in this handler
   try {
     const body = await request.json();
     const { startDate, endDate, currency = 'AED' } = body;
@@ -104,7 +104,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Generate P&L statement
-    const profitLossStatement = await generateProfitLossStatement(startDate, endDate, currency);
+    const profitLossStatement = await generateProfitLossStatement(tenantId, startDate, endDate, currency);
 
     // Save to database
     const plId = generateId();
@@ -112,12 +112,12 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 
     await prisma.$executeRaw`
       INSERT INTO profit_loss_statements (
-        id, period, period_type, start_date, end_date, currency,
+        id, tenant_id, period, period_type, start_date, end_date, currency,
         revenue, cost_of_goods_sold, gross_profit, operating_expenses,
         operating_income, other_income, other_expenses, net_profit_before_tax,
         tax_expense, net_profit_after_tax, generated_at, generated_by
       ) VALUES (
-        ${plId}, ${period}, 'CUSTOM', ${new Date(startDate)}, ${new Date(endDate)},
+        ${plId}, ${tenantId}, ${period}, 'CUSTOM', ${new Date(startDate)}, ${new Date(endDate)},
         ${currency}, ${profitLossStatement.summary.totalRevenue},
         ${profitLossStatement.summary.totalCOGS}, ${profitLossStatement.summary.grossProfit},
         ${profitLossStatement.summary.totalOperatingExpenses}, ${profitLossStatement.summary.operatingIncome},
@@ -145,7 +145,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 });
 
 // Generate Profit & Loss Statement data
-async function generateProfitLossStatement(startDate: string, endDate: string, currency: string) {
+async function generateProfitLossStatement(tenantId: string, startDate: string, endDate: string, currency: string) {
   const start = new Date(startDate);
   const end = new Date(endDate);
   end.setHours(23, 59, 59, 999);
@@ -164,7 +164,8 @@ async function generateProfitLossStatement(startDate: string, endDate: string, c
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
-    WHERE a.type = 'REVENUE' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'REVENUE' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar
     ORDER BY a.code
   ` as any[];
@@ -183,7 +184,8 @@ async function generateProfitLossStatement(startDate: string, endDate: string, c
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
-    WHERE a.type = 'EXPENSE' AND a.code LIKE '5%' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'EXPENSE' AND a.code LIKE '5%' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar
     ORDER BY a.code
   ` as any[];
@@ -202,7 +204,8 @@ async function generateProfitLossStatement(startDate: string, endDate: string, c
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
-    WHERE a.type = 'EXPENSE' AND a.code LIKE '6%' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'EXPENSE' AND a.code LIKE '6%' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar
     ORDER BY a.code
   ` as any[];
@@ -221,7 +224,8 @@ async function generateProfitLossStatement(startDate: string, endDate: string, c
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
-    WHERE a.type = 'REVENUE' AND a.code LIKE '42%' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'REVENUE' AND a.code LIKE '42%' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar
     ORDER BY a.code
   ` as any[];
@@ -239,7 +243,8 @@ async function generateProfitLossStatement(startDate: string, endDate: string, c
       AND t.transaction_date >= ${start}
       AND t.transaction_date <= ${end}
       AND t.currency = ${currency}
-    WHERE a.type = 'EXPENSE' AND a.code LIKE '7%' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'EXPENSE' AND a.code LIKE '7%' AND a.is_active = true AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.name_ar
     ORDER BY a.code
   ` as any[];
