@@ -200,20 +200,20 @@ const HRPage = () => {
     return 'text-red-600';
   };
 
+  const router = useRouter();
+
   return (
-    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-                  <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-
-          <h1 className="text-3xl font-bold text-gray-900">HR & Staff Management</h1>
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">HR & Staff Management</h1>
           <p className="text-gray-600">Human resources management and employee analytics</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -296,14 +296,14 @@ const HRPage = () => {
       {/* Employee List */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <CardTitle>Employee Directory</CardTitle>
               <CardDescription>Manage and view employee information</CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -313,7 +313,7 @@ const HRPage = () => {
                   <SelectItem value="highPerformers">High Performers</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="min-h-[44px]">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
@@ -321,7 +321,8 @@ const HRPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Employee</TableHead>
@@ -403,6 +404,7 @@ const HRPage = () => {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -495,7 +497,7 @@ const HRPage = () => {
             <CardDescription>Frequently used HR functions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button variant="outline" className="h-16 flex flex-col gap-1">
                 <UserCheck className="h-5 w-5" />
                 <span className="text-xs">Attendance</span>

@@ -211,20 +211,20 @@ const PerfumePage = () => {
     return 'text-gray-600';
   };
 
+  const router = useRouter();
+
   return (
-    <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-                  <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-
-          <h1 className="text-3xl font-bold text-gray-900">Perfume & Oud Collection</h1>
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">Perfume & Oud Collection</h1>
           <p className="text-gray-600">Manage premium fragrances, traditional attars, and oud collection</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button variant="outline" size="sm">
             <Filter className="h-4 w-4 mr-2" />
             Advanced Filter
@@ -334,14 +334,14 @@ const PerfumePage = () => {
       {/* Featured Products */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <CardTitle>Premium Collection</CardTitle>
               <CardDescription>Showcase of finest perfumes and oud products</CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -353,7 +353,7 @@ const PerfumePage = () => {
                 </SelectContent>
               </Select>
               <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue placeholder="All Grades" />
                 </SelectTrigger>
                 <SelectContent>
@@ -367,7 +367,8 @@ const PerfumePage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
@@ -445,13 +446,14 @@ const PerfumePage = () => {
               })}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6 text-center">
+          <CardContent className="p-6 text-center">
             <Beaker className="h-12 w-12 mx-auto mb-4 text-blue-600" />
             <h3 className="font-medium mb-2">Distillation Tracking</h3>
             <p className="text-sm text-gray-600">Monitor distillation processes and batches</p>
@@ -459,7 +461,7 @@ const PerfumePage = () => {
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6 text-center">
+          <CardContent className="p-6 text-center">
             <Thermometer className="h-12 w-12 mx-auto mb-4 text-orange-600" />
             <h3 className="font-medium mb-2">Aging Programs</h3>
             <p className="text-sm text-gray-600">Manage long-term aging and maturation</p>
@@ -467,7 +469,7 @@ const PerfumePage = () => {
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6 text-center">
+          <CardContent className="p-6 text-center">
             <Award className="h-12 w-12 mx-auto mb-4 text-purple-600" />
             <h3 className="font-medium mb-2">Quality Grading</h3>
             <p className="text-sm text-gray-600">Professional grading and certification</p>
@@ -475,7 +477,7 @@ const PerfumePage = () => {
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6 text-center">
+          <CardContent className="p-6 text-center">
             <ChefHat className="h-12 w-12 mx-auto mb-4 text-green-600" />
             <h3 className="font-medium mb-2">Blending Lab</h3>
             <p className="text-sm text-gray-600">Create custom blends and formulations</p>

@@ -404,6 +404,8 @@ export default function UnifiedPOS() {
   const totals = calculateTotals();
   const categories = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
 
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Keyboard shortcuts (conditional) */}
@@ -418,15 +420,15 @@ export default function UnifiedPOS() {
       )}
 
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-white border-b px-4 sm:px-6 py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center space-x-4">
                     <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
 
 
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center">
               <ShoppingCart className="h-6 w-6 mr-2 text-amber-600" />
               {getText('Point of Sale', 'نقطة البيع')}
             </h1>
@@ -435,7 +437,7 @@ export default function UnifiedPOS() {
               {getText('Online', 'متصل')}
             </Badge>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Language Toggle */}
             <Select value={language} onValueChange={setLanguage}>
               <SelectTrigger className="w-32">
@@ -499,9 +501,9 @@ export default function UnifiedPOS() {
         </div>
       </div>
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex flex-col lg:flex-row">
         {/* Left Panel - Products */}
-        <div className="flex-1 p-6 space-y-4">
+        <div className="flex-1 p-4 sm:p-6 space-y-4">
           {/* Search and Barcode Scanner */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
@@ -601,13 +603,13 @@ export default function UnifiedPOS() {
           </div>
 
           {/* Product Categories */}
-          <div className="flex space-x-2 overflow-x-auto">
+          <div className="flex gap-2 overflow-x-auto pb-2">
             {categories.slice(0, 5).map((category) => (
               <Button
                 key={category}
                 variant={category === 'All' ? 'default' : 'outline'}
                 size="sm"
-                className="whitespace-nowrap"
+                className="whitespace-nowrap min-h-[44px]"
               >
                 {category}
               </Button>
@@ -615,7 +617,7 @@ export default function UnifiedPOS() {
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 h-[calc(100vh-300px)] overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 h-[calc(100vh-300px)] overflow-y-auto pb-20 lg:pb-0">
             {loadingProducts ? (
               <div className="col-span-full text-center py-8 text-gray-500">
                 {getText('Loading products...', 'جاري تحميل المنتجات...')}
@@ -661,7 +663,7 @@ export default function UnifiedPOS() {
         </div>
 
         {/* Right Panel - Cart & Checkout */}
-        <div className="w-96 bg-white border-l flex flex-col">
+        <div className="hidden lg:flex lg:w-96 bg-white border-l flex-col">
           {/* Customer Section */}
           <div className="p-4 border-b">
             <div className="flex items-center justify-between mb-3">
@@ -997,7 +999,7 @@ export default function UnifiedPOS() {
                   <div className="space-y-4">
                     <div>
                       <Label>{getText('Payment Method', 'طريقة الدفع')}</Label>
-                      <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                         <Button
                           variant={paymentMethod === 'cash' ? 'default' : 'outline'}
                           onClick={() => setPaymentMethod('cash')}
@@ -1114,14 +1116,14 @@ export default function UnifiedPOS() {
                       </div>
                     </div>
 
-                    <div className="flex justify-end space-x-2">
-                      <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>
+                    <div className="flex flex-col sm:flex-row justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)} className="min-h-[44px]">
                         {getText('Cancel', 'إلغاء')}
                       </Button>
                       <Button
                         onClick={processPayment}
                         disabled={paymentMethod === 'cash' && cashReceived < totals.total}
-                        className="bg-amber-600 hover:bg-amber-700"
+                        className="bg-amber-600 hover:bg-amber-700 min-h-[44px]"
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         {getText('Complete Payment', 'إتمام الدفع')}
@@ -1133,6 +1135,19 @@ export default function UnifiedPOS() {
             </div>
           )}
         </div>
+
+        {/* Mobile Cart Button - Fixed at bottom */}
+        {cart.length > 0 && (
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg z-50">
+            <Button
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white min-h-[44px]"
+              onClick={() => setIsPaymentDialogOpen(true)}
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              {getText('Checkout', 'الدفع')} ({cart.length}) - AED {totals.total.toFixed(2)}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
