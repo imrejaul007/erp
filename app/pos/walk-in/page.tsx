@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { UserPlus, Search, Clock, MapPin, Phone, Mail, Calendar, Users, TrendingUp, CheckCircle, Star } from 'lucide-react';
+import { UserPlus, Search, Clock, MapPin, Phone, Mail, Calendar, Users, TrendingUp, CheckCircle, Star,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,6 +114,7 @@ const getSatisfactionStars = (rating: number) => {
 };
 
 export default function WalkInCustomersPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState<typeof walkInCustomers[0] | null>(null);
@@ -137,6 +140,11 @@ export default function WalkInCustomersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Users className="h-8 w-8 text-oud-600" />
             Walk-in Customer Registration

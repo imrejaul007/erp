@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -42,8 +43,8 @@ import {
   UserPlus,
   BarChart3,
   PieChart,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw,
+  ArrowLeft} from 'lucide-react';
 import { LoyaltyTier } from '@/types/crm';
 
 interface RegularCustomer {
@@ -176,6 +177,7 @@ const ENGAGEMENT_PROGRAMS = [
 ];
 
 export default function RegularCustomerManagementPage() {
+  const router = useRouter();
   const [customers, setCustomers] = useState<RegularCustomer[]>([]);
   const [stats, setStats] = useState<RegularCustomerStats | null>(null);
   const [campaigns, setCampaigns] = useState<EngagementCampaign[]>([]);
@@ -294,6 +296,11 @@ export default function RegularCustomerManagementPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

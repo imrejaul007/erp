@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 import {
   TrendingUp,
@@ -18,8 +19,8 @@ import {
   FileSpreadsheet,
   FileImage,
   Building,
-  Zap
-} from 'lucide-react';
+  Zap,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,6 +44,7 @@ const formatPercentage = (value: number): string => {
 };
 
 export default function SalesReportsPage() {
+  const router = useRouter();
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to?: Date | undefined}>({
     from: undefined,
     to: undefined,
@@ -157,6 +159,11 @@ export default function SalesReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <TrendingUp className="h-8 w-8 text-oud-600" />
             Sales Reports & Analytics

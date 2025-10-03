@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Palette, Building2, Image, FileText, Settings2, Globe, Languages } from 'lucide-react';
+import { Loader2, Palette, Building2, Image, FileText, Settings2, Globe, Languages,
+  ArrowLeft} from 'lucide-react';
 import { autoTranslate } from '@/lib/translate';
 
 interface BrandingData {
@@ -75,6 +77,7 @@ interface BrandingData {
 }
 
 export default function BrandingPage() {
+  const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -220,6 +223,11 @@ export default function BrandingPage() {
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex justify-between items-center mb-6">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold">Branding & Customization</h1>
           <p className="text-muted-foreground">Customize your ERP's look and feel</p>
         </div>

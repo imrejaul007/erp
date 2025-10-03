@@ -41,8 +41,8 @@ import {
   Banknote,
   X,
   Keyboard,
-  Languages
-} from 'lucide-react';
+  Languages,
+  ArrowLeft} from 'lucide-react';
 
 export default function UnifiedPOS() {
   const router = useRouter();
@@ -421,6 +421,11 @@ export default function UnifiedPOS() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+                    <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
               <ShoppingCart className="h-6 w-6 mr-2 text-amber-600" />
               {getText('Point of Sale', 'نقطة البيع')}

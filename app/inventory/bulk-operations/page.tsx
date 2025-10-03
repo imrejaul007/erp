@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Download, Edit, Tag, Package, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Download, Edit, Tag, Package, FileSpreadsheet, CheckCircle, AlertCircle,
+  ArrowLeft} from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function BulkOperationsPage() {
@@ -83,6 +84,11 @@ export default function BulkOperationsPage() {
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold">Bulk Operations</h1>
           <p className="text-muted-foreground">Import, export, and update data in bulk</p>
         </div>

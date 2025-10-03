@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,8 +32,8 @@ import {
   BarChart3,
   CheckCircle2,
   XCircle,
-  Eye
-} from 'lucide-react';
+  Eye,
+  ArrowLeft} from 'lucide-react';
 
 interface SemiFinishedGood {
   id: string;
@@ -81,6 +82,7 @@ interface SemiFinishedGood {
 }
 
 export default function SemiFinishedGoodsPage() {
+  const router = useRouter();
   const [semiFinishedGoods, setSemiFinishedGoods] = useState<SemiFinishedGood[]>([
     {
       id: '1',
@@ -330,6 +332,11 @@ export default function SemiFinishedGoodsPage() {
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Semi-Finished Goods</h1>
           <p className="text-gray-600">
             Track production stages, quality control, and aging processes for perfume intermediates

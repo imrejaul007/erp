@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Plus, Search, Filter, ShoppingCart, Eye, Edit, Trash2, Package, Users, TrendingUp, Calendar, MapPin, Phone, CreditCard } from 'lucide-react';
+import { Plus, Search, Filter, ShoppingCart, Eye, Edit, Trash2, Package, Users, TrendingUp, Calendar, MapPin, Phone, CreditCard,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,6 +100,7 @@ const getPriorityBadge = (priority: string) => {
 };
 
 export default function RetailOrdersPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<typeof retailOrders[0] | null>(null);
@@ -119,6 +122,11 @@ export default function RetailOrdersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <ShoppingCart className="h-8 w-8 text-oud-600" />
             Retail Orders Management

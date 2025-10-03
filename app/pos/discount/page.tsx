@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Percent, Star, Gift, CreditCard, Calculator, Tag, Users, TrendingDown, Crown, Award } from 'lucide-react';
+import { Percent, Star, Gift, CreditCard, Calculator, Tag, Users, TrendingDown, Crown, Award,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,6 +108,7 @@ const getTierBadge = (tier: string) => {
 };
 
 export default function DiscountLoyaltyPage() {
+  const router = useRouter();
   const [cartSubtotal] = useState(850.00);
   const [appliedDiscounts, setAppliedDiscounts] = useState<string[]>(['DISC-001']);
   const [loyaltyPointsToUse, setLoyaltyPointsToUse] = useState(0);
@@ -172,6 +175,11 @@ export default function DiscountLoyaltyPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Percent className="h-8 w-8 text-oud-600" />
             Discounts & Loyalty

@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertTriangle, Clock, XCircle, Search, Download, Eye, Calendar } from 'lucide-react';
+import { AlertTriangle, Clock, XCircle, Search, Download, Eye, Calendar,
+  ArrowLeft} from 'lucide-react';
 
 export default function ExpiryTrackingPage() {
   const router = useRouter();
@@ -84,6 +85,11 @@ export default function ExpiryTrackingPage() {
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold">Expiry Tracking</h1>
           <p className="text-muted-foreground">Monitor product expiration dates and manage stock rotation</p>
         </div>

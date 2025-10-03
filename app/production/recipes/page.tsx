@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Beaker, FileText, Copy, Edit, Trash2, Clock, Users, AlertCircle, CheckCircle, Star, Archive, Eye } from 'lucide-react';
+import { Plus, Search, Filter, Beaker, FileText, Copy, Edit, Trash2, Clock, Users, AlertCircle, CheckCircle, Star, Archive, Eye,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -176,6 +178,7 @@ const getComplexityBadge = (complexity: string) => {
 };
 
 export default function RecipesPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -202,6 +205,11 @@ export default function RecipesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Beaker className="h-8 w-8 text-oud-600" />
             Recipe Management

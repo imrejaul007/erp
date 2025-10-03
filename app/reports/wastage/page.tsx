@@ -1,9 +1,13 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle,
+  ArrowLeft} from 'lucide-react';
 
 export default function WastageReportsPage() {
+  const router = useRouter();
   return (
     <div className="container mx-auto p-6">
       <Card>

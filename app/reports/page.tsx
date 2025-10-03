@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { BarChart3, PieChart, TrendingUp, Download, Calendar, Filter, FileText, Users, ShoppingCart, Package, DollarSign } from 'lucide-react';
+import { BarChart3, PieChart, TrendingUp, Download, Calendar, Filter, FileText, Users, ShoppingCart, Package, DollarSign,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +21,7 @@ const formatCurrency = (amount: number): string => {
 };
 
 export default function ReportsPage() {
+  const router = useRouter();
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to?: Date | undefined}>({
     from: undefined,
     to: undefined,
@@ -61,6 +64,11 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <BarChart3 className="h-8 w-8 text-oud-600" />
             Business Intelligence

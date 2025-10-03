@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { BarChart3, TrendingUp, TrendingDown, Download, DollarSign, Package, AlertTriangle, Target } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Download, DollarSign, Package, AlertTriangle, Target,
+  ArrowLeft} from 'lucide-react';
 
 export default function InventoryAnalyticsPage() {
   const router = useRouter();
@@ -15,6 +16,11 @@ export default function InventoryAnalyticsPage() {
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold">Inventory Analytics</h1>
           <p className="text-muted-foreground">Analyze inventory performance and trends</p>
         </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ import {
   BarChart3,
   PieChart,
   Target,
-} from 'lucide-react';
+  ArrowLeft} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -56,6 +57,7 @@ interface Budget {
 }
 
 export default function BudgetingPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('current');
   const [selectedPeriod, setSelectedPeriod] = useState('2024-Q1');
 
@@ -216,13 +218,18 @@ export default function BudgetingPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-            Budgeting & Forecasting
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Plan budgets, track spending, and analyze variance
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              Budgeting & Forecasting
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Plan budgets, track spending, and analyze variance
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">

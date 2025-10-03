@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,8 +33,8 @@ import {
   Package,
   Tags,
   Users,
-  Activity
-} from 'lucide-react';
+  Activity,
+  ArrowLeft} from 'lucide-react';
 
 const PricingManagementPage = () => {
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -243,6 +244,11 @@ const PricingManagementPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Store-wise Pricing Management</h1>
           <p className="text-gray-600">Centralized pricing control across all UAE locations</p>
         </div>

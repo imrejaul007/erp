@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +21,8 @@ import {
   Clock,
   Calendar,
   Settings,
-  Plus
-} from 'lucide-react';
+  Plus,
+  ArrowLeft} from 'lucide-react';
 
 const DemoPage = () => {
   const systemStats = {
@@ -176,7 +177,12 @@ const DemoPage = () => {
     <div className="container mx-auto p-6 space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-gray-900">
           🌟 Oud Palace ERP + POS System
         </h1>
         <p className="text-xl text-gray-600 mb-2">
@@ -185,6 +191,8 @@ const DemoPage = () => {
         <p className="text-lg text-gray-500">
           📍 Built specifically for UAE businesses with cultural and regulatory compliance
         </p>
+          </div>
+        </div>
       </div>
 
       {/* System Overview */}

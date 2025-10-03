@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   BarChart3,
@@ -20,8 +21,8 @@ import {
   ShieldCheck,
   TrendingUp,
   Globe,
-  ChevronRight
-} from 'lucide-react';
+  ChevronRight,
+  ArrowLeft} from 'lucide-react';
 
 export default function FeaturesPage() {
   const router = useRouter();
@@ -163,14 +164,19 @@ export default function FeaturesPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <TrendingUp className="h-8 w-8 text-blue-600" />
-          Advanced Features
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Explore powerful features to grow your business
-        </p>
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <TrendingUp className="h-8 w-8 text-blue-600" />
+            Advanced Features
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Explore powerful features to grow your business
+          </p>
+        </div>
       </div>
 
       {/* Stats */}

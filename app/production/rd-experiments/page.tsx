@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import {
   Plus,
   Filter,
   BarChart3,
-} from 'lucide-react';
+  ArrowLeft} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -58,6 +59,7 @@ interface RDExperiment {
 }
 
 export default function RDExperimentsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('active');
   const [showNewExperiment, setShowNewExperiment] = useState(false);
 
@@ -214,6 +216,11 @@ export default function RDExperimentsPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

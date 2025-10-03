@@ -25,8 +25,8 @@ import {
   Filter,
   Calendar,
   AlertTriangle,
-  CheckCircle
-} from 'lucide-react';
+  CheckCircle,
+  ArrowLeft} from 'lucide-react';
 
 export default function FinancePage() {
   const router = useRouter();
@@ -185,6 +185,11 @@ export default function FinancePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Calculator className="h-8 w-8 text-amber-600" />
             Financial Management

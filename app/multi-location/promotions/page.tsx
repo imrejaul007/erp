@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,8 +43,8 @@ import {
   Building2,
   Package,
   ShoppingCart,
-  Megaphone
-} from 'lucide-react';
+  Megaphone,
+  ArrowLeft} from 'lucide-react';
 
 const PromotionsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -343,6 +344,11 @@ const PromotionsPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Branch Promotions Management</h1>
           <p className="text-gray-600">Create and manage promotional campaigns across all UAE store locations</p>
         </div>

@@ -23,8 +23,8 @@ import {
   Target,
   BarChart3,
   UserCheck,
-  Headphones
-} from 'lucide-react';
+  Headphones,
+  ArrowLeft} from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 
 interface CRMStats {
@@ -170,9 +170,14 @@ export default function CRMDashboard() {
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Customer Relationship Management</h1>
-          <p className="text-gray-600 mt-1">Manage customers, loyalty, and communications</p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Customer Relationship Management</h1>
+            <p className="text-gray-600 mt-1">Manage customers, loyalty, and communications</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.push('/crm/comprehensive')}>

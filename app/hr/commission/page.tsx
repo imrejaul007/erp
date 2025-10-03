@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,8 +54,8 @@ import {
   FileText,
   ShoppingBag,
   Gift,
-  Package
-} from 'lucide-react';
+  Package,
+  ArrowLeft} from 'lucide-react';
 
 const CommissionPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('current_month');
@@ -343,6 +344,11 @@ const CommissionPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Sales Commission Tracking</h1>
           <p className="text-gray-600">Track and manage sales commissions across all locations</p>
         </div>

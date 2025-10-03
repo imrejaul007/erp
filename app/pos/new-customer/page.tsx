@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { UserPlus, Save, RefreshCw, MapPin, Phone, Mail, Calendar, Users, Heart, Gift, Star, Globe } from 'lucide-react';
+import { UserPlus, Save, RefreshCw, MapPin, Phone, Mail, Calendar, Users, Heart, Gift, Star, Globe,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export default function NewCustomerPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     personalInfo: {
       title: '',
@@ -146,6 +149,11 @@ export default function NewCustomerPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <UserPlus className="h-8 w-8 text-oud-600" />
             New Customer Registration

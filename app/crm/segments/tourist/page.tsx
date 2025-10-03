@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -44,8 +45,8 @@ import {
   CreditCard,
   RefreshCw,
   Download,
-  BarChart3
-} from 'lucide-react';
+  BarChart3,
+  ArrowLeft} from 'lucide-react';
 
 interface TouristCustomer {
   id: string;
@@ -188,6 +189,7 @@ const CULTURAL_CATEGORIES = [
 ];
 
 export default function TouristCustomerManagementPage() {
+  const router = useRouter();
   const [tourists, setTourists] = useState<TouristCustomer[]>([]);
   const [stats, setStats] = useState<TouristStats | null>(null);
   const [services, setServices] = useState<TouristService[]>([]);
@@ -302,6 +304,11 @@ export default function TouristCustomerManagementPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

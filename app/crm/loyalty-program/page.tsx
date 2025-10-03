@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,8 +38,8 @@ import {
   Edit,
   Trash2,
   CheckCircle,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle,
+  ArrowLeft} from 'lucide-react';
 import { LoyaltyTier } from '@/types/crm';
 
 interface LoyaltyStats {
@@ -124,6 +125,7 @@ const TIER_BENEFITS = {
 };
 
 export default function LoyaltyProgramPage() {
+  const router = useRouter();
   const [stats, setStats] = useState<LoyaltyStats | null>(null);
   const [members, setMembers] = useState<LoyaltyMember[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -230,6 +232,11 @@ export default function LoyaltyProgramPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,10 +35,11 @@ import {
   Calculator,
   Timer,
   Phone,
-  Mail
-} from 'lucide-react';
+  Mail,
+  ArrowLeft} from 'lucide-react';
 
 export default function AccountsPayablePage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterVendor, setFilterVendor] = useState('all');
@@ -340,6 +342,11 @@ export default function AccountsPayablePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Receipt className="h-8 w-8 text-amber-600" />
             Accounts Payable

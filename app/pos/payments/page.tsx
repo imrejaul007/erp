@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { CreditCard, Banknote, Smartphone, Globe, QrCode, Receipt, CheckCircle, AlertTriangle, Calculator, Percent } from 'lucide-react';
+import { CreditCard, Banknote, Smartphone, Globe, QrCode, Receipt, CheckCircle, AlertTriangle, Calculator, Percent,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,6 +98,7 @@ const formatCurrency = (amount: number): string => {
 };
 
 export default function PaymentsPage() {
+  const router = useRouter();
   const [selectedMethod, setSelectedMethod] = useState('');
   const [splitPayment, setSplitPayment] = useState(false);
   const [paymentSplits, setPaymentSplits] = useState([
@@ -139,6 +142,11 @@ export default function PaymentsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <CreditCard className="h-8 w-8 text-oud-600" />
             Payment Processing

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,10 +36,11 @@ import {
   Car,
   Fuel,
   FileText,
-  Calculator
-} from 'lucide-react';
+  Calculator,
+  ArrowLeft} from 'lucide-react';
 
 export default function PettyCashPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterPeriod, setFilterPeriod] = useState('current-month');
@@ -281,6 +283,11 @@ export default function PettyCashPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Wallet className="h-8 w-8 text-amber-600" />
             Petty Cash Management

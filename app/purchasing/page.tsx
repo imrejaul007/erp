@@ -36,8 +36,8 @@ import {
   Filter,
   Search,
   RefreshCw,
-  BarChart3
-} from 'lucide-react';
+  BarChart3,
+  ArrowLeft} from 'lucide-react';
 
 const PurchasingPage = () => {
   const router = useRouter();
@@ -156,6 +156,11 @@ const PurchasingPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Purchasing & Vendors</h1>
           <p className="text-gray-600">Manage suppliers, purchase orders, and vendor relationships</p>
         </div>

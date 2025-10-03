@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,8 +41,8 @@ import {
   Ship,
   ClipboardList,
   CreditCard,
-  Percent
-} from 'lucide-react';
+  Percent,
+  ArrowLeft} from 'lucide-react';
 import { format } from 'date-fns';
 
 const CreatePurchaseOrderPage = () => {
@@ -207,6 +208,11 @@ const CreatePurchaseOrderPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Create Purchase Order</h1>
           <p className="text-gray-600">Create new purchase orders for international suppliers</p>
         </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -46,8 +47,8 @@ import {
   Upload,
   RefreshCw,
   Lock,
-  Unlock
-} from 'lucide-react';
+  Unlock,
+  ArrowLeft} from 'lucide-react';
 
 const Sync = RefreshCw; // Alias for backward compatibility
 
@@ -293,6 +294,11 @@ const MultiLocationManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Multi-Location Management</h1>
           <p className="text-gray-600">Centralized control and monitoring of all store locations</p>
         </div>

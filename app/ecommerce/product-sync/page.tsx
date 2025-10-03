@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -40,8 +41,8 @@ import {
   Calendar,
   Map,
   Target,
-  Zap
-} from 'lucide-react';
+  Zap,
+  ArrowLeft} from 'lucide-react';
 
 const Sync = RefreshCw; // Alias for backward compatibility
 
@@ -275,9 +276,14 @@ const ProductSyncPage = () => {
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Product Synchronization</h1>
-          <p className="text-gray-600">Manage product sync across all channels</p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Product Synchronization</h1>
+            <p className="text-gray-600">Manage product sync across all channels</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button

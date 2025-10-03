@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { QrCode, Barcode, Printer, Download, Search, Package, Tag, Grid3x3, Copy, Camera, Scan } from 'lucide-react';
+import { QrCode, Barcode, Printer, Download, Search, Package, Tag, Grid3x3, Copy, Camera, Scan,
+  ArrowLeft} from 'lucide-react';
 import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
 import dynamic from 'next/dynamic';
@@ -250,6 +251,11 @@ export default function BarcodeGeneratorPage() {
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold">Barcode & QR Code System</h1>
           <p className="text-muted-foreground">Generate, print, and scan product labels</p>
         </div>

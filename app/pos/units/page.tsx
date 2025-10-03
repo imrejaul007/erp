@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Scale, Calculator, ArrowRightLeft, Droplets, Package, Beaker } from 'lucide-react';
+import { Scale, Calculator, ArrowRightLeft, Droplets, Package, Beaker,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +49,7 @@ const formatNumber = (num: number): string => {
 };
 
 export default function UnitConversionPage() {
+  const router = useRouter();
   const [fromUnit, setFromUnit] = useState('tola');
   const [toUnit, setToUnit] = useState('g');
   const [fromValue, setFromValue] = useState(1);
@@ -99,6 +102,11 @@ export default function UnitConversionPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Scale className="h-8 w-8 text-oud-600" />
             Unit Conversion Calculator

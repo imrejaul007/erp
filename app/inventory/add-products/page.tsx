@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,8 +49,8 @@ import {
   Eye,
   Edit,
   X,
-  Check
-} from 'lucide-react';
+  Check,
+  ArrowLeft} from 'lucide-react';
 
 interface ProductFormData {
   // Basic Information
@@ -115,6 +116,7 @@ interface ProductFormData {
 }
 
 export default function AddProductPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
@@ -1855,6 +1857,11 @@ export default function AddProductPage() {
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Add Products</h1>
           <p className="text-gray-600">
             Create product entries manually, upload in bulk, or scrape from websites

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,8 +33,8 @@ import {
   Calendar,
   MapPin,
   Tag,
-  DollarSign
-} from 'lucide-react';
+  DollarSign,
+  ArrowLeft} from 'lucide-react';
 
 interface FinishedProduct {
   id: string;
@@ -95,6 +96,7 @@ interface FinishedProduct {
 }
 
 export default function FinishedGoodsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<FinishedProduct[]>([
     {
       id: '1',
@@ -389,6 +391,11 @@ export default function FinishedGoodsPage() {
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Finished Goods Inventory</h1>
           <p className="text-gray-600">
             Manage final products ready for sale - perfumes, attars, oud, and gift sets

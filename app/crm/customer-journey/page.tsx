@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ import {
   CheckCircle,
   Download,
   BarChart3,
-} from 'lucide-react';
+  ArrowLeft} from 'lucide-react';
 
 interface JourneyStage {
   stage: 'sampling' | 'trial' | 'purchase' | 'repeat';
@@ -49,6 +50,7 @@ interface CustomerJourney {
 }
 
 export default function CustomerJourneyPage() {
+  const router = useRouter();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
 
   // Mock funnel data
@@ -210,6 +212,11 @@ export default function CustomerJourneyPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

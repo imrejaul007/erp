@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,10 +34,11 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
-  Link
-} from 'lucide-react';
+  Link,
+  ArrowLeft} from 'lucide-react';
 
 export default function BankReconciliationPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedAccount, setSelectedAccount] = useState('emirates-nbd');
@@ -323,14 +325,19 @@ export default function BankReconciliationPage() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Banknote className="h-8 w-8 text-amber-600" />
-            Bank Reconciliation
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Match bank statements with book entries and manage cash positions
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+              <Banknote className="h-8 w-8 text-amber-600" />
+              Bank Reconciliation
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Match bank statements with book entries and manage cash positions
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2">

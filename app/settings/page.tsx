@@ -40,8 +40,8 @@ import {
   Save,
   RefreshCw,
   ArrowRight,
-  Sparkles
-} from 'lucide-react';
+  Sparkles,
+  ArrowLeft} from 'lucide-react';
 
 const SettingsPage = () => {
   const router = useRouter();
@@ -208,6 +208,11 @@ const SettingsPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Settings & Administration</h1>
           <p className="text-gray-600">Configure system settings, user management, and integrations</p>
         </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,7 @@ import {
   BarChart3,
   AlertCircle,
   CheckCircle,
-} from 'lucide-react';
+  ArrowLeft} from 'lucide-react';
 
 interface ByProduct {
   id: string;
@@ -55,6 +56,7 @@ interface ProductionBatch {
 }
 
 export default function ByProductsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
 
   // Mock data
@@ -217,6 +219,11 @@ export default function ByProductsPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

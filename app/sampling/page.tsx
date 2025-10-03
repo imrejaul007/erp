@@ -25,8 +25,8 @@ import {
   DollarSign,
   Package,
   AlertTriangle,
-  Target
-} from 'lucide-react';
+  Target,
+  ArrowLeft} from 'lucide-react';
 
 // Sample data
 const samplingSessions = [
@@ -185,6 +185,11 @@ export default function SamplingPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Sampling & Trial Management</h1>
           <p className="text-gray-600 mt-1">Track customer trials, tester usage, and conversion analytics</p>
         </div>

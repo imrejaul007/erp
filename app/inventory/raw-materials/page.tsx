@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,8 +30,8 @@ import {
   Import,
   Download,
   Eye,
-  BarChart3
-} from 'lucide-react';
+  BarChart3,
+  ArrowLeft} from 'lucide-react';
 
 interface RawMaterial {
   id: string;
@@ -60,6 +61,7 @@ interface RawMaterial {
 }
 
 export default function RawMaterialsPage() {
+  const router = useRouter();
   const [materials, setMaterials] = useState<RawMaterial[]>([
     {
       id: '1',
@@ -216,6 +218,11 @@ export default function RawMaterialsPage() {
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Raw Materials Management</h1>
           <p className="text-gray-600">
             Manage raw materials for perfume production - oud, oils, botanicals, and chemicals

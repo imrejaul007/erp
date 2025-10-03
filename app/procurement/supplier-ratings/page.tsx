@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ import {
   BarChart3,
   Award,
   ThumbsUp,
-} from 'lucide-react';
+  ArrowLeft} from 'lucide-react';
 
 interface SupplierMetrics {
   qualityScore: number;
@@ -48,6 +49,7 @@ interface Supplier {
 }
 
 export default function SupplierRatingsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
 
   // Mock data
@@ -189,6 +191,11 @@ export default function SupplierRatingsPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

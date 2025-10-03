@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -46,8 +47,8 @@ import {
   RefreshCw,
   Download,
   Flag,
-  ArrowUpDown
-} from 'lucide-react';
+  ArrowUpDown,
+  ArrowLeft} from 'lucide-react';
 import { TicketStatus, TicketPriority } from '@/types/crm';
 
 interface SupportTicket {
@@ -190,6 +191,7 @@ const STATUS_COLORS = {
 };
 
 export default function ComplaintsAndFeedbackPage() {
+  const router = useRouter();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [feedback, setFeedback] = useState<CustomerFeedback[]>([]);
   const [agents, setAgents] = useState<SupportAgent[]>([]);
@@ -364,6 +366,11 @@ export default function ComplaintsAndFeedbackPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

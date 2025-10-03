@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -50,8 +51,8 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
-  Star
-} from 'lucide-react';
+  Star,
+  ArrowLeft} from 'lucide-react';
 import { CustomerType } from '@/types/crm';
 
 interface CorporateClient {
@@ -215,6 +216,7 @@ const PAYMENT_TERMS = [
 ];
 
 export default function CorporateClientManagementPage() {
+  const router = useRouter();
   const [corporateClients, setCorporateClients] = useState<CorporateClient[]>([]);
   const [contacts, setContacts] = useState<CorporateContact[]>([]);
   const [stats, setStats] = useState<CorporateStats | null>(null);
@@ -349,6 +351,11 @@ export default function CorporateClientManagementPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

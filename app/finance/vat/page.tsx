@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,10 +33,11 @@ import {
   Clock,
   Flag,
   Mail,
-  Phone
-} from 'lucide-react';
+  Phone,
+  ArrowLeft} from 'lucide-react';
 
 export default function VATPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPeriod, setFilterPeriod] = useState('current');
   const [filterType, setFilterType] = useState('all');
@@ -312,6 +314,11 @@ export default function VATPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Receipt className="h-8 w-8 text-amber-600" />
             UAE VAT Management

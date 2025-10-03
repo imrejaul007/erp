@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -46,8 +47,8 @@ import {
   UserPlus,
   Coffee,
   Scissors,
-  Palette
-} from 'lucide-react';
+  Palette,
+  ArrowLeft} from 'lucide-react';
 import { LoyaltyTier } from '@/types/crm';
 
 interface VIPCustomer {
@@ -149,6 +150,7 @@ const VIP_SERVICES = [
 ];
 
 export default function VIPCustomerManagementPage() {
+  const router = useRouter();
   const [vipCustomers, setVipCustomers] = useState<VIPCustomer[]>([]);
   const [personalShoppers, setPersonalShoppers] = useState<PersonalShopper[]>([]);
   const [vipEvents, setVipEvents] = useState<VIPEvent[]>([]);
@@ -261,6 +263,11 @@ export default function VIPCustomerManagementPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User, ShoppingBag, Gift, Star, Calendar, Download, MessageSquare, Heart, Crown } from 'lucide-react';
+import { User, ShoppingBag, Gift, Star, Calendar, Download, MessageSquare, Heart, Crown,
+  ArrowLeft} from 'lucide-react';
 
 export default function CustomerPortalPage() {
+  const router = useRouter();
   const [customerCode, setCustomerCode] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -91,6 +94,11 @@ export default function CustomerPortalPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
+                        <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
                 <h1 className="text-3xl font-bold">{customer.name}</h1>
                 <Badge className="bg-yellow-400 text-yellow-900">
                   <Crown className="w-3 h-3 mr-1" />

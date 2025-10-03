@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,8 +59,8 @@ import {
   Award,
   BookOpen,
   ChefHat,
-  Layers
-} from 'lucide-react';
+  Layers,
+  ArrowLeft} from 'lucide-react';
 
 // Recipe/Formula definitions for perfume and oud production
 const productionRecipes = [
@@ -484,6 +485,7 @@ const productionFacilities = [
 ];
 
 export default function ProductionManagementPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [selectedBatch, setSelectedBatch] = useState<any>(null);
@@ -706,6 +708,11 @@ export default function ProductionManagementPage() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+                    <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
               <Factory className="h-6 w-6 mr-2 text-orange-600" />
               Production Management

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ import {
   Grid3x3,
   QrCode,
   Download,
-} from 'lucide-react';
+  ArrowLeft} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface BinLocation {
@@ -46,6 +47,7 @@ interface BinLocation {
 }
 
 export default function WarehouseBinsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('map');
   const [selectedWarehouse, setSelectedWarehouse] = useState('warehouse-1');
   const [searchQuery, setSearchQuery] = useState('');
@@ -173,6 +175,11 @@ export default function WarehouseBinsPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Search, Filter, Download, Eye, Edit, Mail, Phone, MessageSquare, Star, Crown, Gift, TrendingUp } from 'lucide-react';
+import { Users, Search, Filter, Download, Eye, Edit, Mail, Phone, MessageSquare, Star, Crown, Gift, TrendingUp,
+  ArrowLeft} from 'lucide-react';
 
 export default function ComprehensiveCRMPage() {
   const router = useRouter();
@@ -81,6 +82,11 @@ export default function ComprehensiveCRMPage() {
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold">Comprehensive Customer Database</h1>
           <p className="text-muted-foreground">Complete customer information and analytics</p>
         </div>

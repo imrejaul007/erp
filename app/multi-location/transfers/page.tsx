@@ -40,8 +40,8 @@ import {
   Barcode,
   Users,
   DollarSign,
-  BarChart3
-} from 'lucide-react';
+  BarChart3,
+  ArrowLeft} from 'lucide-react';
 
 const TransfersPage = () => {
   const router = useRouter();
@@ -272,6 +272,11 @@ const TransfersPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Transfer Management</h1>
           <p className="text-gray-600">Manage inventory transfers and approvals across all UAE locations</p>
         </div>

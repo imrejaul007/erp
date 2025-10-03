@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Plus, Search, Filter, ShoppingCart, CreditCard, Receipt, TrendingUp, DollarSign, Users, Package, Calendar } from 'lucide-react';
+import { Plus, Search, Filter, ShoppingCart, CreditCard, Receipt, TrendingUp, DollarSign, Users, Package, Calendar,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,6 +130,7 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function SalesPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cart, setCart] = useState<Array<{ product: typeof products[0], quantity: number }>>([]);
@@ -196,6 +199,11 @@ export default function SalesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <ShoppingCart className="h-8 w-8 text-oud-600" />
             Sales Management

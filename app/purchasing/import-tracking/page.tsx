@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,8 +48,8 @@ import {
   CreditCard,
   DollarSign,
   Shield,
-  Lock
-} from 'lucide-react';
+  Lock,
+  ArrowLeft} from 'lucide-react';
 import { format } from 'date-fns';
 
 const ImportTrackingPage = () => {
@@ -241,6 +242,11 @@ const ImportTrackingPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Import Tracking</h1>
           <p className="text-gray-600">Track international shipments and customs clearance</p>
         </div>

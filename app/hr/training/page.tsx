@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,8 +21,8 @@ import {
   Users,
   Target,
   TrendingUp,
-  Calendar
-} from 'lucide-react';
+  Calendar,
+  ArrowLeft} from 'lucide-react';
 
 interface TrainingProgram {
   id: string;
@@ -60,6 +61,7 @@ interface Certification {
 }
 
 export default function TrainingPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -296,6 +298,11 @@ export default function TrainingPage() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Training & Certification Management
           </h1>

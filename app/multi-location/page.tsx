@@ -27,8 +27,8 @@ import {
   ArrowDownRight,
   Store,
   Zap,
-  Activity
-} from 'lucide-react';
+  Activity,
+  ArrowLeft} from 'lucide-react';
 
 const MultiLocationPage = () => {
   const router = useRouter();
@@ -213,6 +213,11 @@ const MultiLocationPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Multi-Location Management</h1>
           <p className="text-gray-600">Monitor and manage all store locations from a centralized dashboard</p>
         </div>

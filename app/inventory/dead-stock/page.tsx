@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,8 +14,8 @@ import {
   Calendar,
   Tag,
   BarChart3,
-  Download
-} from 'lucide-react';
+  Download,
+  ArrowLeft} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -40,6 +41,7 @@ interface DeadStockItem {
 }
 
 export default function DeadStockPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('daysUnsold');
 
@@ -164,6 +166,11 @@ export default function DeadStockPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

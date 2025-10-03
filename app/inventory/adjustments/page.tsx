@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,8 +27,8 @@ import {
   Calendar,
   Package,
   FileText,
-  Eye
-} from 'lucide-react';
+  Eye,
+  ArrowLeft} from 'lucide-react';
 
 interface StockAdjustment {
   id: string;
@@ -56,6 +57,7 @@ interface StockAdjustment {
 }
 
 export default function StockAdjustmentsPage() {
+  const router = useRouter();
   const [adjustments, setAdjustments] = useState<StockAdjustment[]>([
     {
       id: '1',
@@ -200,6 +202,11 @@ export default function StockAdjustmentsPage() {
       {/* Header */}
       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Stock Adjustments</h1>
           <p className="text-gray-600">
             Manage inventory adjustments, physical count discrepancies, and stock corrections

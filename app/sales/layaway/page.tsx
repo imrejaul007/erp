@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, DollarSign, Package, User, CreditCard, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, DollarSign, Package, User, CreditCard, Clock, CheckCircle,
+  ArrowLeft} from 'lucide-react';
 
 export default function LayawayPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('active');
 
   // Mock data
@@ -77,6 +80,11 @@ export default function LayawayPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

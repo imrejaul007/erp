@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
 import {
   ArrowUpDown,
@@ -23,8 +24,8 @@ import {
   ShoppingCart,
   AlertCircle,
   CheckCircle,
-  Clock
-} from 'lucide-react';
+  Clock,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -56,6 +57,7 @@ const formatDate = (dateString: string): string => {
 };
 
 export default function StockMovementReportsPage() {
+  const router = useRouter();
   const [dateRange, setDateRange] = useState<{from: Date | undefined, to?: Date | undefined}>({
     from: undefined,
     to: undefined,
@@ -313,6 +315,11 @@ export default function StockMovementReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <ArrowUpDown className="h-8 w-8 text-oud-600" />
             Stock Movement & Valuation Reports

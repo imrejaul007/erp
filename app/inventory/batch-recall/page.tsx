@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import {
   Download,
   Send,
   BarChart3,
-} from 'lucide-react';
+  ArrowLeft} from 'lucide-react';
 
 interface AffectedCustomer {
   id: string;
@@ -62,6 +63,7 @@ interface BatchRecall {
 }
 
 export default function BatchRecallPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('active');
 
   // Mock data
@@ -225,6 +227,11 @@ export default function BatchRecallPage() {
 
   return (
     <div className="space-y-6">
+              <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Package, AlertTriangle, CheckCircle, Clock, QrCode, Truck, RotateCcw, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, Package, AlertTriangle, CheckCircle, Clock, QrCode, Truck, RotateCcw, Eye, Edit, Trash2,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -232,6 +234,7 @@ const getStockStatusBadge = (current: number, min: number, max: number) => {
 };
 
 export default function BatchMaterialsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedBatch, setSelectedBatch] = useState<string>('all');
@@ -264,6 +267,11 @@ export default function BatchMaterialsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Package className="h-8 w-8 text-oud-600" />
             Batch Materials Management

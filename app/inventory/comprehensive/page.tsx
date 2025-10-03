@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,8 +47,8 @@ import {
   Archive,
   ShoppingCart,
   DollarSign,
-  Percent
-} from 'lucide-react';
+  Percent,
+  ArrowLeft} from 'lucide-react';
 
 // Enhanced inventory data structure for raw materials, semi-finished, and finished goods
 const inventoryData = {
@@ -337,6 +338,7 @@ const storeLocations = [
 ];
 
 export default function ComprehensiveInventoryPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -519,6 +521,11 @@ export default function ComprehensiveInventoryPage() {
       <div className="bg-white border-b px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+                    <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center">
               <Package className="h-6 w-6 mr-2 text-blue-600" />
               Comprehensive Inventory Management

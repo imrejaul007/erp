@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { DashboardFilters, DrillDownData, ExportOptions } from '@/types/analytics';
 
 // Import all dashboard components
@@ -16,6 +19,7 @@ import RealTimeMonitoring from '@/components/analytics/real-time-monitoring';
 import InteractiveFeatures from '@/components/analytics/interactive-features';
 
 export default function AnalyticsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [filters, setFilters] = useState<DashboardFilters>({
     dateRange: { start: new Date(), end: new Date() },
@@ -67,13 +71,18 @@ export default function AnalyticsPage() {
     <div className="min-h-screen bg-gradient-to-br from-oud-50 via-white to-oud-100/30">
       <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
         {/* Page Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-serif font-bold bg-gradient-to-r from-oud-800 to-oud-600 bg-clip-text text-transparent">
-            Business Intelligence Dashboard
-          </h1>
-          <p className="text-oud-600 text-lg">
-            Comprehensive analytics and insights for your Perfume & Oud business
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-center space-y-2 flex-1">
+            <h1 className="text-4xl font-serif font-bold bg-gradient-to-r from-oud-800 to-oud-600 bg-clip-text text-transparent">
+              Business Intelligence Dashboard
+            </h1>
+            <p className="text-oud-600 text-lg">
+              Comprehensive analytics and insights for your Perfume & Oud business
+            </p>
+          </div>
         </div>
 
         {/* Interactive Features - Filters and Actions */}

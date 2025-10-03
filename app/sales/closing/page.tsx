@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Clock, DollarSign, CreditCard, Banknote, Calculator, FileText, CheckCircle, AlertTriangle, Lock, Unlock, Calendar, Users, Package, TrendingUp } from 'lucide-react';
+import { Clock, DollarSign, CreditCard, Banknote, Calculator, FileText, CheckCircle, AlertTriangle, Lock, Unlock, Calendar, Users, Package, TrendingUp,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,6 +109,7 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function SalesClosingPage() {
+  const router = useRouter();
   const [actualCash, setActualCash] = useState('');
   const [closingNotes, setClosingNotes] = useState('');
   const [isClosingDialogOpen, setIsClosingDialogOpen] = useState(false);
@@ -130,6 +133,11 @@ export default function SalesClosingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Calculator className="h-8 w-8 text-oud-600" />
             Daily Sales Closing

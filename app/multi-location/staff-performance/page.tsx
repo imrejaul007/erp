@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,8 +48,8 @@ import {
   UserCheck,
   UserX,
   Coffee,
-  Briefcase
-} from 'lucide-react';
+  Briefcase,
+  ArrowLeft} from 'lucide-react';
 
 const StaffPerformancePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -387,6 +388,11 @@ const StaffPerformancePage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-gray-900">Staff Performance Analytics</h1>
           <p className="text-gray-600">Monitor and analyze employee performance across all UAE store locations</p>
         </div>

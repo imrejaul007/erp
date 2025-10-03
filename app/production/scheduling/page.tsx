@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Calendar, Clock, Users, AlertTriangle, CheckCircle, RotateCcw, ChevronLeft, ChevronRight, Eye, Edit, Trash2, Play, Pause, Settings } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, Clock, Users, AlertTriangle, CheckCircle, RotateCcw, ChevronLeft, ChevronRight, Eye, Edit, Trash2, Play, Pause, Settings,
+  ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -190,6 +192,7 @@ const getOperatorStatusBadge = (status: string) => {
 };
 
 export default function ProductionSchedulingPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
@@ -225,6 +228,11 @@ export default function ProductionSchedulingPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
+                  <Button variant="outline" size="icon" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+
+
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Calendar className="h-8 w-8 text-oud-600" />
             Production Scheduling
