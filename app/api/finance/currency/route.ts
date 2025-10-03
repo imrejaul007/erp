@@ -1,6 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
@@ -15,12 +14,8 @@ const currencyRateSchema = z.object({
 });
 
 // Get currency rates
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const baseCurrency = searchParams.get('baseCurrency') || 'AED';
@@ -70,32 +65,22 @@ export async function GET(request: NextRequest) {
     // Calculate cross rates if needed
     const crossRates = calculateCrossRates(Object.values(latestRates), baseCurrency);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        baseCurrency,
-        rateDate,
-        rates: Object.values(latestRates),
-        crossRates,
-        supportedCurrencies: getSupportedCurrencies(),
-      },
+    return apiResponse({
+      baseCurrency,
+      rateDate,
+      rates: Object.values(latestRates),
+      crossRates,
+      supportedCurrencies: getSupportedCurrencies(),
     });
   } catch (error) {
     console.error('Currency Rates GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch currency rates' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch currency rates', 500);
   }
-}
+});
 
 // Create or update currency rate
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const body = await request.json();
     const validatedData = currencyRateSchema.parse(body);
@@ -181,33 +166,19 @@ export async function POST(request: NextRequest) {
     //   });
     // }
 
-    return NextResponse.json({
-      success: true,
-      data: rate,
-      message: 'Currency rate saved successfully',
-    });
+    return apiResponse(rate, 'Currency rate saved successfully');
   } catch (error) {
     console.error('Currency Rate POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Invalid data: ' + JSON.stringify(error.errors), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to save currency rate' },
-      { status: 500 }
-    );
+    return apiError('Failed to save currency rate', 500);
   }
-}
+});
 
 // Sync rates from external API
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const body = await request.json();
     const { source = 'api', baseCurrency = 'AED' } = body;
@@ -216,10 +187,7 @@ export async function PUT(request: NextRequest) {
     const externalRates = await fetchExternalRates(baseCurrency, source);
 
     if (!externalRates.success) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch external rates', details: externalRates.error },
-        { status: 400 }
-      );
+      return apiError('Failed to fetch external rates: ' + externalRates.error, 400);
     }
 
     let updatedCount = 0;
@@ -257,51 +225,33 @@ export async function PUT(request: NextRequest) {
     //   }
     // }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        updatedCount,
-        totalRates: externalRates.rates?.length || 0,
-        source: externalRates.source,
-        lastUpdate: new Date().toISOString(),
-      },
-      message: `${updatedCount} currency rates synchronized successfully`,
-    });
+    return apiResponse({
+      updatedCount,
+      totalRates: externalRates.rates?.length || 0,
+      source: externalRates.source,
+      lastUpdate: new Date().toISOString(),
+    }, `${updatedCount} currency rates synchronized successfully`);
   } catch (error) {
     console.error('Currency Sync error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to sync currency rates' },
-      { status: 500 }
-    );
+    return apiError('Failed to sync currency rates', 500);
   }
-}
+});
 
 // Calculate unrealized gains/losses
-export async function PATCH(request: NextRequest) {
+export const PATCH = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const asOfDate = searchParams.get('asOfDate') || new Date().toISOString().split('T')[0];
     const baseCurrency = searchParams.get('baseCurrency') || 'AED';
 
-    const unrealizedGainLoss = await calculateUnrealizedGainLoss(asOfDate, baseCurrency);
+    const unrealizedGainLoss = await calculateUnrealizedGainLoss(asOfDate, baseCurrency, tenantId);
 
-    return NextResponse.json({
-      success: true,
-      data: unrealizedGainLoss,
-    });
+    return apiResponse(unrealizedGainLoss);
   } catch (error) {
     console.error('Unrealized Gain/Loss calculation error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to calculate unrealized gain/loss' },
-      { status: 500 }
-    );
+    return apiError('Failed to calculate unrealized gain/loss', 500);
   }
-}
+});
 
 // Helper functions
 function getSupportedCurrencies() {
@@ -373,7 +323,7 @@ async function fetchExternalRates(baseCurrency: string, source: string) {
   }
 }
 
-async function calculateUnrealizedGainLoss(asOfDate: string, baseCurrency: string) {
+async function calculateUnrealizedGainLoss(asOfDate: string, baseCurrency: string, tenantId: string) {
   // Get all foreign currency balances
   const foreignCurrencyBalances = await prisma.$queryRaw`
     SELECT
@@ -383,6 +333,7 @@ async function calculateUnrealizedGainLoss(asOfDate: string, baseCurrency: strin
     WHERE t.status = 'COMPLETED'
       AND t.currency != ${baseCurrency}
       AND t.transaction_date <= ${new Date(asOfDate)}
+      AND t.tenant_id = ${tenantId}
     GROUP BY t.currency
     HAVING SUM(CASE WHEN t.type = 'DEBIT' THEN t.amount ELSE -t.amount END) != 0
   ` as any[];

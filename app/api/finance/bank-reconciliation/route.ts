@@ -1,6 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
@@ -41,12 +40,8 @@ const manualMatchSchema = z.object({
 });
 
 // Get bank reconciliation data and perform automatic matching
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const bankAccountId = searchParams.get('bankAccountId');
@@ -56,46 +51,37 @@ export async function GET(request: NextRequest) {
 
     if (action === 'accounts') {
       // Get list of bank accounts
-      const bankAccounts = await getBankAccounts();
-      return NextResponse.json({
-        success: true,
-        data: bankAccounts,
-      });
+      const bankAccounts = await getBankAccounts(tenantId);
+      return apiResponse(bankAccounts);
     }
 
     if (!bankAccountId) {
-      return NextResponse.json(
-        { success: false, error: 'Bank account ID is required' },
-        { status: 400 }
-      );
+      return apiError('Bank account ID is required', 400);
     }
 
     // Get bank account details
-    const bankAccount = await getBankAccountDetails(bankAccountId);
+    const bankAccount = await getBankAccountDetails(bankAccountId, tenantId);
     if (!bankAccount) {
-      return NextResponse.json(
-        { success: false, error: 'Bank account not found' },
-        { status: 404 }
-      );
+      return apiError('Bank account not found', 404);
     }
 
     // Get current book balance
-    const bookBalance = await getBookBalance(bankAccountId, reconciliationDate);
+    const bookBalance = await getBookBalance(bankAccountId, reconciliationDate, tenantId);
 
     // Get unreconciled book transactions
-    const unreconciledTransactions = await getUnreconciledTransactions(bankAccountId, reconciliationDate);
+    const unreconciledTransactions = await getUnreconciledTransactions(bankAccountId, reconciliationDate, tenantId);
 
     // Get unmatched bank transactions
-    const unmatchedBankTransactions = await getUnmatchedBankTransactions(bankAccountId, reconciliationDate);
+    const unmatchedBankTransactions = await getUnmatchedBankTransactions(bankAccountId, reconciliationDate, tenantId);
 
     // Get reconciliation history if requested
     let history = null;
     if (includeHistory) {
-      history = await getReconciliationHistory(bankAccountId, 6); // Last 6 months
+      history = await getReconciliationHistory(bankAccountId, 6, tenantId); // Last 6 months
     }
 
     // Get outstanding items (checks issued but not cleared, deposits in transit)
-    const outstandingItems = await getOutstandingItems(bankAccountId, reconciliationDate);
+    const outstandingItems = await getOutstandingItems(bankAccountId, reconciliationDate, tenantId);
 
     // Calculate reconciliation summary
     const summary = {
@@ -108,76 +94,51 @@ export async function GET(request: NextRequest) {
       difference: 0, // Will be calculated during reconciliation process
     };
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        summary,
-        unreconciledTransactions,
-        unmatchedBankTransactions,
-        history,
-        matchingSuggestions: await generateMatchingSuggestions(unreconciledTransactions, unmatchedBankTransactions),
-      },
+    return apiResponse({
+      summary,
+      unreconciledTransactions,
+      unmatchedBankTransactions,
+      history,
+      matchingSuggestions: await generateMatchingSuggestions(unreconciledTransactions, unmatchedBankTransactions),
     });
   } catch (error) {
     console.error('Bank Reconciliation GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch bank reconciliation data' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch bank reconciliation data', 500);
   }
-}
+});
 
 // Upload bank statement and perform automatic reconciliation
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const action = body.action || 'upload_statement';
 
     if (action === 'upload_statement') {
       const validatedData = bankStatementSchema.parse(body);
-      return await processBankStatement(validatedData, session.user.id);
+      return await processBankStatement(validatedData, user.id, tenantId);
     } else if (action === 'auto_reconcile') {
       const validatedData = reconciliationSchema.parse(body);
-      return await performAutoReconciliation(validatedData, session.user.id);
+      return await performAutoReconciliation(validatedData, user.id, tenantId);
     } else if (action === 'manual_match') {
       const validatedData = manualMatchSchema.parse(body);
-      return await processManualMatch(validatedData, session.user.id);
+      return await processManualMatch(validatedData, user.id, tenantId);
     } else if (action === 'create_adjustment') {
-      return await createReconciliationAdjustment(body.adjustment, session.user.id);
+      return await createReconciliationAdjustment(body.adjustment, user.id, tenantId);
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Invalid action' },
-      { status: 400 }
-    );
+    return apiError('Invalid action', 400);
   } catch (error) {
     console.error('Bank Reconciliation POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Invalid data: ' + JSON.stringify(error.errors), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to process bank reconciliation' },
-      { status: 500 }
-    );
+    return apiError('Failed to process bank reconciliation', 500);
   }
-}
+});
 
 // Finalize reconciliation and create reconciliation report
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const {
       bankAccountId,
@@ -191,10 +152,7 @@ export async function PUT(request: NextRequest) {
 
     // Validate reconciliation data
     if (!bankAccountId || !reconciliationDate || statementBalance === undefined || bookBalance === undefined) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required reconciliation data' },
-        { status: 400 }
-      );
+      return apiError('Missing required reconciliation data', 400);
     }
 
     // Calculate final reconciliation
@@ -206,34 +164,28 @@ export async function PUT(request: NextRequest) {
       matchedTransactions: matchedTransactions || [],
       adjustments: adjustments || [],
       notes,
-      reconciledBy: session.user.id,
+      reconciledBy: user.id,
+      tenantId,
     });
 
     // Generate reconciliation report
     const reconciliationReport = await generateReconciliationReport(reconciliationResult);
 
     // Update transaction statuses
-    await updateTransactionReconciliationStatus(matchedTransactions || [], reconciliationResult.id);
+    await updateTransactionReconciliationStatus(matchedTransactions || [], reconciliationResult.id, tenantId);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        reconciliation: reconciliationResult,
-        report: reconciliationReport,
-      },
-      message: 'Bank reconciliation completed successfully',
-    });
+    return apiResponse({
+      reconciliation: reconciliationResult,
+      report: reconciliationReport,
+    }, 'Bank reconciliation completed successfully');
   } catch (error) {
     console.error('Bank Reconciliation finalization error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to finalize bank reconciliation' },
-      { status: 500 }
-    );
+    return apiError('Failed to finalize bank reconciliation', 500);
   }
-}
+});
 
 // Helper functions for bank reconciliation
-async function getBankAccounts() {
+async function getBankAccounts(tenantId: string) {
   return await prisma.$queryRaw`
     SELECT
       a.id,
@@ -248,14 +200,18 @@ async function getBankAccounts() {
     LEFT JOIN bank_reconciliations br ON a.id = br.bank_account_id
     WHERE a.code LIKE '112%' -- Bank accounts
       AND a.is_active = true
+      AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name, a.currency, a.balance, a.updated_at
     ORDER BY a.code
   ` as any[];
 }
 
-async function getBankAccountDetails(bankAccountId: string) {
+async function getBankAccountDetails(bankAccountId: string, tenantId: string) {
   const account = await prisma.account.findUnique({
-    where: { id: bankAccountId },
+    where: {
+      id: bankAccountId,
+      tenantId: tenantId
+    },
     select: {
       id: true,
       code: true,
@@ -269,7 +225,7 @@ async function getBankAccountDetails(bankAccountId: string) {
   return account;
 }
 
-async function getBookBalance(bankAccountId: string, asOfDate: string) {
+async function getBookBalance(bankAccountId: string, asOfDate: string, tenantId: string) {
   const balance = await prisma.$queryRaw`
     SELECT
       COALESCE(SUM(CASE WHEN t.type = 'DEBIT' THEN t.amount ELSE -t.amount END), 0) as balance,
@@ -279,6 +235,7 @@ async function getBookBalance(bankAccountId: string, asOfDate: string) {
     WHERE t.account_id = ${bankAccountId}
       AND t.transaction_date <= ${new Date(asOfDate)}
       AND t.status = 'COMPLETED'
+      AND t.tenant_id = ${tenantId}
   ` as any[];
 
   const data = balance[0] || {};
@@ -291,7 +248,7 @@ async function getBookBalance(bankAccountId: string, asOfDate: string) {
   };
 }
 
-async function getUnreconciledTransactions(bankAccountId: string, reconciliationDate: string) {
+async function getUnreconciledTransactions(bankAccountId: string, reconciliationDate: string, tenantId: string) {
   return await prisma.$queryRaw`
     SELECT
       t.id,
@@ -308,12 +265,13 @@ async function getUnreconciledTransactions(bankAccountId: string, reconciliation
     WHERE t.account_id = ${bankAccountId}
       AND t.transaction_date <= ${new Date(reconciliationDate)}
       AND t.status = 'COMPLETED'
+      AND t.tenant_id = ${tenantId}
       AND (t.reconciliation_id IS NULL OR t.reconciliation_status = 'UNMATCHED')
     ORDER BY t.transaction_date DESC, t.created_at DESC
   ` as any[];
 }
 
-async function getUnmatchedBankTransactions(bankAccountId: string, reconciliationDate: string) {
+async function getUnmatchedBankTransactions(bankAccountId: string, reconciliationDate: string, tenantId: string) {
   return await prisma.$queryRaw`
     SELECT
       bt.id,
@@ -332,7 +290,7 @@ async function getUnmatchedBankTransactions(bankAccountId: string, reconciliatio
   ` as any[];
 }
 
-async function getOutstandingItems(bankAccountId: string, reconciliationDate: string) {
+async function getOutstandingItems(bankAccountId: string, reconciliationDate: string, tenantId: string) {
   // Get outstanding checks (issued but not cleared)
   const outstandingChecks = await prisma.$queryRaw`
     SELECT
@@ -343,6 +301,7 @@ async function getOutstandingItems(bankAccountId: string, reconciliationDate: st
       AND t.type = 'CREDIT'
       AND t.transaction_date <= ${new Date(reconciliationDate)}
       AND t.status = 'COMPLETED'
+      AND t.tenant_id = ${tenantId}
       AND (t.reference_type = 'CHECK' OR t.description ILIKE '%check%')
       AND NOT EXISTS (
         SELECT 1 FROM bank_transactions bt
@@ -362,6 +321,7 @@ async function getOutstandingItems(bankAccountId: string, reconciliationDate: st
       AND t.type = 'DEBIT'
       AND t.transaction_date <= ${new Date(reconciliationDate)}
       AND t.status = 'COMPLETED'
+      AND t.tenant_id = ${tenantId}
       AND (t.reference_type = 'DEPOSIT' OR t.description ILIKE '%deposit%')
       AND NOT EXISTS (
         SELECT 1 FROM bank_transactions bt
@@ -380,7 +340,7 @@ async function getOutstandingItems(bankAccountId: string, reconciliationDate: st
   };
 }
 
-async function getReconciliationHistory(bankAccountId: string, months: number) {
+async function getReconciliationHistory(bankAccountId: string, months: number, tenantId: string) {
   return await prisma.$queryRaw`
     SELECT
       br.id,
@@ -483,7 +443,7 @@ function calculateDescriptionSimilarity(desc1: string, desc2: string): number {
   return commonWords.length / Math.max(words1.length, words2.length);
 }
 
-async function processBankStatement(statementData: any, userId: string) {
+async function processBankStatement(statementData: any, userId: string, tenantId: string) {
   const statementId = generateId();
 
   // Save bank statement

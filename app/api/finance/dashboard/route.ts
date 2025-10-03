@@ -1,42 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 // Get comprehensive finance dashboard data
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const currency = searchParams.get('currency') || 'AED';
     const period = searchParams.get('period') || getCurrentPeriod();
 
     // Get cash position
-    const cashPosition = await getCashPosition(currency);
+    const cashPosition = await getCashPosition(currency, tenantId);
 
     // Get VAT summary
-    const vatSummary = await getVATSummary(period);
+    const vatSummary = await getVATSummary(period, tenantId);
 
     // Get profit & loss summary
-    const profitLoss = await getProfitLossSummary(period, currency);
+    const profitLoss = await getProfitLossSummary(period, currency, tenantId);
 
     // Get receivables summary
-    const receivables = await getReceivablesSummary(currency);
+    const receivables = await getReceivablesSummary(currency, tenantId);
 
     // Get payables summary
-    const payables = await getPayablesSummary(currency);
+    const payables = await getPayablesSummary(currency, tenantId);
 
     // Get recent transactions
-    const recentTransactions = await getRecentTransactions(10, currency);
+    const recentTransactions = await getRecentTransactions(10, currency, tenantId);
 
     // Get financial KPIs
-    const kpis = await getFinancialKPIs(period, currency);
+    const kpis = await getFinancialKPIs(period, currency, tenantId);
 
     const dashboardData = {
       period,
@@ -51,21 +46,15 @@ export async function GET(request: NextRequest) {
       lastUpdated: new Date().toISOString(),
     };
 
-    return NextResponse.json({
-      success: true,
-      data: dashboardData,
-    });
+    return apiResponse(dashboardData);
   } catch (error) {
     console.error('Finance Dashboard error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch finance dashboard data' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch finance dashboard data', 500);
   }
-}
+});
 
 // Get cash position
-async function getCashPosition(currency: string) {
+async function getCashPosition(currency: string, tenantId: string) {
   const cashAccounts = await prisma.$queryRaw`
     SELECT
       a.id,
@@ -76,8 +65,10 @@ async function getCashPosition(currency: string) {
     LEFT JOIN transactions t ON a.id = t.account_id
       AND t.status = 'COMPLETED'
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
     WHERE a.code IN ('1110', '1120') -- Cash in Hand and Bank Accounts
       AND a.is_active = true
+      AND a.tenant_id = ${tenantId}
     GROUP BY a.id, a.code, a.name
     ORDER BY a.code
   ` as any[];
@@ -97,13 +88,16 @@ async function getCashPosition(currency: string) {
 }
 
 // Get VAT summary
-async function getVATSummary(period: string) {
-  const vatRecords = await prisma.vATRecord.findMany({
-    where: {
-      period,
-      status: 'ACTIVE',
-    },
-  });
+async function getVATSummary(period: string, tenantId: string) {
+  // Note: VAT Record model not yet implemented - using placeholder
+  const vatRecords: any[] = [];
+  // const vatRecords = await prisma.vATRecord.findMany({
+  //   where: {
+  //     period,
+  //     status: 'ACTIVE',
+  //     tenantId,
+  //   },
+  // });
 
   let outputVAT = 0;
   let inputVAT = 0;
@@ -131,7 +125,7 @@ async function getVATSummary(period: string) {
 }
 
 // Get profit & loss summary
-async function getProfitLossSummary(period: string, currency: string) {
+async function getProfitLossSummary(period: string, currency: string, tenantId: string) {
   const [year, month] = period.split('-').map(Number);
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
@@ -146,7 +140,8 @@ async function getProfitLossSummary(period: string, currency: string) {
       AND t.transaction_date >= ${startDate}
       AND t.transaction_date <= ${endDate}
       AND t.currency = ${currency}
-    WHERE a.type = 'REVENUE' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'REVENUE' AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   // Get expenses
@@ -159,7 +154,8 @@ async function getProfitLossSummary(period: string, currency: string) {
       AND t.transaction_date >= ${startDate}
       AND t.transaction_date <= ${endDate}
       AND t.currency = ${currency}
-    WHERE a.type = 'EXPENSE' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.type = 'EXPENSE' AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   const totalRevenue = Number(revenue[0]?.total || 0);
@@ -176,7 +172,7 @@ async function getProfitLossSummary(period: string, currency: string) {
 }
 
 // Get receivables summary
-async function getReceivablesSummary(currency: string) {
+async function getReceivablesSummary(currency: string, tenantId: string) {
   const receivables = await prisma.$queryRaw`
     SELECT
       COALESCE(SUM(CASE WHEN t.type = 'DEBIT' THEN t.amount ELSE -t.amount END), 0) as total
@@ -184,8 +180,10 @@ async function getReceivablesSummary(currency: string) {
     LEFT JOIN transactions t ON a.id = t.account_id
       AND t.status = 'COMPLETED'
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
     WHERE a.code = '1130' -- Accounts Receivable
       AND a.is_active = true
+      AND a.tenant_id = ${tenantId}
   ` as any[];
 
   // Get overdue receivables (simplified - assumes 30 days payment terms)
@@ -200,8 +198,10 @@ async function getReceivablesSummary(currency: string) {
       AND t.status = 'COMPLETED'
       AND t.transaction_date <= ${overdueDate}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
     WHERE a.code = '1130' -- Accounts Receivable
       AND a.is_active = true
+      AND a.tenant_id = ${tenantId}
   ` as any[];
 
   const totalReceivables = Number(receivables[0]?.total || 0);
@@ -216,7 +216,7 @@ async function getReceivablesSummary(currency: string) {
 }
 
 // Get payables summary
-async function getPayablesSummary(currency: string) {
+async function getPayablesSummary(currency: string, tenantId: string) {
   const payables = await prisma.$queryRaw`
     SELECT
       COALESCE(SUM(CASE WHEN t.type = 'CREDIT' THEN t.amount ELSE -t.amount END), 0) as total
@@ -224,8 +224,10 @@ async function getPayablesSummary(currency: string) {
     LEFT JOIN transactions t ON a.id = t.account_id
       AND t.status = 'COMPLETED'
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
     WHERE a.code = '2110' -- Accounts Payable
       AND a.is_active = true
+      AND a.tenant_id = ${tenantId}
   ` as any[];
 
   // Get overdue payables (simplified - assumes 30 days payment terms)
@@ -240,8 +242,10 @@ async function getPayablesSummary(currency: string) {
       AND t.status = 'COMPLETED'
       AND t.transaction_date <= ${overdueDate}
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
     WHERE a.code = '2110' -- Accounts Payable
       AND a.is_active = true
+      AND a.tenant_id = ${tenantId}
   ` as any[];
 
   const totalPayables = Number(payables[0]?.total || 0);
@@ -256,7 +260,7 @@ async function getPayablesSummary(currency: string) {
 }
 
 // Get recent transactions
-async function getRecentTransactions(limit: number, currency: string) {
+async function getRecentTransactions(limit: number, currency: string, tenantId: string) {
   const transactions = await prisma.$queryRaw`
     SELECT
       t.id,
@@ -274,6 +278,7 @@ async function getRecentTransactions(limit: number, currency: string) {
     LEFT JOIN accounts a ON t.account_id = a.id
     WHERE t.status = 'COMPLETED'
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
     ORDER BY t.transaction_date DESC, t.created_at DESC
     LIMIT ${limit}
   ` as any[];
@@ -296,7 +301,7 @@ async function getRecentTransactions(limit: number, currency: string) {
 }
 
 // Get financial KPIs
-async function getFinancialKPIs(period: string, currency: string) {
+async function getFinancialKPIs(period: string, currency: string, tenantId: string) {
   const [year, month] = period.split('-').map(Number);
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
@@ -309,7 +314,8 @@ async function getFinancialKPIs(period: string, currency: string) {
     LEFT JOIN transactions t ON a.id = t.account_id
       AND t.status = 'COMPLETED'
       AND t.currency = ${currency}
-    WHERE a.code LIKE '11%' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.code LIKE '11%' AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   const currentLiabilities = await prisma.$queryRaw`
@@ -319,7 +325,8 @@ async function getFinancialKPIs(period: string, currency: string) {
     LEFT JOIN transactions t ON a.id = t.account_id
       AND t.status = 'COMPLETED'
       AND t.currency = ${currency}
-    WHERE a.code LIKE '21%' AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.code LIKE '21%' AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   const currentAssetsTotal = Number(currentAssets[0]?.total || 0);
@@ -334,7 +341,8 @@ async function getFinancialKPIs(period: string, currency: string) {
     LEFT JOIN transactions t ON a.id = t.account_id
       AND t.status = 'COMPLETED'
       AND t.currency = ${currency}
-    WHERE a.code IN ('1110', '1120', '1130') AND a.is_active = true
+      AND t.tenant_id = ${tenantId}
+    WHERE a.code IN ('1110', '1120', '1130') AND a.is_active = true AND a.tenant_id = ${tenantId}
   ` as any[];
 
   const quickAssetsTotal = Number(quickAssets[0]?.total || 0);

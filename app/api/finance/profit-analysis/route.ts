@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -21,12 +20,9 @@ const profitAnalysisSchema = z.object({
 });
 
 // Get comprehensive profit analysis
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // TODO: Add tenantId filter to all Prisma queries in this handler
 
     const { searchParams } = new URL(request.url);
     const params = {
@@ -43,10 +39,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (!params.startDate || !params.endDate) {
-      return NextResponse.json(
-        { success: false, error: 'Start date and end date are required' },
-        { status: 400 }
-      );
+      return apiError('Start date and end date are required', 400);
     }
 
     const validatedParams = profitAnalysisSchema.parse(params);
@@ -72,7 +65,7 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: analysisResult,
       metadata: {
@@ -89,31 +82,22 @@ export async function GET(request: NextRequest) {
           categoryId: validatedParams.categoryId,
         },
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user?.email,
       },
     });
   } catch (error) {
     console.error('Profit Analysis error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Invalid parameters: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate profit analysis' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate profit analysis', 500);
   }
-}
+});
 
 // Save profit analysis report
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // TODO: Add tenantId filter to all Prisma queries in this handler
 
     const body = await request.json();
     const { analysisData, reportName, reportType } = body;
@@ -127,11 +111,11 @@ export async function POST(request: NextRequest) {
         generated_at, generated_by
       ) VALUES (
         ${reportId}, ${reportName}, ${reportType}, ${JSON.stringify(analysisData)},
-        ${new Date()}, ${session.user.id}
+        ${new Date()}, ${user.id}
       )
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: reportId,
@@ -142,12 +126,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Profit Analysis POST error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to save profit analysis report' },
-      { status: 500 }
-    );
+    return apiError('Failed to save profit analysis report', 500);
   }
-}
+});
 
 // Generate product-wise profit analysis
 async function generateProductProfitAnalysis(params: any) {

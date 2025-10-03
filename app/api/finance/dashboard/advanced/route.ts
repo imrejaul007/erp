@@ -1,6 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
@@ -19,12 +18,8 @@ const dashboardSchema = z.object({
 });
 
 // Get comprehensive financial dashboard with advanced KPIs and forecasting
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const params = {
@@ -61,21 +56,21 @@ export async function GET(request: NextRequest) {
       benchmarkData,
       currency_exposure
     ] = await Promise.all([
-      getExecutiveSummary(currentPeriod, validatedParams.currency, validatedParams.storeId),
-      getProfitabilityKPIs(currentPeriod, comparisonPeriod, validatedParams.currency),
-      getLiquidityKPIs(validatedParams.currency, validatedParams.storeId),
-      getEfficiencyKPIs(currentPeriod, validatedParams.currency),
-      getLeverageKPIs(validatedParams.currency),
-      getCashFlowAnalysis(currentPeriod, validatedParams.currency),
-      getVATComplianceStatus(validatedParams.currency),
-      getRiskAssessment(validatedParams.currency),
-      getTrendAnalysis(validatedParams.currency, 12), // 12 months
-      validatedParams.includeForecasting ? generateAdvancedForecasting(validatedParams.currency) : null,
-      getFinancialAlerts(validatedParams.currency),
-      generateSmartRecommendations(validatedParams.currency),
-      getPerformanceMetrics(currentPeriod, validatedParams.currency),
-      validatedParams.includeBenchmarks ? getBenchmarkData(validatedParams.currency) : null,
-      getCurrencyExposure(validatedParams.currency)
+      getExecutiveSummary(currentPeriod, validatedParams.currency, validatedParams.storeId, tenantId),
+      getProfitabilityKPIs(currentPeriod, comparisonPeriod, validatedParams.currency, tenantId),
+      getLiquidityKPIs(validatedParams.currency, validatedParams.storeId, tenantId),
+      getEfficiencyKPIs(currentPeriod, validatedParams.currency, tenantId),
+      getLeverageKPIs(validatedParams.currency, tenantId),
+      getCashFlowAnalysis(currentPeriod, validatedParams.currency, tenantId),
+      getVATComplianceStatus(validatedParams.currency, tenantId),
+      getRiskAssessment(validatedParams.currency, tenantId),
+      getTrendAnalysis(validatedParams.currency, 12, tenantId), // 12 months
+      validatedParams.includeForecasting ? generateAdvancedForecasting(validatedParams.currency, tenantId) : null,
+      getFinancialAlerts(validatedParams.currency, tenantId),
+      generateSmartRecommendations(validatedParams.currency, tenantId),
+      getPerformanceMetrics(currentPeriod, validatedParams.currency, tenantId),
+      validatedParams.includeBenchmarks ? getBenchmarkData(validatedParams.currency, tenantId) : null,
+      getCurrencyExposure(validatedParams.currency, tenantId)
     ]);
 
     // Calculate performance scores
@@ -93,9 +88,9 @@ export async function GET(request: NextRequest) {
         dateRange: currentPeriod,
         comparisonPeriod: validatedParams.includeComparisons ? comparisonPeriod : null,
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user?.email,
         refreshInterval: 300000, // 5 minutes
-        dataFreshness: await getDataFreshness(),
+        dataFreshness: await getDataFreshness(tenantId),
       },
 
       // Executive Summary Dashboard
@@ -164,26 +159,19 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    return NextResponse.json({
-      success: true,
-      data: dashboardData,
-      meta: {
-        executionTime: Date.now() - Date.now(),
-        dataQuality: 'HIGH',
-        confidence: calculateConfidenceScore(dashboardData),
-      },
+    return apiResponse(dashboardData, {
+      executionTime: Date.now() - Date.now(),
+      dataQuality: 'HIGH',
+      confidence: calculateConfidenceScore(dashboardData),
     });
   } catch (error) {
     console.error('Advanced Financial Dashboard error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate advanced financial dashboard' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate advanced financial dashboard', 500);
   }
-}
+});
 
 // Advanced analytics and KPI calculation functions
-async function getExecutiveSummary(period: any, currency: string, storeId?: string) {
+async function getExecutiveSummary(period: any, currency: string, storeId: string | undefined, tenantId: string) {
   const storeFilter = storeId ? `AND t.store_id = '${storeId}'` : '';
 
   const summary = await prisma.$queryRaw`
@@ -213,6 +201,8 @@ async function getExecutiveSummary(period: any, currency: string, storeId?: stri
         AND t.transaction_date <= ${period.endDate}
         AND t.status = 'COMPLETED'
         AND t.currency = ${currency}
+        AND t.tenant_id = ${tenantId}
+        AND a.tenant_id = ${tenantId}
         ${storeFilter}
     )
     SELECT
@@ -245,10 +235,10 @@ async function getExecutiveSummary(period: any, currency: string, storeId?: stri
   };
 }
 
-async function getProfitabilityKPIs(currentPeriod: any, comparisonPeriod: any, currency: string) {
+async function getProfitabilityKPIs(currentPeriod: any, comparisonPeriod: any, currency: string, tenantId: string) {
   const [current, comparison] = await Promise.all([
-    calculateProfitabilityMetrics(currentPeriod, currency),
-    calculateProfitabilityMetrics(comparisonPeriod, currency)
+    calculateProfitabilityMetrics(currentPeriod, currency, tenantId),
+    calculateProfitabilityMetrics(comparisonPeriod, currency, tenantId)
   ]);
 
   return {
@@ -269,7 +259,7 @@ async function getProfitabilityKPIs(currentPeriod: any, comparisonPeriod: any, c
   };
 }
 
-async function calculateProfitabilityMetrics(period: any, currency: string) {
+async function calculateProfitabilityMetrics(period: any, currency: string, tenantId: string) {
   const metrics = await prisma.$queryRaw`
     SELECT
       -- Revenue
@@ -286,14 +276,14 @@ async function calculateProfitabilityMetrics(period: any, currency: string) {
        FROM transactions t2
        JOIN accounts a2 ON t2.account_id = a2.id
        WHERE a2.type = 'ASSET' AND t2.status = 'COMPLETED' AND t2.currency = ${currency}
-       AND t2.transaction_date <= ${period.endDate}) as total_assets,
+       AND t2.transaction_date <= ${period.endDate} AND t2.tenant_id = ${tenantId} AND a2.tenant_id = ${tenantId}) as total_assets,
 
       -- Total Equity (for ROE)
       (SELECT SUM(CASE WHEN t3.type = 'CREDIT' THEN t3.amount ELSE -t3.amount END)
        FROM transactions t3
        JOIN accounts a3 ON t3.account_id = a3.id
        WHERE a3.type = 'EQUITY' AND t3.status = 'COMPLETED' AND t3.currency = ${currency}
-       AND t3.transaction_date <= ${period.endDate}) as total_equity
+       AND t3.transaction_date <= ${period.endDate} AND t3.tenant_id = ${tenantId} AND a3.tenant_id = ${tenantId}) as total_equity
 
     FROM transactions t
     JOIN accounts a ON t.account_id = a.id
@@ -301,6 +291,8 @@ async function calculateProfitabilityMetrics(period: any, currency: string) {
       AND t.transaction_date <= ${period.endDate}
       AND t.status = 'COMPLETED'
       AND t.currency = ${currency}
+      AND t.tenant_id = ${tenantId}
+      AND a.tenant_id = ${tenantId}
   ` as any[];
 
   const data = metrics[0] || {};
@@ -326,7 +318,7 @@ async function calculateProfitabilityMetrics(period: any, currency: string) {
   };
 }
 
-async function getLiquidityKPIs(currency: string, storeId?: string) {
+async function getLiquidityKPIs(currency: string, storeId: string | undefined, tenantId: string) {
   const storeFilter = storeId ? `AND t.store_id = '${storeId}'` : '';
 
   const liquidity = await prisma.$queryRaw`
@@ -348,6 +340,8 @@ async function getLiquidityKPIs(currency: string, storeId?: string) {
       JOIN accounts a ON t.account_id = a.id
       WHERE t.status = 'COMPLETED'
         AND t.currency = ${currency}
+        AND t.tenant_id = ${tenantId}
+        AND a.tenant_id = ${tenantId}
         ${storeFilter}
     )
     SELECT
@@ -377,7 +371,7 @@ async function getLiquidityKPIs(currency: string, storeId?: string) {
   };
 }
 
-async function getEfficiencyKPIs(period: any, currency: string) {
+async function getEfficiencyKPIs(period: any, currency: string, tenantId: string) {
   // Calculate various efficiency ratios
   const efficiency = await prisma.$queryRaw`
     WITH efficiency_metrics AS (
@@ -404,6 +398,8 @@ async function getEfficiencyKPIs(period: any, currency: string) {
         AND t.transaction_date <= ${period.endDate}
         AND t.status = 'COMPLETED'
         AND t.currency = ${currency}
+        AND t.tenant_id = ${tenantId}
+        AND a.tenant_id = ${tenantId}
     )
     SELECT
       avg_inventory,
@@ -439,7 +435,7 @@ async function getEfficiencyKPIs(period: any, currency: string) {
   };
 }
 
-async function getLeverageKPIs(currency: string) {
+async function getLeverageKPIs(currency: string, tenantId: string) {
   const leverage = await prisma.$queryRaw`
     WITH balance_sheet_totals AS (
       SELECT
@@ -456,6 +452,8 @@ async function getLeverageKPIs(currency: string) {
       JOIN accounts a ON t.account_id = a.id
       WHERE t.status = 'COMPLETED'
         AND t.currency = ${currency}
+        AND t.tenant_id = ${tenantId}
+        AND a.tenant_id = ${tenantId}
     )
     SELECT
       total_assets,
@@ -585,47 +583,47 @@ function getHealthStatus(overallScore: number): string {
 }
 
 // Placeholder functions for remaining comprehensive features
-async function getCashFlowAnalysis(period: any, currency: string) {
+async function getCashFlowAnalysis(period: any, currency: string, tenantId: string) {
   return { operatingCashFlow: 0, investingCashFlow: 0, financingCashFlow: 0, netCashFlow: 0 };
 }
 
-async function getVATComplianceStatus(currency: string) {
+async function getVATComplianceStatus(currency: string, tenantId: string) {
   return { status: 'COMPLIANT', liability: 0, nextDueDate: new Date() };
 }
 
-async function getRiskAssessment(currency: string) {
+async function getRiskAssessment(currency: string, tenantId: string) {
   return { overallRisk: 'LOW', creditRisk: 'LOW', liquidityRisk: 'LOW', operationalRisk: 'LOW' };
 }
 
-async function getTrendAnalysis(currency: string, months: number) {
+async function getTrendAnalysis(currency: string, months: number, tenantId: string) {
   return { revenue: [], profit: [], expenses: [], trends: [] };
 }
 
-async function generateAdvancedForecasting(currency: string) {
+async function generateAdvancedForecasting(currency: string, tenantId: string) {
   return { revenue: [], expenses: [], profit: [], confidence: 'MEDIUM', horizon: '12_MONTHS' };
 }
 
-async function getFinancialAlerts(currency: string) {
+async function getFinancialAlerts(currency: string, tenantId: string) {
   return []; // Array of alert objects
 }
 
-async function generateSmartRecommendations(currency: string) {
+async function generateSmartRecommendations(currency: string, tenantId: string) {
   return []; // Array of recommendation objects
 }
 
-async function getPerformanceMetrics(period: any, currency: string) {
+async function getPerformanceMetrics(period: any, currency: string, tenantId: string) {
   return { growth: 0, productivity: 0, profitability: 0 };
 }
 
-async function getBenchmarkData(currency: string) {
+async function getBenchmarkData(currency: string, tenantId: string) {
   return { industryAverage: {}, competitorData: {}, marketBenchmarks: {} };
 }
 
-async function getCurrencyExposure(currency: string) {
+async function getCurrencyExposure(currency: string, tenantId: string) {
   return { totalExposure: 0, currencies: [], riskLevel: 'LOW' };
 }
 
-async function getDataFreshness() {
+async function getDataFreshness(tenantId: string) {
   return { status: 'FRESH', lastUpdate: new Date(), minutesOld: 0 };
 }
 

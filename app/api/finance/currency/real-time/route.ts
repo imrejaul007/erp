@@ -1,6 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
@@ -27,12 +26,8 @@ const hedgePositionSchema = z.object({
 });
 
 // Get real-time exchange rates from multiple providers
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { searchParams } = new URL(request.url);
     const provider = searchParams.get('provider') || 'CBUAE';
@@ -56,14 +51,11 @@ export async function GET(request: NextRequest) {
         })
       );
 
-      return NextResponse.json({
-        success: true,
-        data: {
-          baseCurrency,
-          providers: providerRates,
-          consolidatedRates: consolidateRates(providerRates),
-          lastUpdated: new Date().toISOString(),
-        },
+      return apiResponse({
+        baseCurrency,
+        providers: providerRates,
+        consolidatedRates: consolidateRates(providerRates),
+        lastUpdated: new Date().toISOString(),
       });
     }
 
@@ -80,38 +72,27 @@ export async function GET(request: NextRequest) {
     const analytics = await calculateRateAnalytics(baseCurrency, targetCurrencies);
 
     // Get current FX exposure
-    const exposure = await calculateCurrentFXExposure(baseCurrency);
+    const exposure = await calculateCurrentFXExposure(baseCurrency, tenantId);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        provider,
-        baseCurrency,
-        rates,
-        historical,
-        analytics,
-        exposure,
-        lastUpdated: new Date().toISOString(),
-        cacheExpiry: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes
-      },
+    return apiResponse({
+      provider,
+      baseCurrency,
+      rates,
+      historical,
+      analytics,
+      exposure,
+      lastUpdated: new Date().toISOString(),
+      cacheExpiry: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes
     });
   } catch (error) {
     console.error('Real-time Currency GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch real-time currency data' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch real-time currency data', 500);
   }
-}
+});
 
 // Update real-time rates and store in database
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const action = body.action || 'update_rates';
 
@@ -121,103 +102,56 @@ export async function POST(request: NextRequest) {
         validatedData.provider,
         validatedData.baseCurrency,
         validatedData.targetCurrencies,
-        session.user.id
+        user.id,
+        tenantId
       );
 
-      return NextResponse.json({
-        success: true,
-        data: rates,
-        message: 'Real-time rates updated successfully',
-      });
+      return apiResponse(rates, 'Real-time rates updated successfully');
     } else if (action === 'create_alert') {
-      const alertResult = await createRateAlert(body.alert, session.user.id);
-      return NextResponse.json({
-        success: true,
-        data: alertResult,
-        message: 'Rate alert created successfully',
-      });
+      const alertResult = await createRateAlert(body.alert, user.id, tenantId);
+      return apiResponse(alertResult, 'Rate alert created successfully');
     } else if (action === 'hedge_position') {
       const validatedHedge = hedgePositionSchema.parse(body.hedge);
-      const hedgeResult = await createHedgePosition(validatedHedge, session.user.id);
-      return NextResponse.json({
-        success: true,
-        data: hedgeResult,
-        message: 'Hedge position created successfully',
-      });
+      const hedgeResult = await createHedgePosition(validatedHedge, user.id, tenantId);
+      return apiResponse(hedgeResult, 'Hedge position created successfully');
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Invalid action' },
-      { status: 400 }
-    );
+    return apiError('Invalid action', 400);
   } catch (error) {
     console.error('Real-time Currency POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Invalid data: ' + JSON.stringify(error.errors), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to process real-time currency request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process real-time currency request', 500);
   }
-}
+});
 
 // Bulk operations and advanced analytics
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { action, baseCurrency = 'AED' } = body;
 
     if (action === 'bulk_sync_all_providers') {
-      const syncResults = await syncAllProviders(baseCurrency, session.user.id);
-      return NextResponse.json({
-        success: true,
-        data: syncResults,
-        message: 'All providers synchronized successfully',
-      });
+      const syncResults = await syncAllProviders(baseCurrency, user.id, tenantId);
+      return apiResponse(syncResults, 'All providers synchronized successfully');
     } else if (action === 'calculate_var') {
-      const varCalculation = await calculateValueAtRisk(baseCurrency);
-      return NextResponse.json({
-        success: true,
-        data: varCalculation,
-        message: 'Value at Risk calculated successfully',
-      });
+      const varCalculation = await calculateValueAtRisk(baseCurrency, tenantId);
+      return apiResponse(varCalculation, 'Value at Risk calculated successfully');
     } else if (action === 'revalue_positions') {
-      const revaluation = await revalueAllPositions(baseCurrency, session.user.id);
-      return NextResponse.json({
-        success: true,
-        data: revaluation,
-        message: 'All positions revalued successfully',
-      });
+      const revaluation = await revalueAllPositions(baseCurrency, user.id, tenantId);
+      return apiResponse(revaluation, 'All positions revalued successfully');
     } else if (action === 'generate_forecast') {
       const forecast = await generateCurrencyForecast(body.currency, baseCurrency);
-      return NextResponse.json({
-        success: true,
-        data: forecast,
-        message: 'Currency forecast generated successfully',
-      });
+      return apiResponse(forecast, 'Currency forecast generated successfully');
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Invalid action' },
-      { status: 400 }
-    );
+    return apiError('Invalid action', 400);
   } catch (error) {
     console.error('Real-time Currency PUT error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to process advanced currency operation' },
-      { status: 500 }
-    );
+    return apiError('Failed to process advanced currency operation', 500);
   }
-}
+});
 
 // Provider-specific rate fetching functions
 async function fetchRatesFromProvider(
@@ -514,7 +448,7 @@ function findResistanceLevel(rates: any[]): number {
 }
 
 // Advanced financial calculations
-async function calculateCurrentFXExposure(baseCurrency: string) {
+async function calculateCurrentFXExposure(baseCurrency: string, tenantId: string) {
   const exposures = await prisma.$queryRaw`
     SELECT
       currency,
@@ -526,6 +460,7 @@ async function calculateCurrentFXExposure(baseCurrency: string) {
     FROM transactions
     WHERE status = 'COMPLETED'
       AND currency != ${baseCurrency}
+      AND tenant_id = ${tenantId}
     GROUP BY currency
     HAVING SUM(CASE
       WHEN type = 'DEBIT' AND currency != ${baseCurrency} THEN amount
@@ -545,14 +480,15 @@ async function fetchAndStoreRates(
   provider: string,
   baseCurrency: string,
   targetCurrencies: string[] | undefined,
-  userId: string
+  userId: string,
+  tenantId: string
 ) {
   const rates = await fetchRatesFromProvider(provider, baseCurrency, targetCurrencies);
 
   // Store rates in database
   for (const [currency, rateData] of Object.entries(rates)) {
     const rate = rateData as any;
-    await storeRate(baseCurrency, currency, rate.rate, provider, userId, rate.bid, rate.ask);
+    await storeRate(baseCurrency, currency, rate.rate, provider, userId, tenantId, rate.bid, rate.ask);
   }
 
   return rates;
@@ -564,6 +500,7 @@ async function storeRate(
   rate: number,
   source: string,
   userId: string,
+  tenantId: string,
   bidRate?: number,
   askRate?: number
 ) {
@@ -573,13 +510,13 @@ async function storeRate(
     INSERT INTO currency_rates (
       from_currency, to_currency, rate, bid_rate, ask_rate,
       rate_date, source, is_active, created_by, updated_by,
-      created_at, updated_at
+      tenant_id, created_at, updated_at
     ) VALUES (
       ${fromCurrency}, ${toCurrency}, ${rate}, ${bidRate || null}, ${askRate || null},
       ${new Date(today)}, ${source.toLowerCase()}, true, ${userId}, ${userId},
-      ${new Date()}, ${new Date()}
+      ${tenantId}, ${new Date()}, ${new Date()}
     )
-    ON CONFLICT (from_currency, to_currency, rate_date)
+    ON CONFLICT (from_currency, to_currency, rate_date, tenant_id)
     DO UPDATE SET
       rate = ${rate},
       bid_rate = ${bidRate || null},
@@ -591,37 +528,37 @@ async function storeRate(
 }
 
 // Additional helper functions for advanced features
-async function createRateAlert(alert: any, userId: string) {
+async function createRateAlert(alert: any, userId: string, tenantId: string) {
   // Implementation for creating rate alerts
   return { id: generateId(), message: 'Alert created successfully' };
 }
 
-async function createHedgePosition(hedge: any, userId: string) {
+async function createHedgePosition(hedge: any, userId: string, tenantId: string) {
   const hedgeId = generateId();
 
   await prisma.$executeRaw`
     INSERT INTO fx_hedging_positions (
       id, currency, amount, hedge_type, maturity_date,
       contract_rate, premium, counterparty, notes,
-      status, created_by, created_at
+      status, created_by, tenant_id, created_at
     ) VALUES (
       ${hedgeId}, ${hedge.currency}, ${hedge.amount}, ${hedge.hedgeType},
       ${new Date(hedge.maturityDate)}, ${hedge.contractRate}, ${hedge.premium || 0},
       ${hedge.counterparty || null}, ${hedge.notes || null},
-      'ACTIVE', ${userId}, ${new Date()}
+      'ACTIVE', ${userId}, ${tenantId}, ${new Date()}
     )
   `;
 
   return { id: hedgeId, message: 'Hedge position created successfully' };
 }
 
-async function syncAllProviders(baseCurrency: string, userId: string) {
+async function syncAllProviders(baseCurrency: string, userId: string, tenantId: string) {
   const providers = ['CBUAE', 'FIXER', 'XE'];
   const results = [];
 
   for (const provider of providers) {
     try {
-      const rates = await fetchAndStoreRates(provider, baseCurrency, undefined, userId);
+      const rates = await fetchAndStoreRates(provider, baseCurrency, undefined, userId, tenantId);
       results.push({
         provider,
         success: true,
@@ -640,8 +577,8 @@ async function syncAllProviders(baseCurrency: string, userId: string) {
   return results;
 }
 
-async function calculateValueAtRisk(baseCurrency: string) {
-  const exposure = await calculateCurrentFXExposure(baseCurrency);
+async function calculateValueAtRisk(baseCurrency: string, tenantId: string) {
+  const exposure = await calculateCurrentFXExposure(baseCurrency, tenantId);
   let totalVaR = 0;
 
   for (const exp of exposure) {
@@ -668,7 +605,7 @@ async function getVolatilityForCurrency(currency: string, baseCurrency: string):
   return calculateVolatility(historicalRates) / Math.sqrt(252); // Daily volatility
 }
 
-async function revalueAllPositions(baseCurrency: string, userId: string) {
+async function revalueAllPositions(baseCurrency: string, userId: string, tenantId: string) {
   // Implementation for revaluing all foreign currency positions
   return {
     revaluedPositions: 0,
