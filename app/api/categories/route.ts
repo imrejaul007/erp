@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const CategoryCreateSchema = z.object({
   name: z.string().min(2, 'Category name must be at least 2 characters'),
@@ -11,15 +12,10 @@ const CategoryCreateSchema = z.object({
 });
 
 // GET /api/categories
-export async function GET(req: NextRequest) {
+export const GET = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const categories = await prisma.category.findMany({
+      where: { tenantId },
       orderBy: {
         name: 'asc'
       },
@@ -31,52 +27,39 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    return NextResponse.json({ categories });
+    return apiResponse({ categories });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching categories:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to fetch categories', 500);
   }
-}
+});
 
 // POST /api/categories
-export async function POST(req: NextRequest) {
+export const POST = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'ADMIN', 'MANAGER'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const categoryData = CategoryCreateSchema.parse(body);
 
     const category = await prisma.category.create({
-      data: categoryData
+      data: {
+        ...categoryData,
+        tenantId
+      }
     });
 
-    return NextResponse.json(category, { status: 201 });
+    return apiResponse(category, 201);
 
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error', 400, error.errors);
     }
 
     console.error('Error creating category:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to create category', 500);
   }
-}
+});

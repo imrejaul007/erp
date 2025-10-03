@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Validation schema for product creation
 const ProductCreateSchema = z.object({
@@ -28,14 +29,8 @@ const ProductCreateSchema = z.object({
 });
 
 // GET /api/products - List all products
-export async function GET(req: NextRequest) {
+export const GET = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const url = new URL(req.url);
     const search = url.searchParams.get('search');
     const categoryId = url.searchParams.get('categoryId');
@@ -44,8 +39,8 @@ export async function GET(req: NextRequest) {
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '50');
 
-    // Build where clause
-    const whereClause: any = {};
+    // Build where clause with tenantId
+    const whereClause: any = { tenantId };
 
     if (search) {
       whereClause.OR = [
@@ -88,7 +83,7 @@ export async function GET(req: NextRequest) {
       prisma.product.count({ where: whereClause })
     ]);
 
-    return NextResponse.json({
+    return apiResponse({
       products,
       pagination: {
         total,
@@ -99,68 +94,49 @@ export async function GET(req: NextRequest) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching products:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to fetch products', 500);
   }
-}
+});
 
 // POST /api/products - Create new product
-export async function POST(req: NextRequest) {
+export const POST = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const productData = ProductCreateSchema.parse(body);
 
-    // Check if SKU is unique
-    const existingProduct = await prisma.product.findUnique({
-      where: { sku: productData.sku }
+    // Check if SKU is unique within tenant
+    const existingProduct = await prisma.product.findFirst({
+      where: { sku: productData.sku, tenantId }
     });
 
     if (existingProduct) {
-      return NextResponse.json(
-        { error: 'Product with this SKU already exists' },
-        { status: 409 }
-      );
+      return apiError('Product with this SKU already exists', 409);
     }
 
-    // Verify category exists
-    const category = await prisma.category.findUnique({
-      where: { id: productData.categoryId }
+    // Verify category exists and belongs to tenant
+    const category = await prisma.category.findFirst({
+      where: { id: productData.categoryId, tenantId }
     });
 
     if (!category) {
-      return NextResponse.json(
-        { error: 'Category not found' },
-        { status: 404 }
-      );
+      return apiError('Category not found', 404);
     }
 
-    // Verify brand exists if provided
+    // Verify brand exists and belongs to tenant if provided
     if (productData.brandId) {
-      const brand = await prisma.brand.findUnique({
-        where: { id: productData.brandId }
+      const brand = await prisma.brand.findFirst({
+        where: { id: productData.brandId, tenantId }
       });
 
       if (!brand) {
-        return NextResponse.json(
-          { error: 'Brand not found' },
-          { status: 404 }
-        );
+        return apiError('Brand not found', 404);
       }
     }
 
@@ -184,7 +160,8 @@ export async function POST(req: NextRequest) {
         images: productData.images ? JSON.stringify(productData.images) : null,
         tags: productData.tags ? JSON.stringify(productData.tags) : null,
         isActive: productData.isActive,
-        isFeatured: productData.isFeatured
+        isFeatured: productData.isFeatured,
+        tenantId
       },
       include: {
         category: {
@@ -196,59 +173,40 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    return NextResponse.json(product, { status: 201 });
+    return apiResponse(product, 201);
 
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error', 400, error.errors);
     }
 
     console.error('Error creating product:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to create product', 500);
   }
-}
+});
 
 // PUT /api/products - Update product
-export async function PUT(req: NextRequest) {
+export const PUT = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Product ID is required' },
-        { status: 400 }
-      );
+      return apiError('Product ID is required', 400);
     }
 
-    // Check if product exists
-    const existingProduct = await prisma.product.findUnique({
-      where: { id }
+    // Check if product exists and belongs to tenant
+    const existingProduct = await prisma.product.findFirst({
+      where: { id, tenantId }
     });
 
     if (!existingProduct) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return apiError('Product not found', 404);
     }
 
     // Update product
@@ -269,58 +227,46 @@ export async function PUT(req: NextRequest) {
       }
     });
 
-    return NextResponse.json(product);
+    return apiResponse(product);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating product:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to update product', 500);
   }
-}
+});
 
 // DELETE /api/products - Delete product (soft delete)
-export async function DELETE(req: NextRequest) {
+export const DELETE = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'ADMIN'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Product ID is required' },
-        { status: 400 }
-      );
+      return apiError('Product ID is required', 400);
     }
 
-    // Soft delete by setting isActive to false
-    const product = await prisma.product.update({
-      where: { id },
+    // Soft delete by setting isActive to false (with tenant check)
+    const product = await prisma.product.updateMany({
+      where: { id, tenantId },
       data: { isActive: false }
     });
 
-    return NextResponse.json({
+    if (product.count === 0) {
+      return apiError('Product not found', 404);
+    }
+
+    return apiResponse({
       message: 'Product deleted successfully',
       product
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting product:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to delete product', 500);
   }
-}
+});

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const CustomerCreateSchema = z.object({
   name: z.string().min(2, 'Customer name must be at least 2 characters'),
@@ -20,14 +21,8 @@ const CustomerCreateSchema = z.object({
 });
 
 // GET /api/customers - List all customers
-export async function GET(req: NextRequest) {
+export const GET = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const url = new URL(req.url);
     const search = url.searchParams.get('search');
     const customerType = url.searchParams.get('customerType');
@@ -35,8 +30,8 @@ export async function GET(req: NextRequest) {
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '50');
 
-    // Build where clause
-    const whereClause: any = {};
+    // Build where clause with tenantId
+    const whereClause: any = { tenantId };
 
     if (search) {
       whereClause.OR = [
@@ -76,7 +71,7 @@ export async function GET(req: NextRequest) {
       prisma.customer.count({ where: whereClause })
     ]);
 
-    return NextResponse.json({
+    return apiResponse({
       customers,
       pagination: {
         total,
@@ -87,51 +82,36 @@ export async function GET(req: NextRequest) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching customers:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to fetch customers', 500);
   }
-}
+});
 
 // POST /api/customers - Create new customer
-export async function POST(req: NextRequest) {
+export const POST = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await req.json();
     const customerData = CustomerCreateSchema.parse(body);
 
-    // Check if email or phone already exists
+    // Check if email or phone already exists within tenant
     if (customerData.email) {
-      const existingCustomer = await prisma.customer.findUnique({
-        where: { email: customerData.email }
+      const existingCustomer = await prisma.customer.findFirst({
+        where: { email: customerData.email, tenantId }
       });
 
       if (existingCustomer) {
-        return NextResponse.json(
-          { error: 'Customer with this email already exists' },
-          { status: 409 }
-        );
+        return apiError('Customer with this email already exists', 409);
       }
     }
 
     if (customerData.phone) {
-      const existingCustomer = await prisma.customer.findUnique({
-        where: { phone: customerData.phone }
+      const existingCustomer = await prisma.customer.findFirst({
+        where: { phone: customerData.phone, tenantId }
       });
 
       if (existingCustomer) {
-        return NextResponse.json(
-          { error: 'Customer with this phone number already exists' },
-          { status: 409 }
-        );
+        return apiError('Customer with this phone number already exists', 409);
       }
     }
 
@@ -150,57 +130,40 @@ export async function POST(req: NextRequest) {
         city: customerData.city,
         loyaltyPoints: customerData.loyaltyPoints,
         notes: customerData.notes,
-        createdById: session.user.id
+        createdById: user.id,
+        tenantId
       }
     });
 
-    return NextResponse.json(customer, { status: 201 });
+    return apiResponse(customer, 201);
 
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error', 400, error.errors);
     }
 
     console.error('Error creating customer:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to create customer', 500);
   }
-}
+});
 
 // PUT /api/customers - Update customer
-export async function PUT(req: NextRequest) {
+export const PUT = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Customer ID is required' },
-        { status: 400 }
-      );
+      return apiError('Customer ID is required', 400);
     }
 
-    // Check if customer exists
-    const existingCustomer = await prisma.customer.findUnique({
-      where: { id }
+    // Check if customer exists and belongs to tenant
+    const existingCustomer = await prisma.customer.findFirst({
+      where: { id, tenantId }
     });
 
     if (!existingCustomer) {
-      return NextResponse.json(
-        { error: 'Customer not found' },
-        { status: 404 }
-      );
+      return apiError('Customer not found', 404);
     }
 
     // Update customer
@@ -212,56 +175,44 @@ export async function PUT(req: NextRequest) {
       }
     });
 
-    return NextResponse.json(customer);
+    return apiResponse(customer);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating customer:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to update customer', 500);
   }
-}
+});
 
 // DELETE /api/customers - Delete customer
-export async function DELETE(req: NextRequest) {
+export const DELETE = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'ADMIN'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: 'Customer ID is required' },
-        { status: 400 }
-      );
+      return apiError('Customer ID is required', 400);
     }
 
-    // Delete customer (hard delete - consider soft delete if needed)
-    await prisma.customer.delete({
-      where: { id }
+    // Delete customer (hard delete - consider soft delete if needed) with tenant check
+    const result = await prisma.customer.deleteMany({
+      where: { id, tenantId }
     });
 
-    return NextResponse.json({
+    if (result.count === 0) {
+      return apiError('Customer not found', 404);
+    }
+
+    return apiResponse({
       message: 'Customer deleted successfully'
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting customer:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to delete customer', 500);
   }
-}
+});

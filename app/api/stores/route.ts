@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Validation schemas matching actual database schema
 const StoreCreateSchema = z.object({
@@ -32,21 +33,15 @@ const StoreFiltersSchema = z.object({
 });
 
 // GET /api/stores - List stores with filters
-export async function GET(req: NextRequest) {
+export const GET = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Parse query parameters
     const url = new URL(req.url);
     const params = Object.fromEntries(url.searchParams.entries());
     const filters = StoreFiltersSchema.parse(params);
 
-    // Build where clause
-    const whereClause: any = {};
+    // Build where clause with tenantId
+    const whereClause: any = { tenantId };
 
     if (filters.search) {
       whereClause.OR = [
@@ -116,52 +111,40 @@ export async function GET(req: NextRequest) {
       }
     };
 
-    return NextResponse.json(response);
+    return apiResponse(response);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching stores:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to fetch stores', 500);
   }
-}
+});
 
 // POST /api/stores - Create new store
-export async function POST(req: NextRequest) {
+export const POST = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const storeData = StoreCreateSchema.parse(body);
 
-    // Check if store code is unique
-    const existingStore = await prisma.store.findUnique({
-      where: { code: storeData.code }
+    // Check if store code is unique within tenant
+    const existingStore = await prisma.store.findFirst({
+      where: { code: storeData.code, tenantId }
     });
 
     if (existingStore) {
-      return NextResponse.json(
-        { error: 'Store code already exists' },
-        { status: 409 }
-      );
+      return apiError('Store code already exists', 409);
     }
 
     // Create store in database
     const newStore = await prisma.store.create({
       data: {
         ...storeData,
-        createdById: session.user.id
+        createdById: user.id,
+        tenantId
       },
       include: {
         createdBy: {
@@ -174,114 +157,84 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    return NextResponse.json(newStore, { status: 201 });
+    return apiResponse(newStore, 201);
 
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error', 400, error.errors);
     }
 
     console.error('Error creating store:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to create store', 500);
   }
-}
+});
 
 // PUT /api/stores - Bulk update stores
-export async function PUT(req: NextRequest) {
+export const PUT = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
-    if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const { storeIds, updates } = body;
 
     if (!Array.isArray(storeIds) || storeIds.length === 0) {
-      return NextResponse.json(
-        { error: 'Store IDs array is required' },
-        { status: 400 }
-      );
+      return apiError('Store IDs array is required', 400);
     }
 
-    // Bulk update stores
-    await prisma.store.updateMany({
+    // Bulk update stores (only within tenant)
+    const result = await prisma.store.updateMany({
       where: {
-        id: { in: storeIds }
+        id: { in: storeIds },
+        tenantId
       },
       data: updates
     });
 
-    return NextResponse.json({
-      message: `${storeIds.length} stores updated successfully`
+    return apiResponse({
+      message: `${result.count} stores updated successfully`
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error bulk updating stores:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to update stores', 500);
   }
-}
+});
 
 // DELETE /api/stores - Bulk delete stores
-export async function DELETE(req: NextRequest) {
+export const DELETE = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions (only owners/admins can delete stores)
-    const userRole = session.user.role;
-    if (!['OWNER', 'SUPER_ADMIN'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!['OWNER', 'SUPER_ADMIN'].includes(user.role)) {
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const { storeIds } = body;
 
     if (!Array.isArray(storeIds) || storeIds.length === 0) {
-      return NextResponse.json(
-        { error: 'Store IDs array is required' },
-        { status: 400 }
-      );
+      return apiError('Store IDs array is required', 400);
     }
 
-    // Soft delete by setting isActive to false
-    await prisma.store.updateMany({
+    // Soft delete by setting isActive to false (only within tenant)
+    const result = await prisma.store.updateMany({
       where: {
-        id: { in: storeIds }
+        id: { in: storeIds },
+        tenantId
       },
       data: {
         isActive: false
       }
     });
 
-    return NextResponse.json({
-      message: `${storeIds.length} stores deactivated successfully`
+    return apiResponse({
+      message: `${result.count} stores deactivated successfully`
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting stores:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError(error.message || 'Failed to delete stores', 500);
   }
-}
+});
