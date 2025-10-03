@@ -131,10 +131,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     const storeId = searchParams.get('storeId');
     const category = searchParams.get('category');
 
-    // TODO: Add tenantId filter to all Prisma queries when implemented
-    // Example: await prisma.sales.findMany({ where: { tenantId } })
-    // For aggregations: const sales = await prisma.sale.findMany({ where: { tenantId, ...otherFilters } })
-
     let responseData: any = {};
 
     switch (type) {
@@ -178,7 +174,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
       case 'staff':
         // Mock staff performance data
-        // TODO: await prisma.staffPerformance.findMany({ where: { tenantId } })
         responseData = {
           staffPerformance: [
             { id: 'staff_001', name: 'Ahmad Hassan', sales: 45200, orders: 152, conversion: 72.5 },

@@ -216,15 +216,10 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     const period = searchParams.get('period') || 'monthly';
     const storeId = searchParams.get('storeId');
 
-    // TODO: Add tenantId filter to all Prisma queries when implemented
-    // Example: await prisma.financialMetrics.findMany({ where: { tenantId } })
-    // For aggregations: const financial = await prisma.transaction.findMany({ where: { tenantId, ...filters } })
-
     let responseData: any = {};
 
     switch (type) {
       case 'profitability':
-        // TODO: await prisma.profitability.findMany({ where: { tenantId, storeId } })
         responseData = {
           productProfitability: mockProfitabilityAnalysis,
           storeProfitability: mockStoreProfitability.filter(store =>
@@ -237,7 +232,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'costs':
-        // TODO: await prisma.costAnalysis.findMany({ where: { tenantId } })
         responseData = {
           costBreakdown: mockCostAnalysis,
           totalCosts: mockCostAnalysis.reduce((sum, cost) => sum + cost.currentMonth, 0),
@@ -251,7 +245,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'cashflow':
-        // TODO: await prisma.cashFlow.findMany({ where: { tenantId } })
         responseData = {
           cashFlowData: mockCashFlowData,
           currentBalance: mockCashFlowData[mockCashFlowData.length - 1].cumulativeFlow,
@@ -266,7 +259,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'roi':
-        // TODO: await prisma.roiAnalysis.findMany({ where: { tenantId } })
         responseData = {
           campaigns: mockROIAnalysis,
           averageROI: mockROIAnalysis.reduce((sum, campaign) => sum + campaign.roi, 0) / mockROIAnalysis.length,
@@ -277,7 +269,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'breakeven':
-        // TODO: await prisma.breakEvenAnalysis.findMany({ where: { tenantId } })
         responseData = {
           analysis: mockBreakEvenAnalysis,
           quickestBreakEven: mockBreakEvenAnalysis.reduce((min, product) =>
@@ -288,7 +279,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'kpis':
-        // TODO: await prisma.financialKPIs.findFirst({ where: { tenantId } })
         responseData = {
           kpis: mockFinancialKPIs,
           benchmarks: {

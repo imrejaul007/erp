@@ -147,16 +147,10 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     const category = searchParams.get('category');
     const horizon = searchParams.get('horizon') || '6'; // months
 
-    // TODO: Add tenantId filter to all Prisma queries when implemented
-    // Example: await prisma.demandForecast.findMany({ where: { tenantId } })
-    // For ML models: filter training data by tenantId before predictions
-
     let responseData: any = {};
 
     switch (type) {
       case 'demand':
-        // TODO: Generate forecasts based on tenant-specific historical data
-        // const historicalData = await prisma.sales.findMany({ where: { tenantId } })
         responseData = {
           forecast: mockDemandForecast.slice(0, parseInt(horizon)),
           categoryForecasts: mockCategoryForecasts,
@@ -166,7 +160,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'stockout':
-        // TODO: await prisma.stockPrediction.findMany({ where: { tenantId } })
         responseData = {
           alerts: mockStockOutPredictions,
           criticalItems: mockStockOutPredictions.filter(alert => alert.severity === 'high'),
@@ -179,7 +172,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'seasonal':
-        // TODO: await prisma.seasonalRecommendation.findMany({ where: { tenantId, category } })
         responseData = {
           recommendations: mockSeasonalRecommendations.filter(rec =>
             !category || rec.category === category
@@ -190,7 +182,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'pricing':
-        // TODO: await prisma.priceOptimization.findMany({ where: { tenantId } })
         responseData = {
           optimizations: mockPriceOptimization,
           potentialRevenue: mockPriceOptimization.reduce((sum, opt) => sum + opt.expectedImpact, 0),
@@ -199,7 +190,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'churn':
-        // TODO: await prisma.churnPrediction.findMany({ where: { tenantId } })
         responseData = {
           predictions: mockChurnPrediction,
           highRiskCustomers: mockChurnPrediction.filter(pred => pred.churnProbability > 0.7),
@@ -210,7 +200,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
       case 'trends':
         // Market trend analysis
-        // TODO: Generate trends from tenant-specific data
         responseData = {
           emergingTrends: [
             { trend: 'Sustainable packaging', impact: 'High', timeframe: '6 months' },

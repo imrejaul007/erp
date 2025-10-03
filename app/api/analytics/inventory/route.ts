@@ -171,15 +171,10 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     const category = searchParams.get('category');
     const storeId = searchParams.get('storeId');
 
-    // TODO: Add tenantId filter to all Prisma queries when implemented
-    // Example: await prisma.inventory.findMany({ where: { tenantId } })
-    // For aggregations: const inventory = await prisma.inventory.findMany({ where: { tenantId, ...filters } })
-
     let responseData: any = {};
 
     switch (type) {
       case 'health':
-        // TODO: await prisma.inventoryHealth.findFirst({ where: { tenantId } })
         responseData = {
           health: mockInventoryHealth,
           summary: {
@@ -190,7 +185,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'turnover':
-        // TODO: await prisma.inventoryTurnover.findMany({ where: { tenantId, category } })
         responseData = {
           analysis: mockTurnoverAnalysis.filter(item =>
             !category || item.category === category
@@ -201,7 +195,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'aging':
-        // TODO: await prisma.agingInventory.findMany({ where: { tenantId, category } })
         responseData = {
           agingItems: mockInventoryHealth.agingItems.filter(item =>
             !category || item.category === category
@@ -218,7 +211,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'wastage':
-        // TODO: await prisma.wastageAnalysis.findMany({ where: { tenantId } })
         responseData = {
           wastageData: mockWastageAnalysis,
           totalWastageValue: mockWastageAnalysis.reduce((sum, item) => sum + item.totalValue, 0),
@@ -227,7 +219,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'reorder':
-        // TODO: await prisma.reorderPoint.findMany({ where: { tenantId } })
         responseData = {
           reorderPoints: mockReorderPoints,
           urgentReorders: mockReorderPoints.filter(item => item.status === 'urgent_reorder'),
@@ -236,7 +227,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         break;
 
       case 'suppliers':
-        // TODO: await prisma.supplier.findMany({ where: { tenantId } })
         responseData = {
           suppliers: mockSupplierPerformance,
           topPerformer: mockSupplierPerformance[0],

@@ -68,8 +68,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     // Here you would fetch real data from your database based on filters
     // For now, returning mock data filtered by tenantId
-    // TODO: Add tenantId filter to actual Prisma queries when implemented
-    // Example: await prisma.kpi.findMany({ where: { tenantId } })
 
     const dashboardData = {
       kpis: mockKPIs,
@@ -91,7 +89,6 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 
     // Apply filters and return filtered data
     // This is where you'd implement the actual filtering logic
-    // TODO: Add tenantId filter to queries: await prisma.kpi.findMany({ where: { tenantId, ...filters } })
 
     return apiResponse({ message: 'Filters applied successfully' });
   } catch (error: any) {
