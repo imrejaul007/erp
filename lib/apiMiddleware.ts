@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-simple';
 import { prisma } from '@/lib/database/prisma';
+import { handleError, AppError, ErrorCode, ErrorHelpers } from '@/lib/errorHandler';
+import { RequestLogger } from '@/lib/requestLogger';
+import { rateLimit, RateLimits } from '@/lib/rateLimit';
 
 /**
  * API Response helper with consistent error handling
@@ -41,11 +44,11 @@ export async function requireAuth() {
   const user = await getAuthenticatedUser();
 
   if (!user) {
-    throw new Error('Unauthorized: Please log in');
+    ErrorHelpers.unauthorized('Please log in');
   }
 
   if (!user.isActive) {
-    throw new Error('Account is inactive');
+    ErrorHelpers.forbidden('Account is inactive');
   }
 
   return user;
@@ -58,7 +61,11 @@ export async function requireTenant() {
   const user = await requireAuth();
 
   if (!user.tenantId) {
-    throw new Error('Unauthorized: No tenant context. Please contact support.');
+    throw new AppError(
+      'No tenant context. Please contact support.',
+      ErrorCode.TENANT_NOT_FOUND,
+      401
+    );
   }
 
   // Verify tenant is active
@@ -68,11 +75,19 @@ export async function requireTenant() {
   });
 
   if (!tenant) {
-    throw new Error('Tenant not found');
+    throw new AppError(
+      'Tenant not found',
+      ErrorCode.TENANT_NOT_FOUND,
+      404
+    );
   }
 
   if (!tenant.isActive || tenant.status === 'SUSPENDED' || tenant.status === 'CANCELLED') {
-    throw new Error('Tenant account is inactive. Please contact support.');
+    throw new AppError(
+      'Tenant account is inactive. Please contact support.',
+      ErrorCode.FORBIDDEN,
+      403
+    );
   }
 
   return {
@@ -97,15 +112,34 @@ export async function requireTenant() {
 export function withTenant(
   handler: (
     req: NextRequest,
-    context: { tenantId: string; user: Awaited<ReturnType<typeof requireAuth>> }
+    context: { tenantId: string; user: Awaited<ReturnType<typeof requireAuth>>; logger: RequestLogger }
   ) => Promise<NextResponse>
 ) {
   return async (req: NextRequest) => {
+    const logger = new RequestLogger(req);
+
     try {
       const { tenantId, user } = await requireTenant();
-      return await handler(req, { tenantId, user });
+      logger['tenantId'] = tenantId;
+      logger['userId'] = user.id;
+
+      const response = await handler(req, { tenantId, user, logger });
+
+      // Log successful response
+      logger.success(response.status);
+
+      return response;
     } catch (error: any) {
-      return apiError(error.message || 'An error occurred', 401);
+      const url = new URL(req.url);
+      const errorResponse = handleError(error, url.pathname);
+
+      // Log error response
+      logger.error(
+        errorResponse.status,
+        error instanceof AppError ? error.message : 'An error occurred'
+      );
+
+      return errorResponse;
     }
   };
 }
@@ -116,15 +150,33 @@ export function withTenant(
 export function withAuth(
   handler: (
     req: NextRequest,
-    context: { user: Awaited<ReturnType<typeof requireAuth>> }
+    context: { user: Awaited<ReturnType<typeof requireAuth>>; logger: RequestLogger }
   ) => Promise<NextResponse>
 ) {
   return async (req: NextRequest) => {
+    const logger = new RequestLogger(req);
+
     try {
       const user = await requireAuth();
-      return await handler(req, { user });
+      logger['userId'] = user.id;
+
+      const response = await handler(req, { user, logger });
+
+      // Log successful response
+      logger.success(response.status);
+
+      return response;
     } catch (error: any) {
-      return apiError(error.message || 'An error occurred', 401);
+      const url = new URL(req.url);
+      const errorResponse = handleError(error, url.pathname);
+
+      // Log error response
+      logger.error(
+        errorResponse.status,
+        error instanceof AppError ? error.message : 'An error occurred'
+      );
+
+      return errorResponse;
     }
   };
 }
@@ -142,6 +194,57 @@ export function hasRole(user: Awaited<ReturnType<typeof requireAuth>>, roles: st
  */
 export function requireRole(user: Awaited<ReturnType<typeof requireAuth>>, roles: string | string[]) {
   if (!hasRole(user, roles)) {
-    throw new Error(`Forbidden: Requires role ${Array.isArray(roles) ? roles.join(' or ') : roles}`);
+    ErrorHelpers.forbidden(`Requires role ${Array.isArray(roles) ? roles.join(' or ') : roles}`);
   }
 }
+
+/**
+ * Enhanced withTenant with rate limiting
+ * Usage:
+ * export const POST = withTenant(handler, { rateLimit: RateLimits.write() });
+ */
+export function withTenantAndRateLimit(
+  handler: (
+    req: NextRequest,
+    context: { tenantId: string; user: Awaited<ReturnType<typeof requireAuth>>; logger: RequestLogger }
+  ) => Promise<NextResponse>,
+  options?: {
+    rateLimit?: ReturnType<typeof rateLimit>;
+  }
+) {
+  return async (req: NextRequest) => {
+    const logger = new RequestLogger(req);
+
+    try {
+      const { tenantId, user } = await requireTenant();
+      logger['tenantId'] = tenantId;
+      logger['userId'] = user.id;
+
+      // Apply rate limiting if configured
+      if (options?.rateLimit) {
+        await options.rateLimit(req, tenantId);
+      }
+
+      const response = await handler(req, { tenantId, user, logger });
+
+      // Log successful response
+      logger.success(response.status);
+
+      return response;
+    } catch (error: any) {
+      const url = new URL(req.url);
+      const errorResponse = handleError(error, url.pathname);
+
+      // Log error response
+      logger.error(
+        errorResponse.status,
+        error instanceof AppError ? error.message : 'An error occurred'
+      );
+
+      return errorResponse;
+    }
+  };
+}
+
+// Export utilities for use in routes
+export { AppError, ErrorCode, ErrorHelpers, RateLimits };
