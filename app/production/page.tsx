@@ -349,13 +349,13 @@ export default function ProductionPage() {
   return (
     <div className="space-y-4 sm:space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Production & Segregation</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Production & Segregation</h1>
             <p className="text-muted-foreground">
               Complete production management from raw oud to finished perfumes
             </p>
@@ -469,7 +469,7 @@ export default function ProductionPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {Object.entries(module.metrics).map(([key, value]) => (
                         <div key={key}>
                           <p className="text-xs text-muted-foreground capitalize">

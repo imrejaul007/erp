@@ -211,22 +211,22 @@ const MultiLocationPage = () => {
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-                  <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-
-          <h1 className="text-3xl font-bold text-gray-900">Multi-Location Management</h1>
-          <p className="text-gray-600">Monitor and manage all store locations from a centralized dashboard</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Multi-Location Management</h1>
+            <p className="text-gray-600">Monitor and manage all store locations from a centralized dashboard</p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => router.push('/multi-location/settings')}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" size="sm" onClick={() => router.push('/multi-location/settings')} className="w-full sm:w-auto">
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </Button>
-          <Button onClick={() => router.push('/multi-location/add-location')}>
+          <Button onClick={() => router.push('/multi-location/add-location')} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Add Location
           </Button>

@@ -154,26 +154,26 @@ const PurchasingPage = () => {
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-                  <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-
-          <h1 className="text-3xl font-bold text-gray-900">Purchasing & Vendors</h1>
-          <p className="text-gray-600">Manage suppliers, purchase orders, and vendor relationships</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Purchasing & Vendors</h1>
+            <p className="text-gray-600">Manage suppliers, purchase orders, and vendor relationships</p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="w-full sm:w-auto">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={() => router.push('/purchasing/reports')}>
+          <Button variant="outline" size="sm" onClick={() => router.push('/purchasing/reports')} className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={() => router.push('/purchasing/create-order')}>
+          <Button onClick={() => router.push('/purchasing/create-order')} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             New Purchase Order
           </Button>
@@ -250,14 +250,14 @@ const PurchasingPage = () => {
       {/* Recent Purchase Orders */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <CardTitle>Recent Purchase Orders</CardTitle>
               <CardDescription>Latest procurement activities and status updates</CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -267,7 +267,7 @@ const PurchasingPage = () => {
                   <SelectItem value="thisQuarter">This Quarter</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
@@ -275,7 +275,8 @@ const PurchasingPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Order ID</TableHead>
@@ -324,6 +325,7 @@ const PurchasingPage = () => {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

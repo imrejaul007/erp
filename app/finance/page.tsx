@@ -184,26 +184,26 @@ export default function FinancePage() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-                  <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Calculator className="h-8 w-8 text-amber-600" />
-            Financial Management
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Track revenue, expenses, VAT compliance, and financial reports
-          </p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
+              <Calculator className="h-6 sm:h-8 w-6 sm:w-8 text-amber-600" />
+              Financial Management
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Track revenue, expenses, VAT compliance, and financial reports
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => router.push('/finance/reports')}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={() => router.push('/finance/reports')}>
             <FileText className="h-4 w-4" />
             Generate Report
           </Button>
-          <Button className="gap-2 bg-amber-600 hover:bg-amber-700" onClick={() => router.push('/finance/add-transaction')}>
+          <Button className="gap-2 bg-amber-600 hover:bg-amber-700 w-full sm:w-auto" onClick={() => router.push('/finance/add-transaction')}>
             <Plus className="h-4 w-4" />
             Add Transaction
           </Button>
@@ -237,22 +237,22 @@ export default function FinancePage() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Overview
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="flex items-center">
-            <Receipt className="h-4 w-4 mr-2" />
-            Transactions
+          <TabsTrigger value="transactions" className="flex items-center gap-2">
+            <Receipt className="h-4 w-4" />
+            <span className="hidden sm:inline">Transactions</span>
           </TabsTrigger>
-          <TabsTrigger value="vat" className="flex items-center">
-            <FileText className="h-4 w-4 mr-2" />
-            VAT Reports
+          <TabsTrigger value="vat" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">VAT Reports</span>
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center">
-            <PieChart className="h-4 w-4 mr-2" />
-            Analytics
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <PieChart className="h-4 w-4" />
+            <span className="hidden sm:inline">Analytics</span>
           </TabsTrigger>
         </TabsList>
 
@@ -413,7 +413,7 @@ export default function FinancePage() {
                   </div>
                 </div>
                 <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <Filter className="h-4 w-4 mr-2" />
                     <SelectValue placeholder="Filter period" />
                   </SelectTrigger>
@@ -426,7 +426,7 @@ export default function FinancePage() {
                 </Select>
               </div>
 
-              <div className="rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -490,7 +490,7 @@ export default function FinancePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>

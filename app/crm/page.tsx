@@ -169,26 +169,26 @@ export default function CRMDashboard() {
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Customer Relationship Management</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Customer Relationship Management</h1>
             <p className="text-gray-600 mt-1">Manage customers, loyalty, and communications</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.push('/crm/comprehensive')}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={() => router.push('/crm/comprehensive')} className="w-full sm:w-auto">
             <Users className="w-4 h-4 mr-2" />
             View All Customers
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/crm/add-customer')}>
+          <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" onClick={() => router.push('/crm/add-customer')}>
             <Users className="w-4 h-4 mr-2" />
             Add Customer
           </Button>
-          <Button variant="outline" onClick={() => router.push('/crm/campaigns')}>
+          <Button variant="outline" onClick={() => router.push('/crm/campaigns')} className="w-full sm:w-auto">
             <MessageSquare className="w-4 h-4 mr-2" />
             Send Campaign
           </Button>
@@ -307,7 +307,7 @@ export default function CRMDashboard() {
 
       {/* Main Content */}
       <Tabs defaultValue="customers" className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="loyalty">Loyalty</TabsTrigger>
           <TabsTrigger value="communications">Communications</TabsTrigger>
@@ -320,20 +320,20 @@ export default function CRMDashboard() {
         <TabsContent value="customers" className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
                   Customer Database
                 </CardTitle>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <Input
                     placeholder="Search customers..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-64"
+                    className="w-full sm:w-64"
                   />
                   <Select value={segmentFilter} onValueChange={setSegmentFilter}>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-full sm:w-40">
                       <SelectValue placeholder="All Segments" />
                     </SelectTrigger>
                     <SelectContent>
@@ -345,7 +345,7 @@ export default function CRMDashboard() {
                     </SelectContent>
                   </Select>
                   <Select value={tierFilter} onValueChange={setTierFilter}>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-full sm:w-40">
                       <SelectValue placeholder="All Tiers" />
                     </SelectTrigger>
                     <SelectContent>
@@ -433,7 +433,7 @@ export default function CRMDashboard() {
                 <CardTitle>Customer Segments</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64">
+                <div className="h-64 sm:h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -461,7 +461,7 @@ export default function CRMDashboard() {
                 <CardTitle>Segment Revenue</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64">
+                <div className="h-64 sm:h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={segmentData}>
                       <CartesianGrid strokeDasharray="3 3" />
