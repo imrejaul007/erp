@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -20,20 +19,16 @@ const quickbooksSyncSchema = z.object({
 });
 
 // Get QuickBooks configuration
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
     if (action === 'auth_url') {
       // Generate QuickBooks OAuth URL
       const authUrl = generateQuickBooksAuthUrl();
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: { authUrl },
       });
@@ -45,7 +40,7 @@ export async function GET(request: NextRequest) {
     ` as any[];
 
     if (qbConfig.length === 0) {
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: null,
         message: 'No QuickBooks integration configured',
@@ -72,7 +67,7 @@ export async function GET(request: NextRequest) {
       LIMIT 10
     ` as any[];
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: config.id,
@@ -88,21 +83,17 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('QuickBooks Integration GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch QuickBooks configuration' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to fetch QuickBooks configuration', 500);
   }
-}
+});
 
 // Complete QuickBooks OAuth authentication
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = quickbooksAuthSchema.parse(body);
 
@@ -110,10 +101,7 @@ export async function POST(request: NextRequest) {
     const tokenResponse = await exchangeCodeForTokens(validatedData.code, validatedData.realmId);
 
     if (!tokenResponse.success) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to obtain access token', details: tokenResponse.error },
-        { status: 400 }
-      );
+      return apiError('Failed to obtain access token', 400);
     }
 
     const configId = generateId();
@@ -130,7 +118,7 @@ export async function POST(request: NextRequest) {
       )
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: configId,
@@ -141,26 +129,16 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('QuickBooks Integration POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to configure QuickBooks integration' },
-      { status: 500 }
-    );
+    return apiError('Failed to configure QuickBooks integration', 500);
   }
-}
+});
 
 // Sync data with QuickBooks
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = quickbooksSyncSchema.parse(body);
 
@@ -170,10 +148,7 @@ export async function PUT(request: NextRequest) {
     ` as any[];
 
     if (qbConfig.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No QuickBooks integration configured' },
-        { status: 400 }
-      );
+      return apiError('No QuickBooks integration configured', 400);
     }
 
     const config = qbConfig[0];
@@ -183,10 +158,7 @@ export async function PUT(request: NextRequest) {
     if (isTokenExpired) {
       const refreshResult = await refreshQuickBooksToken(config);
       if (!refreshResult.success) {
-        return NextResponse.json(
-          { success: false, error: 'Token refresh failed', details: refreshResult.error },
-          { status: 401 }
-        );
+        return apiError('Token refresh failed', 401);
       }
       config.access_token = refreshResult.accessToken;
     }
@@ -198,7 +170,7 @@ export async function PUT(request: NextRequest) {
         id, quickbooks_config_id, type, status, started_at, started_by
       ) VALUES (
         ${syncLogId}, ${config.id}, ${validatedData.type}, 'in_progress',
-        ${new Date()}, ${session.user.id}
+        ${new Date()}, ${user.id}
       )
     `;
 
@@ -244,7 +216,7 @@ export async function PUT(request: NextRequest) {
         WHERE id = ${config.id}
       `;
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: syncResult,
         message: 'Sync completed successfully',
@@ -265,26 +237,16 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('QuickBooks Sync error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Sync failed', details: (error as Error).message },
-      { status: 500 }
-    );
+    return apiError('Sync failed: ' + (error as Error).message, 500);
   }
-}
+});
 
 // Disconnect QuickBooks integration
-export async function DELETE(request: NextRequest) {
+export const DELETE = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Deactivate QuickBooks configuration
     await prisma.$executeRaw`
       UPDATE quickbooks_configs
@@ -292,18 +254,18 @@ export async function DELETE(request: NextRequest) {
       WHERE is_active = true
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       message: 'QuickBooks integration disconnected successfully',
     });
   } catch (error) {
     console.error('QuickBooks Integration DELETE error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to disconnect QuickBooks integration' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to disconnect QuickBooks integration', 500);
   }
-}
+});
 
 // Helper functions
 function generateQuickBooksAuthUrl(): string {

@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -31,20 +30,16 @@ const tallySyncSchema = z.object({
 });
 
 // Get Tally configuration
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Get Tally integration configuration
     const tallyConfig = await prisma.$queryRaw`
       SELECT * FROM tally_integrations WHERE is_active = true LIMIT 1
     ` as any[];
 
     if (tallyConfig.length === 0) {
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: null,
         message: 'No Tally integration configured',
@@ -68,7 +63,7 @@ export async function GET(request: NextRequest) {
       LIMIT 10
     ` as any[];
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: config.id,
@@ -85,31 +80,24 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Tally Integration GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch Tally configuration' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to fetch Tally configuration', 500);
   }
-}
+});
 
 // Create or update Tally configuration
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = tallyConfigSchema.parse(body);
 
     // Test connection first
     const connectionTest = await testTallyConnection(validatedData);
     if (!connectionTest.success) {
-      return NextResponse.json(
-        { success: false, error: 'Connection test failed', details: connectionTest.error },
-        { status: 400 }
-      );
+      return apiError('Connection test failed: ' + (connectionTest.error || 'Unknown error'), 400);
     }
 
     // Check if configuration already exists
@@ -146,7 +134,7 @@ export async function POST(request: NextRequest) {
       `;
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: existingConfig.length > 0 ? existingConfig[0].id : configId,
@@ -157,26 +145,16 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Tally Integration POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to save Tally configuration' },
-      { status: 500 }
-    );
+    return apiError('Failed to save Tally configuration', 500);
   }
-}
+});
 
 // Sync data with Tally
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = tallySyncSchema.parse(body);
 
@@ -186,10 +164,7 @@ export async function PUT(request: NextRequest) {
     ` as any[];
 
     if (tallyConfig.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No Tally integration configured' },
-        { status: 400 }
-      );
+      return apiError('No Tally integration configured', 400);
     }
 
     const config = tallyConfig[0];
@@ -201,7 +176,7 @@ export async function PUT(request: NextRequest) {
         id, tally_integration_id, type, status, started_at, started_by
       ) VALUES (
         ${syncLogId}, ${config.id}, ${validatedData.type}, 'in_progress',
-        ${new Date()}, ${session.user.id}
+        ${new Date()}, ${user.id}
       )
     `;
 
@@ -247,7 +222,7 @@ export async function PUT(request: NextRequest) {
         WHERE id = ${config.id}
       `;
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: syncResult,
         message: 'Sync completed successfully',
@@ -268,17 +243,11 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Tally Sync error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Sync failed', details: (error as Error).message },
-      { status: 500 }
-    );
+    return apiError('Sync failed: ' + (error as Error).message, 500);
   }
-}
+});
 
 // Test Tally connection
 async function testTallyConnection(config: any): Promise<{ success: boolean; error?: string }> {

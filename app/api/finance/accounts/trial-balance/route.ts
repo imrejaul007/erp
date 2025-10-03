@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -15,13 +14,9 @@ const trialBalanceSchema = z.object({
 });
 
 // Generate Trial Balance
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const params = {
       asOfDate: searchParams.get('asOfDate') || new Date().toISOString().split('T')[0],
@@ -40,47 +35,34 @@ export async function GET(request: NextRequest) {
       validatedParams.accountType
     );
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: trialBalance,
       metadata: {
         asOfDate: validatedParams.asOfDate,
         currency: validatedParams.currency,
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user?.email,
       },
     });
   } catch (error) {
     console.error('Trial Balance error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate trial balance' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate trial balance', 500);
   }
-}
+});
 
 // Save/Export Trial Balance
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const { asOfDate, currency = 'AED', format = 'json' } = body;
 
     if (!asOfDate) {
-      return NextResponse.json(
-        { success: false, error: 'As of date is required' },
-        { status: 400 }
-      );
+      return apiError('As of date is required', 400);
     }
 
     // Generate trial balance
@@ -97,7 +79,7 @@ export async function POST(request: NextRequest) {
       ) VALUES (
         ${trialBalanceId}, ${period}, ${new Date(asOfDate)}, ${currency},
         ${trialBalance.summary.totalDebits}, ${trialBalance.summary.totalCredits},
-        ${trialBalance.summary.isBalanced}, ${session.user.id}, ${new Date()}
+        ${trialBalance.summary.isBalanced}, ${user.id}, ${new Date()}
       )
     `;
 
@@ -124,7 +106,7 @@ export async function POST(request: NextRequest) {
       return generatePDFResponse(trialBalance);
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: trialBalanceId,
@@ -134,12 +116,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Trial Balance POST error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to save trial balance' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to save trial balance', 500);
   }
-}
+});
 
 // Generate trial balance data
 async function generateTrialBalance(

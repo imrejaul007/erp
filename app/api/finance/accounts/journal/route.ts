@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -53,13 +52,9 @@ const journalEntrySchema = z.object({
 );
 
 // Get journal entries
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -159,7 +154,7 @@ export async function GET(request: NextRequest) {
 
     const totalCount = (total as any[])[0]?.count || 0;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: formattedEntries,
       pagination: {
@@ -171,21 +166,17 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Journal Entries GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch journal entries' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
+    }
+    return apiError('Failed to fetch journal entries', 500);
   }
-}
+});
 
 // Create journal entry
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = journalEntrySchema.parse(body);
 
@@ -235,7 +226,7 @@ export async function POST(request: NextRequest) {
           ${validatedData.description}, ${new Date(validatedData.transactionDate)},
           ${validatedData.currency}, ${validatedData.exchangeRate},
           ${totalDebit}, ${totalCredit}, 'DRAFT', ${validatedData.source},
-          ${validatedData.sourceId || null}, ${session.user.id},
+          ${validatedData.sourceId || null}, ${user.id},
           ${new Date()}, ${new Date()}
         )
       `;
@@ -280,7 +271,7 @@ export async function POST(request: NextRequest) {
             referenceId: entryId,
             transactionDate: new Date(validatedData.transactionDate),
             status: 'PENDING', // Will be completed when journal is posted
-            createdById: session.user.id,
+            createdById: user.id,
           },
         });
       }
@@ -288,7 +279,7 @@ export async function POST(request: NextRequest) {
       return entryId;
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         id: result,
@@ -302,17 +293,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Journal Entry POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to create journal entry' },
-      { status: 500 }
-    );
+    return apiError('Failed to create journal entry', 500);
   }
-}
+});
 
 // Helper functions
 function buildWhereClause(whereClause: any): string {

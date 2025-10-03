@@ -1,20 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
 // Get specific journal entry with line items
-export async function GET(
+export const GET = withTenant(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context: { tenantId: string; user: any; params: { id: string } }
+) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // TODO: Add tenantId filter to all Prisma queries in this handler
+    const { params } = context;
 
     const { id } = params;
 
@@ -141,30 +138,24 @@ export async function GET(
       })),
     };
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: formattedEntry,
     });
   } catch (error) {
     console.error('Journal Entry GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch journal entry' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch journal entry', 500);
   }
-}
+});
 
 // Post journal entry (approve and post to ledger)
-export async function POST(
+export const POST = withTenant(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context: { tenantId: string; user: any; params: { id: string } }
+) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
+    const { params, user } = context;
     const { id } = params;
 
     // Get current journal entry
@@ -173,19 +164,13 @@ export async function POST(
     ` as any[];
 
     if (journalEntry.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Journal entry not found' },
-        { status: 404 }
-      );
+      return apiError('Journal entry not found', 404);
     }
 
     const entry = journalEntry[0];
 
     if (entry.status !== 'DRAFT' && entry.status !== 'PENDING_APPROVAL') {
-      return NextResponse.json(
-        { success: false, error: 'Journal entry cannot be posted in current status' },
-        { status: 400 }
-      );
+      return apiError('Journal entry cannot be posted in current status', 400);
     }
 
     // Post journal entry within transaction
@@ -195,7 +180,7 @@ export async function POST(
         UPDATE journal_entries
         SET
           status = 'POSTED',
-          approved_by = ${session.user.id},
+          approved_by = ${user.id},
           approved_at = ${new Date()},
           posting_date = ${new Date()},
           updated_at = ${new Date()}
@@ -210,7 +195,7 @@ export async function POST(
         },
         data: {
           status: 'COMPLETED',
-          updatedById: session.user.id,
+          updatedById: user.id,
           updatedAt: new Date(),
         },
       });
@@ -255,39 +240,30 @@ export async function POST(
       }
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       message: 'Journal entry posted successfully',
     });
   } catch (error) {
     console.error('Journal Entry POST error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to post journal entry' },
-      { status: 500 }
-    );
+    return apiError('Failed to post journal entry', 500);
   }
-}
+});
 
 // Reverse journal entry
-export async function DELETE(
+export const DELETE = withTenant(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context: { tenantId: string; user: any; params: { id: string } }
+) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
+    const { params, user } = context;
     const { id } = params;
     const body = await request.json();
     const { reason } = body;
 
     if (!reason) {
-      return NextResponse.json(
-        { success: false, error: 'Reversal reason is required' },
-        { status: 400 }
-      );
+      return apiError('Reversal reason is required', 400);
     }
 
     // Get current journal entry
@@ -296,19 +272,13 @@ export async function DELETE(
     ` as any[];
 
     if (journalEntry.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Journal entry not found' },
-        { status: 404 }
-      );
+      return apiError('Journal entry not found', 404);
     }
 
     const entry = journalEntry[0];
 
     if (entry.status !== 'POSTED') {
-      return NextResponse.json(
-        { success: false, error: 'Only posted journal entries can be reversed' },
-        { status: 400 }
-      );
+      return apiError('Only posted journal entries can be reversed', 400);
     }
 
     // Reverse journal entry within transaction
@@ -320,7 +290,7 @@ export async function DELETE(
         UPDATE journal_entries
         SET
           status = 'REVERSED',
-          reversed_by = ${session.user.id},
+          reversed_by = ${user.id},
           reversed_at = ${new Date()},
           reversal_reason = ${reason},
           updated_at = ${new Date()}
@@ -345,7 +315,7 @@ export async function DELETE(
           ${`REVERSAL: ${entry.description} - ${reason}`},
           ${new Date()}, ${entry.currency}, ${entry.exchange_rate},
           ${entry.total_debit}, ${entry.total_credit},
-          'POSTED', 'reversal', ${id}, ${session.user.id},
+          'POSTED', 'reversal', ${id}, ${user.id},
           ${new Date()}, ${new Date()}
         )
       `;
@@ -386,7 +356,7 @@ export async function DELETE(
             referenceId: reversalId,
             transactionDate: new Date(),
             status: 'COMPLETED',
-            createdById: session.user.id,
+            createdById: user.id,
           },
         });
 
@@ -424,13 +394,13 @@ export async function DELETE(
         },
         data: {
           status: 'CANCELLED',
-          updatedById: session.user.id,
+          updatedById: user.id,
           updatedAt: new Date(),
         },
       });
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         reversalJournalNo,
@@ -439,12 +409,9 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Journal Entry DELETE error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to reverse journal entry' },
-      { status: 500 }
-    );
+    return apiError('Failed to reverse journal entry', 500);
   }
-}
+});
 
 // Helper functions
 async function generateReversalJournalNumber(originalJournalNo: string): Promise<string> {
