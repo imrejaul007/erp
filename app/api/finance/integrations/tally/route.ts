@@ -32,10 +32,9 @@ const tallySyncSchema = z.object({
 // Get Tally configuration
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Get Tally integration configuration
     const tallyConfig = await prisma.$queryRaw`
-      SELECT * FROM tally_integrations WHERE is_active = true LIMIT 1
+      SELECT * FROM tally_integrations WHERE tenant_id = ${tenantId} AND is_active = true LIMIT 1
     ` as any[];
 
     if (tallyConfig.length === 0) {
@@ -51,15 +50,16 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     // Get sync history
     const syncHistory = await prisma.$queryRaw`
       SELECT
-        type,
-        status,
-        records_synced,
-        started_at,
-        completed_at,
-        error_message
-      FROM tally_sync_logs
-      WHERE tally_integration_id = ${config.id}
-      ORDER BY started_at DESC
+        logs.type,
+        logs.status,
+        logs.records_synced,
+        logs.started_at,
+        logs.completed_at,
+        logs.error_message
+      FROM tally_sync_logs logs
+      LEFT JOIN tally_integrations integrations ON logs.tally_integration_id = integrations.id
+      WHERE integrations.tenant_id = ${tenantId} AND logs.tally_integration_id = ${config.id}
+      ORDER BY logs.started_at DESC
       LIMIT 10
     ` as any[];
 
@@ -90,7 +90,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Create or update Tally configuration
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = tallyConfigSchema.parse(body);
 
@@ -102,7 +101,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 
     // Check if configuration already exists
     const existingConfig = await prisma.$queryRaw`
-      SELECT id FROM tally_integrations WHERE is_active = true LIMIT 1
+      SELECT id FROM tally_integrations WHERE tenant_id = ${tenantId} AND is_active = true LIMIT 1
     ` as any[];
 
     const configId = generateId();
@@ -118,16 +117,16 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
           username = ${validatedData.username || null},
           sync_settings = ${JSON.stringify(validatedData.syncSettings)},
           updated_at = ${new Date()}
-        WHERE id = ${existingConfig[0].id}
+        WHERE tenant_id = ${tenantId} AND id = ${existingConfig[0].id}
       `;
     } else {
       // Create new configuration
       await prisma.$executeRaw`
         INSERT INTO tally_integrations (
-          id, company_name, server_address, port, username,
+          id, tenant_id, company_name, server_address, port, username,
           sync_settings, is_active, created_at, updated_at
         ) VALUES (
-          ${configId}, ${validatedData.companyName}, ${validatedData.serverAddress},
+          ${configId}, ${tenantId}, ${validatedData.companyName}, ${validatedData.serverAddress},
           ${validatedData.port}, ${validatedData.username || null},
           ${JSON.stringify(validatedData.syncSettings)}, true, ${new Date()}, ${new Date()}
         )
@@ -154,13 +153,12 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 // Sync data with Tally
 export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = tallySyncSchema.parse(body);
 
     // Get Tally configuration
     const tallyConfig = await prisma.$queryRaw`
-      SELECT * FROM tally_integrations WHERE is_active = true LIMIT 1
+      SELECT * FROM tally_integrations WHERE tenant_id = ${tenantId} AND is_active = true LIMIT 1
     ` as any[];
 
     if (tallyConfig.length === 0) {
@@ -219,7 +217,7 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
       await prisma.$executeRaw`
         UPDATE tally_integrations
         SET last_sync_at = ${new Date()}
-        WHERE id = ${config.id}
+        WHERE tenant_id = ${tenantId} AND id = ${config.id}
       `;
 
       return apiResponse({

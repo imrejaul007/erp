@@ -16,7 +16,6 @@ const trialBalanceSchema = z.object({
 // Generate Trial Balance
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const params = {
       asOfDate: searchParams.get('asOfDate') || new Date().toISOString().split('T')[0],
@@ -29,6 +28,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     // Generate trial balance
     const trialBalance = await generateTrialBalance(
+      tenantId,
       validatedParams.asOfDate,
       validatedParams.currency,
       validatedParams.includeZeroBalances,
@@ -57,7 +57,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Save/Export Trial Balance
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const { asOfDate, currency = 'AED', format = 'json' } = body;
 
@@ -66,7 +65,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Generate trial balance
-    const trialBalance = await generateTrialBalance(asOfDate, currency, true);
+    const trialBalance = await generateTrialBalance(tenantId, asOfDate, currency, true);
 
     // Save trial balance record
     const trialBalanceId = generateId();
@@ -74,10 +73,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 
     await prisma.$executeRaw`
       INSERT INTO trial_balance (
-        id, period, as_of_date, currency, total_debits, total_credits,
+        id, tenant_id, period, as_of_date, currency, total_debits, total_credits,
         is_balanced, generated_by, generated_at
       ) VALUES (
-        ${trialBalanceId}, ${period}, ${new Date(asOfDate)}, ${currency},
+        ${trialBalanceId}, ${tenantId}, ${period}, ${new Date(asOfDate)}, ${currency},
         ${trialBalance.summary.totalDebits}, ${trialBalance.summary.totalCredits},
         ${trialBalance.summary.isBalanced}, ${user.id}, ${new Date()}
       )
@@ -125,6 +124,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 
 // Generate trial balance data
 async function generateTrialBalance(
+  tenantId: string,
   asOfDate: string,
   currency: string,
   includeZeroBalances: boolean = false,
@@ -134,7 +134,7 @@ async function generateTrialBalance(
   cutoffDate.setHours(23, 59, 59, 999); // End of day
 
   // Build account filter
-  let accountFilter = 'WHERE a.is_active = true';
+  let accountFilter = `WHERE a.tenant_id = '${tenantId}' AND a.is_active = true`;
   if (accountType) {
     accountFilter += ` AND a.type = '${accountType}'`;
   }
@@ -159,7 +159,8 @@ async function generateTrialBalance(
         t.account_id,
         SUM(CASE WHEN t.type = 'DEBIT' THEN t.amount ELSE -t.amount END) as opening_balance
       FROM transactions t
-      WHERE t.status = 'COMPLETED'
+      WHERE t.tenant_id = '${tenantId}'
+        AND t.status = 'COMPLETED'
         AND t.transaction_date < '${cutoffDate.toISOString()}'
         AND t.currency = '${currency}'
       GROUP BY t.account_id
@@ -171,7 +172,8 @@ async function generateTrialBalance(
         SUM(CASE WHEN t.type = 'DEBIT' THEN t.amount ELSE 0 END) as debit_movements,
         SUM(CASE WHEN t.type = 'CREDIT' THEN t.amount ELSE 0 END) as credit_movements
       FROM transactions t
-      WHERE t.status = 'COMPLETED'
+      WHERE t.tenant_id = '${tenantId}'
+        AND t.status = 'COMPLETED'
         AND t.transaction_date <= '${cutoffDate.toISOString()}'
         AND t.currency = '${currency}'
       GROUP BY t.account_id
@@ -182,7 +184,8 @@ async function generateTrialBalance(
         t.account_id,
         SUM(CASE WHEN t.type = 'DEBIT' THEN t.amount ELSE -t.amount END) as closing_balance
       FROM transactions t
-      WHERE t.status = 'COMPLETED'
+      WHERE t.tenant_id = '${tenantId}'
+        AND t.status = 'COMPLETED'
         AND t.transaction_date <= '${cutoffDate.toISOString()}'
         AND t.currency = '${currency}'
       GROUP BY t.account_id

@@ -54,7 +54,6 @@ const journalEntrySchema = z.object({
 // Get journal entries
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -65,7 +64,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     const source = searchParams.get('source');
     const search = searchParams.get('search');
 
-    const whereClause: any = {};
+    const whereClause: any = { tenantId };
 
     if (status) {
       whereClause.status = status;
@@ -116,7 +115,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         FROM journal_entries je
         LEFT JOIN users u ON je.created_by = u.id
         LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
-        ${buildWhereClause(whereClause)}
+        ${buildWhereClause(whereClause, tenantId)}
         GROUP BY je.id, u.first_name, u.last_name
         ORDER BY je.transaction_date DESC, je.created_at DESC
         LIMIT ${limit} OFFSET ${offset}
@@ -124,7 +123,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
       prisma.$queryRaw`
         SELECT COUNT(DISTINCT je.id) as count
         FROM journal_entries je
-        ${buildWhereClause(whereClause)}
+        ${buildWhereClause(whereClause, tenantId)}
       `,
     ]);
 
@@ -176,7 +175,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Create journal entry
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = journalEntrySchema.parse(body);
 
@@ -207,7 +205,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     // }
 
     // Generate journal number
-    const journalNo = await generateJournalNumber();
+    const journalNo = await generateJournalNumber(tenantId);
 
     // Calculate totals
     const totalDebit = validatedData.lineItems.reduce((sum, item) => sum + item.debitAmount, 0);
@@ -218,11 +216,11 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
       // Create journal entry
       const journalEntry = await tx.$executeRaw`
         INSERT INTO journal_entries (
-          id, journal_no, reference, description, transaction_date,
+          id, tenant_id, journal_no, reference, description, transaction_date,
           currency, exchange_rate, total_debit, total_credit,
           status, source, source_id, created_by, created_at, updated_at
         ) VALUES (
-          ${generateId()}, ${journalNo}, ${validatedData.reference || null},
+          ${generateId()}, ${tenantId}, ${journalNo}, ${validatedData.reference || null},
           ${validatedData.description}, ${new Date(validatedData.transactionDate)},
           ${validatedData.currency}, ${validatedData.exchangeRate},
           ${totalDebit}, ${totalCredit}, 'DRAFT', ${validatedData.source},
@@ -232,7 +230,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
       `;
 
       const journalEntryId = await tx.$queryRaw`
-        SELECT id FROM journal_entries WHERE journal_no = ${journalNo}
+        SELECT id FROM journal_entries WHERE tenant_id = ${tenantId} AND journal_no = ${journalNo}
       ` as any[];
 
       const entryId = journalEntryId[0].id;
@@ -258,9 +256,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
         `;
 
         // Create individual transactions for each line
-        const transactionNo = await generateTransactionNumber();
+        const transactionNo = await generateTransactionNumber(tenantId);
         await tx.transaction.create({
           data: {
+            tenantId,
             transactionNo,
             type: item.debitAmount > 0 ? 'DEBIT' : 'CREDIT',
             accountId: item.accountId,
@@ -300,8 +299,8 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 });
 
 // Helper functions
-function buildWhereClause(whereClause: any): string {
-  let sql = 'WHERE 1=1';
+function buildWhereClause(whereClause: any, tenantId: string): string {
+  let sql = `WHERE je.tenant_id = '${tenantId}'`;
 
   if (whereClause.status) {
     sql += ` AND je.status = '${whereClause.status}'`;
@@ -328,22 +327,23 @@ function buildWhereClause(whereClause: any): string {
   return sql;
 }
 
-async function generateJournalNumber(): Promise<string> {
+async function generateJournalNumber(tenantId: string): Promise<string> {
   const year = new Date().getFullYear();
   const count = await prisma.$queryRaw`
     SELECT COUNT(*) as count
     FROM journal_entries
-    WHERE journal_no LIKE 'JE-${year}-%'
+    WHERE tenant_id = ${tenantId} AND journal_no LIKE 'JE-${year}-%'
   ` as any[];
 
   const nextNumber = (parseInt(count[0]?.count || '0') + 1).toString().padStart(6, '0');
   return `JE-${year}-${nextNumber}`;
 }
 
-async function generateTransactionNumber(): Promise<string> {
+async function generateTransactionNumber(tenantId: string): Promise<string> {
   const year = new Date().getFullYear();
   const count = await prisma.transaction.count({
     where: {
+      tenantId,
       transactionNo: {
         startsWith: `TXN-${year}-`,
       },

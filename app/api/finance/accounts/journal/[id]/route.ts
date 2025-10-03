@@ -10,8 +10,7 @@ export const GET = withTenant(async (
   context: { tenantId: string; user: any; params: { id: string } }
 ) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
-    const { params } = context;
+    const { params, tenantId } = context;
 
     const { id } = params;
 
@@ -46,7 +45,7 @@ export const GET = withTenant(async (
       FROM journal_entries je
       LEFT JOIN users u1 ON je.created_by = u1.id
       LEFT JOIN users u2 ON je.approved_by = u2.id
-      WHERE je.id = ${id}
+      WHERE je.tenant_id = ${tenantId} AND je.id = ${id}
     ` as any[];
 
     if (journalEntry.length === 0) {
@@ -154,13 +153,12 @@ export const POST = withTenant(async (
   context: { tenantId: string; user: any; params: { id: string } }
 ) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
-    const { params, user } = context;
+    const { params, user, tenantId } = context;
     const { id } = params;
 
     // Get current journal entry
     const journalEntry = await prisma.$queryRaw`
-      SELECT * FROM journal_entries WHERE id = ${id}
+      SELECT * FROM journal_entries WHERE tenant_id = ${tenantId} AND id = ${id}
     ` as any[];
 
     if (journalEntry.length === 0) {
@@ -184,12 +182,13 @@ export const POST = withTenant(async (
           approved_at = ${new Date()},
           posting_date = ${new Date()},
           updated_at = ${new Date()}
-        WHERE id = ${id}
+        WHERE tenant_id = ${tenantId} AND id = ${id}
       `;
 
       // Update all related transactions to completed
       await tx.transaction.updateMany({
         where: {
+          tenantId,
           referenceType: 'journal_entry',
           referenceId: id,
         },
@@ -229,7 +228,10 @@ export const POST = withTenant(async (
 
         // Update account balance
         await tx.account.update({
-          where: { id: item.account_id },
+          where: {
+            tenantId,
+            id: item.account_id
+          },
           data: {
             balance: {
               increment: balanceChange,
@@ -256,8 +258,7 @@ export const DELETE = withTenant(async (
   context: { tenantId: string; user: any; params: { id: string } }
 ) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
-    const { params, user } = context;
+    const { params, user, tenantId } = context;
     const { id } = params;
     const body = await request.json();
     const { reason } = body;
@@ -268,7 +269,7 @@ export const DELETE = withTenant(async (
 
     // Get current journal entry
     const journalEntry = await prisma.$queryRaw`
-      SELECT * FROM journal_entries WHERE id = ${id}
+      SELECT * FROM journal_entries WHERE tenant_id = ${tenantId} AND id = ${id}
     ` as any[];
 
     if (journalEntry.length === 0) {
@@ -294,7 +295,7 @@ export const DELETE = withTenant(async (
           reversed_at = ${new Date()},
           reversal_reason = ${reason},
           updated_at = ${new Date()}
-        WHERE id = ${id}
+        WHERE tenant_id = ${tenantId} AND id = ${id}
       `;
 
       // Get original line items
@@ -306,11 +307,11 @@ export const DELETE = withTenant(async (
       const reversalId = generateId();
       await tx.$executeRaw`
         INSERT INTO journal_entries (
-          id, journal_no, reference, description, transaction_date,
+          id, tenant_id, journal_no, reference, description, transaction_date,
           currency, exchange_rate, total_debit, total_credit,
           status, source, source_id, created_by, created_at, updated_at
         ) VALUES (
-          ${reversalId}, ${reversalJournalNo},
+          ${reversalId}, ${tenantId}, ${reversalJournalNo},
           ${`Reversal of ${entry.journal_no}`},
           ${`REVERSAL: ${entry.description} - ${reason}`},
           ${new Date()}, ${entry.currency}, ${entry.exchange_rate},
@@ -340,12 +341,13 @@ export const DELETE = withTenant(async (
         `;
 
         // Create reversal transactions
-        const transactionNo = await generateTransactionNumber();
+        const transactionNo = await generateTransactionNumber(tenantId);
         const reversalAmount = Number(item.debit_amount) > 0 ? Number(item.credit_amount) : Number(item.debit_amount);
         const reversalType = Number(item.debit_amount) > 0 ? 'CREDIT' : 'DEBIT';
 
         await tx.transaction.create({
           data: {
+            tenantId,
             transactionNo,
             type: reversalType as any,
             accountId: item.account_id,
@@ -362,7 +364,10 @@ export const DELETE = withTenant(async (
 
         // Update account balance (reverse the original effect)
         const accountType = await tx.account.findUnique({
-          where: { id: item.account_id },
+          where: {
+            tenantId,
+            id: item.account_id
+          },
           select: { type: true },
         });
 
@@ -376,7 +381,10 @@ export const DELETE = withTenant(async (
         }
 
         await tx.account.update({
-          where: { id: item.account_id },
+          where: {
+            tenantId,
+            id: item.account_id
+          },
           data: {
             balance: {
               increment: balanceChange,
@@ -389,6 +397,7 @@ export const DELETE = withTenant(async (
       // Mark original transactions as cancelled
       await tx.transaction.updateMany({
         where: {
+          tenantId,
           referenceType: 'journal_entry',
           referenceId: id,
         },
@@ -418,10 +427,11 @@ async function generateReversalJournalNumber(originalJournalNo: string): Promise
   return `REV-${originalJournalNo}`;
 }
 
-async function generateTransactionNumber(): Promise<string> {
+async function generateTransactionNumber(tenantId: string): Promise<string> {
   const year = new Date().getFullYear();
   const count = await prisma.transaction.count({
     where: {
+      tenantId,
       transactionNo: {
         startsWith: `TXN-${year}-`,
       },

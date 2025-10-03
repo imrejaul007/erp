@@ -22,8 +22,6 @@ const profitAnalysisSchema = z.object({
 // Get comprehensive profit analysis
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
-
     const { searchParams } = new URL(request.url);
     const params = {
       startDate: searchParams.get('startDate'),
@@ -49,19 +47,19 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     // Generate analysis based on type
     switch (validatedParams.analysisType) {
       case 'product':
-        analysisResult = await generateProductProfitAnalysis(validatedParams);
+        analysisResult = await generateProductProfitAnalysis(tenantId, validatedParams);
         break;
       case 'batch':
-        analysisResult = await generateBatchProfitAnalysis(validatedParams);
+        analysisResult = await generateBatchProfitAnalysis(tenantId, validatedParams);
         break;
       case 'store':
-        analysisResult = await generateStoreProfitAnalysis(validatedParams);
+        analysisResult = await generateStoreProfitAnalysis(tenantId, validatedParams);
         break;
       case 'category':
-        analysisResult = await generateCategoryProfitAnalysis(validatedParams);
+        analysisResult = await generateCategoryProfitAnalysis(tenantId, validatedParams);
         break;
       case 'all':
-        analysisResult = await generateComprehensiveProfitAnalysis(validatedParams);
+        analysisResult = await generateComprehensiveProfitAnalysis(tenantId, validatedParams);
         break;
     }
 
@@ -97,8 +95,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Save profit analysis report
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
-
     const body = await request.json();
     const { analysisData, reportName, reportType } = body;
 
@@ -107,10 +103,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     // Save analysis report
     await prisma.$executeRaw`
       INSERT INTO profit_analysis_reports (
-        id, report_name, report_type, analysis_data,
+        id, tenant_id, report_name, report_type, analysis_data,
         generated_at, generated_by
       ) VALUES (
-        ${reportId}, ${reportName}, ${reportType}, ${JSON.stringify(analysisData)},
+        ${reportId}, ${tenantId}, ${reportName}, ${reportType}, ${JSON.stringify(analysisData)},
         ${new Date()}, ${user.id}
       )
     `;
@@ -131,12 +127,12 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 });
 
 // Generate product-wise profit analysis
-async function generateProductProfitAnalysis(params: any) {
+async function generateProductProfitAnalysis(tenantId: string, params: any) {
   const start = new Date(params.startDate);
   const end = new Date(params.endDate);
   end.setHours(23, 59, 59, 999);
 
-  const whereClause = buildWhereClause(params, start, end);
+  const whereClause = buildWhereClause(tenantId, params, start, end);
 
   // Get sales data by product
   const productSales = await prisma.$queryRaw`
@@ -162,7 +158,9 @@ async function generateProductProfitAnalysis(params: any) {
     LEFT JOIN sale_items si ON p.id = si.product_id
     LEFT JOIN sales s ON si.sale_id = s.id
     LEFT JOIN stores st ON s.store_id = st.id
-    WHERE s.status IN ('COMPLETED', 'CONFIRMED')
+    WHERE p.tenant_id = ${tenantId}
+      AND s.tenant_id = ${tenantId}
+      AND s.status IN ('COMPLETED', 'CONFIRMED')
       AND s.sale_date >= ${start}
       AND s.sale_date <= ${end}
       AND s.currency = ${params.currency}
@@ -177,7 +175,7 @@ async function generateProductProfitAnalysis(params: any) {
   const productCosts = await Promise.all(
     productSales.map(async (product) => {
       // Get average cost price from recent stock movements or production batches
-      const avgCost = await getAverageProductCost(product.product_id, start, end);
+      const avgCost = await getAverageProductCost(tenantId, product.product_id, start, end);
 
       const totalCost = Number(product.total_quantity_sold) * avgCost;
       const grossProfit = Number(product.net_revenue) - totalCost;
@@ -219,7 +217,7 @@ async function generateProductProfitAnalysis(params: any) {
 }
 
 // Generate batch-wise profit analysis
-async function generateBatchProfitAnalysis(params: any) {
+async function generateBatchProfitAnalysis(tenantId: string, params: any) {
   const start = new Date(params.startDate);
   const end = new Date(params.endDate);
 
@@ -341,7 +339,7 @@ async function generateBatchProfitAnalysis(params: any) {
 }
 
 // Generate store-wise profit analysis
-async function generateStoreProfitAnalysis(params: any) {
+async function generateStoreProfitAnalysis(tenantId: string, params: any) {
   const start = new Date(params.startDate);
   const end = new Date(params.endDate);
 
@@ -370,7 +368,9 @@ async function generateStoreProfitAnalysis(params: any) {
     JOIN stores st ON s.store_id = st.id
     JOIN sale_items si ON s.id = si.sale_id
 
-    WHERE s.status IN ('COMPLETED', 'CONFIRMED')
+    WHERE s.tenant_id = ${tenantId}
+      AND st.tenant_id = ${tenantId}
+      AND s.status IN ('COMPLETED', 'CONFIRMED')
       AND s.sale_date >= ${start}
       AND s.sale_date <= ${end}
       AND s.currency = ${params.currency}
@@ -384,10 +384,10 @@ async function generateStoreProfitAnalysis(params: any) {
   const storesWithProfitability = await Promise.all(
     storeAnalysis.map(async (store) => {
       // Get average inventory cost for this store
-      const inventoryCost = await getStoreInventoryCost(store.store_id, start, end);
+      const inventoryCost = await getStoreInventoryCost(tenantId, store.store_id, start, end);
 
       // Estimate operational costs (this would typically come from expense tracking)
-      const operationalCosts = await getStoreOperationalCosts(store.store_id, start, end);
+      const operationalCosts = await getStoreOperationalCosts(tenantId, store.store_id, start, end);
 
       const totalCosts = inventoryCost + operationalCosts;
       const grossProfit = Number(store.net_revenue) - inventoryCost;
@@ -431,7 +431,7 @@ async function generateStoreProfitAnalysis(params: any) {
 }
 
 // Generate category-wise profit analysis
-async function generateCategoryProfitAnalysis(params: any) {
+async function generateCategoryProfitAnalysis(tenantId: string, params: any) {
   const start = new Date(params.startDate);
   const end = new Date(params.endDate);
 
@@ -453,7 +453,9 @@ async function generateCategoryProfitAnalysis(params: any) {
        FROM products p2
        JOIN sale_items si2 ON p2.id = si2.product_id
        JOIN sales s2 ON si2.sale_id = s2.id
-       WHERE p2.category = p.category
+       WHERE p2.tenant_id = ${tenantId}
+         AND s2.tenant_id = ${tenantId}
+         AND p2.category = p.category
          AND p2.subcategory = p.subcategory
          AND s2.status IN ('COMPLETED', 'CONFIRMED')
          AND s2.sale_date >= ${start}
@@ -467,7 +469,9 @@ async function generateCategoryProfitAnalysis(params: any) {
     JOIN sale_items si ON p.id = si.product_id
     JOIN sales s ON si.sale_id = s.id
 
-    WHERE s.status IN ('COMPLETED', 'CONFIRMED')
+    WHERE p.tenant_id = ${tenantId}
+      AND s.tenant_id = ${tenantId}
+      AND s.status IN ('COMPLETED', 'CONFIRMED')
       AND s.sale_date >= ${start}
       AND s.sale_date <= ${end}
       AND s.currency = ${params.currency}
@@ -481,7 +485,7 @@ async function generateCategoryProfitAnalysis(params: any) {
   const categoriesWithProfitability = await Promise.all(
     categoryAnalysis.map(async (category) => {
       // Get average cost for products in this category
-      const avgCategoryCost = await getAverageCategoryCost(category.category, category.subcategory, start, end);
+      const avgCategoryCost = await getAverageCategoryCost(tenantId, category.category, category.subcategory, start, end);
 
       const totalCost = Number(category.total_quantity_sold) * avgCategoryCost;
       const grossProfit = Number(category.net_revenue) - totalCost;
@@ -521,12 +525,12 @@ async function generateCategoryProfitAnalysis(params: any) {
 }
 
 // Generate comprehensive profit analysis (all types combined)
-async function generateComprehensiveProfitAnalysis(params: any) {
+async function generateComprehensiveProfitAnalysis(tenantId: string, params: any) {
   const [productAnalysis, batchAnalysis, storeAnalysis, categoryAnalysis] = await Promise.all([
-    generateProductProfitAnalysis(params),
-    generateBatchProfitAnalysis(params),
-    generateStoreProfitAnalysis(params),
-    generateCategoryProfitAnalysis(params),
+    generateProductProfitAnalysis(tenantId, params),
+    generateBatchProfitAnalysis(tenantId, params),
+    generateStoreProfitAnalysis(tenantId, params),
+    generateCategoryProfitAnalysis(tenantId, params),
   ]);
 
   return {
@@ -541,8 +545,8 @@ async function generateComprehensiveProfitAnalysis(params: any) {
 }
 
 // Helper functions
-function buildWhereClause(params: any, start: Date, end: Date): string {
-  let clause = `WHERE s.status IN ('COMPLETED', 'CONFIRMED')
+function buildWhereClause(tenantId: string, params: any, start: Date, end: Date): string {
+  let clause = `WHERE s.tenant_id = '${tenantId}' AND s.status IN ('COMPLETED', 'CONFIRMED')
     AND s.sale_date >= ${start} AND s.sale_date <= ${end}
     AND s.currency = '${params.currency}'`;
 
@@ -557,18 +561,21 @@ function buildWhereClause(params: any, start: Date, end: Date): string {
   return clause;
 }
 
-async function getAverageProductCost(productId: string, start: Date, end: Date): Promise<number> {
+async function getAverageProductCost(tenantId: string, productId: string, start: Date, end: Date): Promise<number> {
   // This would get the weighted average cost from stock movements or production batches
   // For simplicity, using cost_price from product table
   const product = await prisma.product.findUnique({
-    where: { id: productId },
+    where: {
+      tenantId,
+      id: productId
+    },
     select: { costPrice: true }
   });
 
   return product ? Number(product.costPrice) : 0;
 }
 
-async function getStoreInventoryCost(storeId: string, start: Date, end: Date): Promise<number> {
+async function getStoreInventoryCost(tenantId: string, storeId: string, start: Date, end: Date): Promise<number> {
   // Calculate inventory cost based on sales in the period
   // This is a simplified calculation - in practice would use FIFO/LIFO/Weighted Average
   const salesCost = await prisma.$queryRaw`
@@ -576,7 +583,9 @@ async function getStoreInventoryCost(storeId: string, start: Date, end: Date): P
     FROM sale_items si
     JOIN sales s ON si.sale_id = s.id
     JOIN products p ON si.product_id = p.id
-    WHERE s.store_id = ${storeId}
+    WHERE s.tenant_id = ${tenantId}
+      AND p.tenant_id = ${tenantId}
+      AND s.store_id = ${storeId}
       AND s.sale_date >= ${start}
       AND s.sale_date <= ${end}
       AND s.status IN ('COMPLETED', 'CONFIRMED')
@@ -585,16 +594,22 @@ async function getStoreInventoryCost(storeId: string, start: Date, end: Date): P
   return salesCost.length > 0 ? Number(salesCost[0].total_cost) || 0 : 0;
 }
 
-async function getStoreOperationalCosts(storeId: string, start: Date, end: Date): Promise<number> {
+async function getStoreOperationalCosts(tenantId: string, storeId: string, start: Date, end: Date): Promise<number> {
   // This would typically come from expense tracking
   // For now, returning a placeholder calculation
-  const store = await prisma.store.findUnique({ where: { id: storeId } });
+  const store = await prisma.store.findUnique({
+    where: {
+      tenantId,
+      id: storeId
+    }
+  });
 
   // Simplified: assume 20% of revenue as operational costs
   const revenue = await prisma.$queryRaw`
     SELECT SUM(total_amount) as total_revenue
     FROM sales
-    WHERE store_id = ${storeId}
+    WHERE tenant_id = ${tenantId}
+      AND store_id = ${storeId}
       AND sale_date >= ${start}
       AND sale_date <= ${end}
       AND status IN ('COMPLETED', 'CONFIRMED')
@@ -604,11 +619,12 @@ async function getStoreOperationalCosts(storeId: string, start: Date, end: Date)
   return totalRevenue * 0.2; // 20% operational cost assumption
 }
 
-async function getAverageCategoryCost(category: string, subcategory: string, start: Date, end: Date): Promise<number> {
+async function getAverageCategoryCost(tenantId: string, category: string, subcategory: string, start: Date, end: Date): Promise<number> {
   const avgCost = await prisma.$queryRaw`
     SELECT AVG(cost_price) as avg_cost
     FROM products
-    WHERE category = ${category}
+    WHERE tenant_id = ${tenantId}
+      AND category = ${category}
       AND subcategory = ${subcategory}
       AND is_active = true
   ` as any[];

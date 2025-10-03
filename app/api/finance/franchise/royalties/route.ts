@@ -79,25 +79,24 @@ const marketingFundSchema = z.object({
 
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const { action } = body;
 
     switch (action) {
       case 'calculate_royalties':
-        return await calculateRoyalties(body, user);
+        return await calculateRoyalties(tenantId, body, user);
       case 'create_agreement':
-        return await createFranchiseAgreement(body, user);
+        return await createFranchiseAgreement(tenantId, body, user);
       case 'update_agreement':
-        return await updateFranchiseAgreement(body);
+        return await updateFranchiseAgreement(tenantId, body);
       case 'calculate_marketing_fund':
-        return await calculateMarketingFund(body);
+        return await calculateMarketingFund(tenantId, body);
       case 'generate_statement':
-        return await generateRoyaltyStatement(body);
+        return await generateRoyaltyStatement(tenantId, body);
       case 'track_performance':
-        return await trackFranchisePerformance(body);
+        return await trackFranchisePerformance(tenantId, body);
       case 'calculate_commissions':
-        return await calculateFranchiseCommissions(body);
+        return await calculateFranchiseCommissions(tenantId, body);
       default:
         return apiError('Invalid action', 400);
     }
@@ -112,18 +111,18 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
   }
 });
 
-async function calculateRoyalties(requestData: any, user: any) {
+async function calculateRoyalties(tenantId: string, requestData: any, user: any) {
   const validatedData = franchiseRoyaltySchema.parse(requestData);
   const { franchiseId, period, royaltyType, currency, adjustments, includeDetails } = validatedData;
 
   // Get franchise agreement details
-  const franchise = await getFranchiseAgreement(franchiseId);
+  const franchise = await getFranchiseAgreement(tenantId, franchiseId);
   if (!franchise) {
     return apiError('Franchise not found', 404);
   }
 
   // Get sales data for the period
-  const salesData = await getFranchiseSalesData(franchiseId, period.start, period.end);
+  const salesData = await getFranchiseSalesData(tenantId, franchiseId, period.start, period.end);
 
   // Calculate base royalties
   const baseRoyalties = await calculateBaseRoyalties(salesData, franchise, royaltyType);
@@ -196,6 +195,7 @@ async function calculateRoyalties(requestData: any, user: any) {
   // Store calculation in database
   await prisma.royaltyCalculation.create({
     data: {
+      tenantId,
       franchise_id: franchiseId,
       period_start: new Date(period.start),
       period_end: new Date(period.end),
@@ -215,11 +215,12 @@ async function calculateRoyalties(requestData: any, user: any) {
   return apiResponse({ success: true, data: royaltyCalculation });
 }
 
-async function createFranchiseAgreement(requestData: any, user: any) {
+async function createFranchiseAgreement(tenantId: string, requestData: any, user: any) {
   const validatedData = franchiseAgreementSchema.parse(requestData);
 
   const agreement = await prisma.franchiseAgreement.create({
     data: {
+      tenantId,
       franchise_id: validatedData.franchiseId,
       franchise_name: validatedData.franchiseName,
       franchisee_name: validatedData.franchiseeDetails.name,
@@ -252,6 +253,7 @@ async function createFranchiseAgreement(requestData: any, user: any) {
   if (validatedData.products?.length > 0) {
     await prisma.franchiseProduct.createMany({
       data: validatedData.products.map(product => ({
+        tenantId,
         franchise_agreement_id: agreement.id,
         product_id: product.productId,
         royalty_rate: product.royaltyRate,
@@ -275,11 +277,11 @@ async function createFranchiseAgreement(requestData: any, user: any) {
   });
 }
 
-async function calculateMarketingFund(requestData: any) {
+async function calculateMarketingFund(tenantId: string, requestData: any) {
   const validatedData = marketingFundSchema.parse(requestData);
   const { franchiseId, period, contributionRate, campaigns } = validatedData;
 
-  const salesData = await getFranchiseSalesData(franchiseId, period.start, period.end);
+  const salesData = await getFranchiseSalesData(tenantId, franchiseId, period.start, period.end);
   const totalContribution = salesData.grossSales * (contributionRate / 100);
 
   const fundCalculation = {
@@ -301,11 +303,12 @@ async function calculateMarketingFund(requestData: any) {
   return apiResponse({ success: true, data: fundCalculation });
 }
 
-async function generateRoyaltyStatement(requestData: any) {
+async function generateRoyaltyStatement(tenantId: string, requestData: any) {
   const { franchiseId, period } = requestData;
 
   const royaltyData = await prisma.royaltyCalculation.findFirst({
     where: {
+      tenantId,
       franchise_id: franchiseId,
       period_start: new Date(period.start),
       period_end: new Date(period.end),
@@ -356,19 +359,22 @@ async function generateRoyaltyStatement(requestData: any) {
 
   // Update statement status
   await prisma.royaltyCalculation.update({
-    where: { id: royaltyData.id },
+    where: {
+      tenantId,
+      id: royaltyData.id
+    },
     data: { status: 'STATEMENT_GENERATED' },
   });
 
   return apiResponse({ success: true, data: statement });
 }
 
-async function trackFranchisePerformance(requestData: any) {
+async function trackFranchisePerformance(tenantId: string, requestData: any) {
   const { franchiseId, period } = requestData;
 
-  const franchise = await getFranchiseAgreement(franchiseId);
-  const salesData = await getFranchiseSalesData(franchiseId, period.start, period.end);
-  const previousYearData = await getPreviousYearSalesData(franchiseId, period);
+  const franchise = await getFranchiseAgreement(tenantId, franchiseId);
+  const salesData = await getFranchiseSalesData(tenantId, franchiseId, period.start, period.end);
+  const previousYearData = await getPreviousYearSalesData(tenantId, franchiseId, period);
 
   const performance = {
     franchiseId,
@@ -415,10 +421,10 @@ async function trackFranchisePerformance(requestData: any) {
   return apiResponse({ success: true, data: performance });
 }
 
-async function calculateFranchiseCommissions(requestData: any) {
+async function calculateFranchiseCommissions(tenantId: string, requestData: any) {
   const { franchiseId, period, commissionStructure } = requestData;
 
-  const salesData = await getFranchiseSalesData(franchiseId, period.start, period.end);
+  const salesData = await getFranchiseSalesData(tenantId, franchiseId, period.start, period.end);
 
   const commissionCalculation = {
     franchiseId,
@@ -457,9 +463,13 @@ async function calculateFranchiseCommissions(requestData: any) {
 
 // Helper Functions
 
-async function getFranchiseAgreement(franchiseId: string) {
+async function getFranchiseAgreement(tenantId: string, franchiseId: string) {
   const agreement = await prisma.franchiseAgreement.findFirst({
-    where: { franchise_id: franchiseId, status: 'ACTIVE' },
+    where: {
+      tenantId,
+      franchise_id: franchiseId,
+      status: 'ACTIVE'
+    },
   });
 
   return agreement ? {
@@ -473,7 +483,7 @@ async function getFranchiseAgreement(franchiseId: string) {
   } : null;
 }
 
-async function getFranchiseSalesData(franchiseId: string, start: string, end: string) {
+async function getFranchiseSalesData(tenantId: string, franchiseId: string, start: string, end: string) {
   // In a real implementation, this would query franchise-specific sales data
   // For now, returning mock data structure
   const mockSalesData = {
@@ -727,14 +737,16 @@ async function getPerformanceAlerts(franchiseId: string, salesData: any, franchi
 // GET endpoint for franchise information and reports
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
     const franchiseId = searchParams.get('franchiseId');
 
     if (action === 'franchise-list') {
       const franchises = await prisma.franchiseAgreement.findMany({
-        where: { status: 'ACTIVE' },
+        where: {
+          tenantId,
+          status: 'ACTIVE'
+        },
         select: {
           id: true,
           franchise_id: true,
@@ -851,7 +863,7 @@ async function getMarketingFundUtilization(franchiseId: string, period: any) {
   return { utilized: 85, pending: 15, effectiveness: 'High' };
 }
 
-async function getPreviousYearSalesData(franchiseId: string, period: any) {
+async function getPreviousYearSalesData(tenantId: string, franchiseId: string, period: any) {
   return { grossSales: 110000, netSales: 102000 };
 }
 

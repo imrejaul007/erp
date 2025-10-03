@@ -20,7 +20,6 @@ const zohoBooksSyncSchema = z.object({
 // Get Zoho Books configuration
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -44,7 +43,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     // Get Zoho Books integration configuration
     const zohoBooksConfig = await prisma.$queryRaw`
-      SELECT * FROM zoho_books_configs WHERE is_active = true LIMIT 1
+      SELECT * FROM zoho_books_configs WHERE tenant_id = ${tenantId} AND is_active = true LIMIT 1
     ` as any[];
 
     if (zohoBooksConfig.length === 0) {
@@ -63,15 +62,16 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     // Get sync history
     const syncHistory = await prisma.$queryRaw`
       SELECT
-        type,
-        status,
-        records_synced,
-        started_at,
-        completed_at,
-        error_message
-      FROM zoho_books_sync_logs
-      WHERE zoho_books_config_id = ${config.id}
-      ORDER BY started_at DESC
+        logs.type,
+        logs.status,
+        logs.records_synced,
+        logs.started_at,
+        logs.completed_at,
+        logs.error_message
+      FROM zoho_books_sync_logs logs
+      LEFT JOIN zoho_books_configs configs ON logs.zoho_books_config_id = configs.id
+      WHERE configs.tenant_id = ${tenantId} AND logs.zoho_books_config_id = ${config.id}
+      ORDER BY logs.started_at DESC
       LIMIT 10
     ` as any[];
 
@@ -100,7 +100,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Complete Zoho Books OAuth authentication
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = zohoBooksAuthSchema.parse(body);
 
@@ -116,10 +115,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     // Save Zoho Books configuration
     await prisma.$executeRaw`
       INSERT INTO zoho_books_configs (
-        id, organization_id, client_id, client_secret, access_token,
+        id, tenant_id, organization_id, client_id, client_secret, access_token,
         refresh_token, token_expires_at, is_active, created_at, updated_at
       ) VALUES (
-        ${configId}, ${validatedData.organizationId}, ${process.env.ZOHO_BOOKS_CLIENT_ID},
+        ${configId}, ${tenantId}, ${validatedData.organizationId}, ${process.env.ZOHO_BOOKS_CLIENT_ID},
         ${process.env.ZOHO_BOOKS_CLIENT_SECRET}, ${tokenResponse.accessToken},
         ${tokenResponse.refreshToken}, ${tokenResponse.expiresAt},
         true, ${new Date()}, ${new Date()}
@@ -146,13 +145,12 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 // Sync data with Zoho Books
 export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = zohoBooksSyncSchema.parse(body);
 
     // Get Zoho Books configuration
     const zohoBooksConfig = await prisma.$queryRaw`
-      SELECT * FROM zoho_books_configs WHERE is_active = true LIMIT 1
+      SELECT * FROM zoho_books_configs WHERE tenant_id = ${tenantId} AND is_active = true LIMIT 1
     ` as any[];
 
     if (zohoBooksConfig.length === 0) {
@@ -218,7 +216,7 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
       await prisma.$executeRaw`
         UPDATE zoho_books_configs
         SET last_sync_at = ${new Date()}
-        WHERE id = ${config.id}
+        WHERE tenant_id = ${tenantId} AND id = ${config.id}
       `;
 
       return apiResponse({
@@ -251,12 +249,11 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Disconnect Zoho Books integration
 export const DELETE = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Deactivate Zoho Books configuration
     await prisma.$executeRaw`
       UPDATE zoho_books_configs
       SET is_active = false, updated_at = ${new Date()}
-      WHERE is_active = true
+      WHERE tenant_id = ${tenantId} AND is_active = true
     `;
 
     return apiResponse({
@@ -362,7 +359,7 @@ async function refreshZohoBooksToken(config: any) {
         access_token = ${tokenData.access_token},
         token_expires_at = ${new Date(Date.now() + tokenData.expires_in * 1000)},
         updated_at = ${new Date()}
-      WHERE id = ${config.id}
+      WHERE tenant_id = ${config.tenant_id} AND id = ${config.id}
     `;
 
     return {

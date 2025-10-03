@@ -21,7 +21,6 @@ const quickbooksSyncSchema = z.object({
 // Get QuickBooks configuration
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -36,7 +35,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     // Get QuickBooks integration configuration
     const qbConfig = await prisma.$queryRaw`
-      SELECT * FROM quickbooks_configs WHERE is_active = true LIMIT 1
+      SELECT * FROM quickbooks_configs WHERE tenant_id = ${tenantId} AND is_active = true LIMIT 1
     ` as any[];
 
     if (qbConfig.length === 0) {
@@ -55,15 +54,16 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     // Get sync history
     const syncHistory = await prisma.$queryRaw`
       SELECT
-        type,
-        status,
-        records_synced,
-        started_at,
-        completed_at,
-        error_message
-      FROM quickbooks_sync_logs
-      WHERE quickbooks_config_id = ${config.id}
-      ORDER BY started_at DESC
+        logs.type,
+        logs.status,
+        logs.records_synced,
+        logs.started_at,
+        logs.completed_at,
+        logs.error_message
+      FROM quickbooks_sync_logs logs
+      LEFT JOIN quickbooks_configs configs ON logs.quickbooks_config_id = configs.id
+      WHERE configs.tenant_id = ${tenantId} AND logs.quickbooks_config_id = ${config.id}
+      ORDER BY logs.started_at DESC
       LIMIT 10
     ` as any[];
 
@@ -93,7 +93,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Complete QuickBooks OAuth authentication
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = quickbooksAuthSchema.parse(body);
 
@@ -109,10 +108,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     // Save QuickBooks configuration
     await prisma.$executeRaw`
       INSERT INTO quickbooks_configs (
-        id, company_id, access_token, refresh_token, token_expires_at,
+        id, tenant_id, company_id, access_token, refresh_token, token_expires_at,
         base_url, is_active, created_at, updated_at
       ) VALUES (
-        ${configId}, ${validatedData.realmId}, ${tokenResponse.accessToken},
+        ${configId}, ${tenantId}, ${validatedData.realmId}, ${tokenResponse.accessToken},
         ${tokenResponse.refreshToken}, ${tokenResponse.expiresAt},
         ${tokenResponse.baseUrl}, true, ${new Date()}, ${new Date()}
       )
@@ -138,13 +137,12 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 // Sync data with QuickBooks
 export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = quickbooksSyncSchema.parse(body);
 
     // Get QuickBooks configuration
     const qbConfig = await prisma.$queryRaw`
-      SELECT * FROM quickbooks_configs WHERE is_active = true LIMIT 1
+      SELECT * FROM quickbooks_configs WHERE tenant_id = ${tenantId} AND is_active = true LIMIT 1
     ` as any[];
 
     if (qbConfig.length === 0) {
@@ -213,7 +211,7 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
       await prisma.$executeRaw`
         UPDATE quickbooks_configs
         SET last_sync_at = ${new Date()}
-        WHERE id = ${config.id}
+        WHERE tenant_id = ${tenantId} AND id = ${config.id}
       `;
 
       return apiResponse({
@@ -246,12 +244,11 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Disconnect QuickBooks integration
 export const DELETE = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Deactivate QuickBooks configuration
     await prisma.$executeRaw`
       UPDATE quickbooks_configs
       SET is_active = false, updated_at = ${new Date()}
-      WHERE is_active = true
+      WHERE tenant_id = ${tenantId} AND is_active = true
     `;
 
     return apiResponse({
@@ -360,7 +357,7 @@ async function refreshQuickBooksToken(config: any) {
         refresh_token = ${tokenData.refresh_token || config.refresh_token},
         token_expires_at = ${new Date(Date.now() + tokenData.expires_in * 1000)},
         updated_at = ${new Date()}
-      WHERE id = ${config.id}
+      WHERE tenant_id = ${config.tenant_id} AND id = ${config.id}
     `;
 
     return {
