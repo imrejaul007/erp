@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Function to calculate appropriate price based on customer type
 function calculatePrice(product: any, customerType: string = 'retail'): number {
@@ -100,18 +99,11 @@ function enrichProductData(product: any, customerType?: string) {
   };
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { barcode: string } }
-) {
+export const GET = withTenant(async (request: NextRequest, context: { tenantId: string; user: any; params: { barcode: string } }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const barcode = params.barcode;
+    // TODO: Add tenantId filter to all Prisma queries in this handler
+    const { params, user } = context;
+    const { barcode } = params;
     const { searchParams } = new URL(request.url);
 
     // Query parameters for enhanced functionality
@@ -120,10 +112,7 @@ export async function GET(
     const includeAlternatives = searchParams.get('includeAlternatives') === 'true';
 
     if (!barcode) {
-      return NextResponse.json(
-        { error: 'Barcode parameter is required' },
-        { status: 400 }
-      );
+      return apiError('Barcode parameter is required', 400);
     }
 
     // Search for product by SKU (using as barcode)
@@ -152,18 +141,7 @@ export async function GET(
     });
 
     if (!product) {
-      return NextResponse.json(
-        {
-          error: 'Product not found',
-          message: `No product found with barcode/SKU: ${barcode}`,
-          suggestions: [
-            'Check if the barcode is correct',
-            'Try scanning again',
-            'Search manually by product name or SKU'
-          ]
-        },
-        { status: 404 }
-      );
+      return apiError(`Product not found. No product found with barcode/SKU: ${barcode}. Check if the barcode is correct, try scanning again, or search manually by product name or SKU`, 404);
     }
 
     // Enrich product data with pricing and availability
@@ -215,44 +193,26 @@ export async function GET(
       };
     }
 
-    return NextResponse.json(response);
+    return apiResponse(response);
 
   } catch (error) {
     console.error('Barcode lookup error:', error);
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message: 'Failed to process barcode lookup',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to process barcode lookup: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
-}
+});
 
 // POST endpoint for bulk barcode lookup
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { barcodes, customerType = 'retail' } = await request.json();
 
     if (!Array.isArray(barcodes) || barcodes.length === 0) {
-      return NextResponse.json(
-        { error: 'Barcodes array is required and must not be empty' },
-        { status: 400 }
-      );
+      return apiError('Barcodes array is required and must not be empty', 400);
     }
 
     if (barcodes.length > 50) {
-      return NextResponse.json(
-        { error: 'Maximum 50 barcodes allowed per request' },
-        { status: 400 }
-      );
+      return apiError('Maximum 50 barcodes allowed per request', 400);
     }
 
     // Fetch all products matching the barcodes/SKUs
@@ -285,7 +245,7 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
+    return apiResponse({
       results,
       summary: {
         total: barcodes.length,
@@ -296,9 +256,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Bulk barcode lookup error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process bulk barcode lookup' },
-      { status: 500 }
-    );
+    return apiError('Failed to process bulk barcode lookup', 500);
   }
-}
+});

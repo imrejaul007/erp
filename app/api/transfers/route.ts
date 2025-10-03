@@ -305,7 +305,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return apiError('Validation error', 400, { details: error.errors });
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating transfer:', error);

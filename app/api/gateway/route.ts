@@ -1,29 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import { AuditService } from '@/lib/services/audit-service';
 import { RateLimiter } from '@/lib/services/rate-limiter';
 import { DataValidator } from '@/lib/validation/data-validator';
 
 // API Gateway - Unified endpoint for all module communications
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // Authentication check
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Rate limiting
     const rateLimiter = new RateLimiter();
-    const isAllowed = await rateLimiter.checkLimit(session.user.id, 'api_gateway');
+    const isAllowed = await rateLimiter.checkLimit(user.id, 'api_gateway');
     if (!isAllowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded' },
-        { status: 429 }
-      );
+      return apiError('Rate limit exceeded', 429);
     }
 
     const { module, action, data } = await request.json();
@@ -32,15 +21,12 @@ export async function POST(request: NextRequest) {
     const validator = new DataValidator();
     const validationResult = validator.validateGatewayRequest({ module, action, data });
     if (!validationResult.isValid) {
-      return NextResponse.json(
-        { error: 'Invalid request format', details: validationResult.errors },
-        { status: 400 }
-      );
+      return apiError('Invalid request format: ' + validationResult.errors.join(', '), 400);
     }
 
     // Log the API request
     await AuditService.logActivity({
-      userId: session.user.id,
+      userId: user.id,
       action: 'api_gateway_request',
       module: 'gateway',
       details: { targetModule: module, targetAction: action },
@@ -50,9 +36,9 @@ export async function POST(request: NextRequest) {
     });
 
     // Route to appropriate module handler
-    const result = await routeToModule(module, action, data, session);
+    const result = await routeToModule(module, action, data, { user, tenantId });
 
-    return NextResponse.json(result);
+    return apiResponse(result);
   } catch (error) {
     console.error('API Gateway Error:', error);
 
@@ -62,19 +48,16 @@ export async function POST(request: NextRequest) {
         userId: 'unknown',
         action: 'api_gateway_error',
         module: 'gateway',
-        details: { error: error.message },
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
         timestamp: new Date(),
         ipAddress: request.ip,
         userAgent: request.headers.get('user-agent')
       });
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 async function routeToModule(module: string, action: string, data: any, session: any) {
   const moduleHandlers = {
@@ -102,13 +85,14 @@ async function routeToModule(module: string, action: string, data: any, session:
 }
 
 // GET endpoint for health checks and module status
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const check = searchParams.get('check');
 
     if (check === 'health') {
-      return NextResponse.json({
+      return apiResponse({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         modules: {
@@ -125,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (check === 'modules') {
-      return NextResponse.json({
+      return apiResponse({
         availableModules: [
           'inventory',
           'sales',
@@ -140,11 +124,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ message: 'API Gateway is running' });
+    return apiResponse({ message: 'API Gateway is running' });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Gateway health check failed' },
-      { status: 500 }
-    );
+    return apiError('Gateway health check failed', 500);
   }
-}
+});

@@ -1,22 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // GET /api/replenishment - Get replenishment suggestions based on real inventory
-export async function GET(req: NextRequest) {
+export const GET = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     const url = new URL(req.url);
@@ -29,7 +23,7 @@ export async function GET(req: NextRequest) {
     // Filter by accessible stores if not admin/owner
     if (!['OWNER', 'ADMIN'].includes(userRole)) {
       const userStoreIds = await prisma.userStore.findMany({
-        where: { userId: session.user.id },
+        where: { userId: user.id },
         select: { storeId: true }
       });
       const storeIds = userStoreIds.map(us => us.storeId);
@@ -152,7 +146,7 @@ export async function GET(req: NextRequest) {
       totalSuggestedOrderValue: filteredAlerts.reduce((sum, alert) => sum + alert.suggestedOrder, 0)
     };
 
-    return NextResponse.json({
+    return apiResponse({
       alerts: filteredAlerts,
       summary,
       timestamp: new Date().toISOString()
@@ -160,26 +154,18 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching replenishment data:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // POST /api/replenishment - Create replenishment order or update inventory settings
-export async function POST(req: NextRequest) {
+export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
@@ -188,17 +174,11 @@ export async function POST(req: NextRequest) {
     if (action === 'update_levels') {
       // Update product min/max stock levels
       if (!productId || minStock === undefined || maxStock === undefined) {
-        return NextResponse.json(
-          { error: 'Product ID, minStock, and maxStock are required' },
-          { status: 400 }
-        );
+        return apiError('Product ID, minStock, and maxStock are required', 400);
       }
 
       if (minStock < 0 || maxStock <= minStock) {
-        return NextResponse.json(
-          { error: 'Invalid stock levels. Max must be greater than min, and both must be non-negative.' },
-          { status: 400 }
-        );
+        return apiError('Invalid stock levels. Max must be greater than min, and both must be non-negative.', 400);
       }
 
       const product = await prisma.product.update({
@@ -209,7 +189,7 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         message: 'Stock levels updated successfully',
         product: {
@@ -224,10 +204,7 @@ export async function POST(req: NextRequest) {
     if (action === 'create_replenishment') {
       // Create a transfer order for replenishment
       if (!createTransfer || !createTransfer.fromStoreId || !createTransfer.toStoreId || !createTransfer.items) {
-        return NextResponse.json(
-          { error: 'Transfer details (fromStoreId, toStoreId, items) are required' },
-          { status: 400 }
-        );
+        return apiError('Transfer details (fromStoreId, toStoreId, items) are required', 400);
       }
 
       // Verify stores exist
@@ -237,7 +214,7 @@ export async function POST(req: NextRequest) {
       ]);
 
       if (!fromStore || !toStore) {
-        return NextResponse.json({ error: 'One or both stores not found' }, { status: 404 });
+        return apiError('One or both stores not found', 404);
       }
 
       // Check inventory availability at source store
@@ -253,9 +230,7 @@ export async function POST(req: NextRequest) {
 
         if (!inventory || inventory.quantity < item.quantity) {
           const product = await prisma.product.findUnique({ where: { id: item.productId } });
-          return NextResponse.json({
-            error: `Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`
-          }, { status: 400 });
+          return apiError(`Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`, 400);
         }
       }
 
@@ -267,7 +242,7 @@ export async function POST(req: NextRequest) {
             toStoreId: createTransfer.toStoreId,
             notes: createTransfer.notes || 'Automated replenishment order',
             totalItems: createTransfer.items.length,
-            createdById: session.user.id,
+            createdById: user.id,
             status: 'PENDING'
           }
         });
@@ -306,7 +281,7 @@ export async function POST(req: NextRequest) {
         return newTransfer;
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         message: 'Replenishment transfer created successfully',
         transfer: {
@@ -316,16 +291,13 @@ export async function POST(req: NextRequest) {
           status: transfer.status,
           totalItems: transfer.totalItems
         }
-      }, { status: 201 });
+      }, 201);
     }
 
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    return apiError('Invalid action', 400);
 
   } catch (error) {
     console.error('Error processing replenishment action:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});

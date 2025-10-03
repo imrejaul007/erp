@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const StoreUpdateSchema = z.object({
   name: z.string().min(2).optional(),
@@ -94,18 +93,11 @@ const StoreUpdateSchema = z.object({
 });
 
 // GET /api/stores/[id] - Get store by ID
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const GET = withTenant(async (req: NextRequest, context: { tenantId: string; user: any; params: { id: string } }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const storeId = params.id;
+    // TODO: Add tenantId filter to all Prisma queries in this handler
+    const { params, user } = context;
+    const { id: storeId } = params;
 
     // TODO: Replace with actual database query
     const mockStore = {
@@ -192,49 +184,39 @@ export async function GET(
       },
       createdAt: new Date('2024-01-15'),
       updatedAt: new Date(),
-      createdById: session.user.id
+      createdById: user.id
     };
 
     // Check if user has access to this store
     // TODO: Implement proper access control
-    const userStores = session.user.stores || [];
-    if (!['OWNER', 'ADMIN'].includes(session.user.role) && !userStores.includes(storeId)) {
-      return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 });
+    const userStores = user.stores || [];
+    if (!['OWNER', 'ADMIN'].includes(user.role) && !userStores.includes(storeId)) {
+      return apiError('Access denied to this store', 403);
     }
 
-    return NextResponse.json(mockStore);
+    return apiResponse(mockStore);
 
   } catch (error) {
     console.error('Error fetching store:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // PUT /api/stores/[id] - Update store
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const PUT = withTenant(async (req: NextRequest, context: { tenantId: string; user: any; params: { id: string } }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const storeId = params.id;
+    // TODO: Add tenantId filter to all Prisma queries in this handler
+    const { params, user } = context;
+    const { id: storeId } = params;
     const body = await req.json();
     const updates = StoreUpdateSchema.parse(body);
 
     // Check permissions
-    const userRole = session.user.role;
-    const userStores = session.user.stores || [];
+    const userRole = user.role;
+    const userStores = user.stores || [];
 
     if (!['OWNER', 'ADMIN'].includes(userRole) && !userStores.includes(storeId)) {
-      return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 });
+      return apiError('Access denied to this store', 403);
     }
 
     // If updating store code, check uniqueness
@@ -254,42 +236,29 @@ export async function PUT(
     // TODO: Notify relevant users
     // TODO: Sync changes across the system
 
-    return NextResponse.json(updatedStore);
+    return apiResponse(updatedStore);
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error updating store:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // DELETE /api/stores/[id] - Delete store
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export const DELETE = withTenant(async (req: NextRequest, context: { tenantId: string; user: any; params: { id: string } }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const storeId = params.id;
+    // TODO: Add tenantId filter to all Prisma queries in this handler
+    const { params, user } = context;
+    const { id: storeId } = params;
 
     // Check permissions (only owners/admins can delete stores)
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     // TODO: Check if store can be deleted
@@ -301,15 +270,12 @@ export async function DELETE(
     // TODO: Update related records
     // TODO: Create audit log entry
 
-    return NextResponse.json({
+    return apiResponse({
       message: 'Store deleted successfully'
     });
 
   } catch (error) {
     console.error('Error deleting store:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});

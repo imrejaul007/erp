@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Validation schemas
 const SyncEventSchema = z.object({
@@ -41,18 +40,13 @@ const PromotionSyncSchema = z.object({
 });
 
 // GET /api/sync - Get sync events and status
-export async function GET(req: NextRequest) {
+export const GET = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     const url = new URL(req.url);
@@ -61,7 +55,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(url.searchParams.get('limit') || '50');
 
     // Filter by user's accessible stores if not admin/owner
-    const userStores = session.user.stores || [];
+    const userStores = user.stores || [];
     const accessibleStores = ['OWNER', 'ADMIN'].includes(userRole) ? null : userStores;
 
     // TODO: Replace with actual database queries
@@ -172,7 +166,7 @@ export async function GET(req: NextRequest) {
       lastSync: filteredEvents.length > 0 ? filteredEvents[0].timestamp : null
     };
 
-    return NextResponse.json({
+    return apiResponse({
       events: filteredEvents,
       stats,
       isConnected: true, // WebSocket connection status
@@ -181,32 +175,24 @@ export async function GET(req: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching sync events:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // POST /api/sync - Trigger sync operations
-export async function POST(req: NextRequest) {
+export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
     const { action, data } = body;
 
-    const userStores = session.user.stores || [];
+    const userStores = user.stores || [];
 
     switch (action) {
       case 'manual_sync':
@@ -215,7 +201,7 @@ export async function POST(req: NextRequest) {
         // Check store access if storeId is provided
         if (eventData.storeId && !['OWNER', 'ADMIN'].includes(userRole)) {
           if (!userStores.includes(eventData.storeId)) {
-            return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 });
+            return apiError('Access denied to this store', 403);
           }
         }
 
@@ -232,7 +218,7 @@ export async function POST(req: NextRequest) {
         // For demo, we'll simulate immediate completion
         syncEvent.status = 'COMPLETED';
 
-        return NextResponse.json(syncEvent, { status: 201 });
+        return apiResponse(syncEvent, 201);
 
       case 'pricing_sync':
         const pricingData = PricingSyncSchema.parse(data);
@@ -243,7 +229,7 @@ export async function POST(req: NextRequest) {
           pricingData.storeAdjustments.filter(adj => userStores.includes(adj.storeId)).map(adj => adj.storeId);
 
         if (accessibleStores.length !== pricingData.storeAdjustments.length) {
-          return NextResponse.json({ error: 'Access denied to some stores' }, { status: 403 });
+          return apiError('Access denied to some stores', 403);
         }
 
         // TODO: Update pricing in database
@@ -256,10 +242,10 @@ export async function POST(req: NextRequest) {
           storeAdjustments: pricingData.storeAdjustments,
           effectiveDate: pricingData.effectiveDate || new Date().toISOString(),
           syncedAt: new Date().toISOString(),
-          syncedBy: session.user.id
+          syncedBy: user.id
         };
 
-        return NextResponse.json(pricingSyncResult);
+        return apiResponse(pricingSyncResult);
 
       case 'promotion_sync':
         const promotionData = PromotionSyncSchema.parse(data);
@@ -270,7 +256,7 @@ export async function POST(req: NextRequest) {
           promotionData.applicableStores.filter(storeId => userStores.includes(storeId));
 
         if (accessiblePromotionStores.length !== promotionData.applicableStores.length) {
-          return NextResponse.json({ error: 'Access denied to some stores' }, { status: 403 });
+          return apiError('Access denied to some stores', 403);
         }
 
         // TODO: Create/update promotion in database
@@ -284,16 +270,16 @@ export async function POST(req: NextRequest) {
           endDate: new Date(promotionData.endDate),
           isActive: new Date(promotionData.startDate) <= new Date(),
           syncedAt: new Date().toISOString(),
-          syncedBy: session.user.id
+          syncedBy: user.id
         };
 
-        return NextResponse.json(promotionSyncResult);
+        return apiResponse(promotionSyncResult);
 
       case 'inventory_sync':
         const { storeIds } = data;
 
         if (!Array.isArray(storeIds)) {
-          return NextResponse.json({ error: 'Store IDs array is required' }, { status: 400 });
+          return apiError('Store IDs array is required', 400);
         }
 
         // Check store access
@@ -302,7 +288,7 @@ export async function POST(req: NextRequest) {
           storeIds.filter((id: string) => userStores.includes(id));
 
         if (accessibleInventoryStores.length !== storeIds.length) {
-          return NextResponse.json({ error: 'Access denied to some stores' }, { status: 403 });
+          return apiError('Access denied to some stores', 403);
         }
 
         // TODO: Trigger inventory sync for specified stores
@@ -312,7 +298,7 @@ export async function POST(req: NextRequest) {
           startedAt: new Date().toISOString()
         }));
 
-        return NextResponse.json({
+        return apiResponse({
           message: `Inventory sync started for ${accessibleInventoryStores.length} stores`,
           results: inventorySyncResults
         });
@@ -321,7 +307,7 @@ export async function POST(req: NextRequest) {
         const { eventIds } = data;
 
         if (!Array.isArray(eventIds)) {
-          return NextResponse.json({ error: 'Event IDs array is required' }, { status: 400 });
+          return apiError('Event IDs array is required', 400);
         }
 
         // TODO: Retry failed sync events
@@ -331,7 +317,7 @@ export async function POST(req: NextRequest) {
           retriedAt: new Date().toISOString()
         }));
 
-        return NextResponse.json({
+        return apiResponse({
           message: `${eventIds.length} sync events scheduled for retry`,
           results: retryResults
         });
@@ -342,45 +328,34 @@ export async function POST(req: NextRequest) {
         // TODO: Update auto-sync setting in database
         // TODO: Start/stop background sync processes
 
-        return NextResponse.json({
+        return apiResponse({
           autoSyncEnabled: enabled,
           message: `Auto-sync ${enabled ? 'enabled' : 'disabled'}`,
           updatedAt: new Date().toISOString()
         });
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return apiError('Invalid action', 400);
     }
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error processing sync request:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // PUT /api/sync - Update sync settings
-export async function PUT(req: NextRequest) {
+export const PUT = withTenant(async (req: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     // Check permissions (only admins can change sync settings)
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
@@ -394,16 +369,13 @@ export async function PUT(req: NextRequest) {
       timeoutDuration: settings.timeoutDuration ?? 30, // seconds
       enableWebSocket: settings.enableWebSocket ?? true,
       updatedAt: new Date().toISOString(),
-      updatedBy: session.user.id
+      updatedBy: user.id
     };
 
-    return NextResponse.json(updatedSettings);
+    return apiResponse(updatedSettings);
 
   } catch (error) {
     console.error('Error updating sync settings:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
