@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 
 const createBatchSchema = z.object({
   materialId: z.string().min(1, 'Material ID is required'),
@@ -19,7 +20,7 @@ const createBatchSchema = z.object({
 })
 
 // GET /api/inventory/batches - Get all batches with filtering
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url)
 
@@ -35,8 +36,10 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'receivedDate'
     const sortOrder = searchParams.get('sortOrder') || 'desc'
 
-    // Build where clause
-    const where: any = {}
+    // Build where clause with tenantId
+    const where: any = {
+      tenantId,
+    }
 
     if (search) {
       where.OR = [
@@ -135,8 +138,7 @@ export async function GET(request: NextRequest) {
 
     const pages = Math.ceil(total / limit)
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: batches,
       pagination: {
         page,
@@ -147,41 +149,39 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching batches:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch batches' },
-      { status: 500 }
-    )
+    return apiError('Failed to fetch batches', 500)
   }
-}
+})
 
 // POST /api/inventory/batches - Create new batch
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json()
     const validatedData = createBatchSchema.parse(body)
 
-    // Check if batch number exists
-    const existingBatch = await prisma.materialBatch.findUnique({
-      where: { batchNumber: validatedData.batchNumber },
+    // Check if batch number exists for this tenant
+    const existingBatch = await prisma.materialBatch.findFirst({
+      where: {
+        batchNumber: validatedData.batchNumber,
+        tenantId,
+      },
     })
 
     if (existingBatch) {
-      return NextResponse.json(
-        { success: false, error: 'Batch number already exists' },
-        { status: 400 }
-      )
+      return apiError('Batch number already exists', 400)
     }
 
-    // Check if material exists
+    // Check if material exists and belongs to tenant
     const material = await prisma.material.findUnique({
       where: { id: validatedData.materialId },
     })
 
     if (!material) {
-      return NextResponse.json(
-        { success: false, error: 'Material not found' },
-        { status: 404 }
-      )
+      return apiError('Material not found', 404)
+    }
+
+    if (material.tenantId !== tenantId) {
+      return apiError('Material does not belong to your organization', 403)
     }
 
     // Calculate total cost
@@ -193,6 +193,7 @@ export async function POST(request: NextRequest) {
       const batch = await tx.materialBatch.create({
         data: {
           ...validatedData,
+          tenantId,
           totalCost,
           currentStock: validatedData.quantity,
           isExpired: validatedData.expiryDate ? validatedData.expiryDate < new Date() : false,
@@ -209,7 +210,10 @@ export async function POST(request: NextRequest) {
 
       // Update material stock
       await tx.material.update({
-        where: { id: validatedData.materialId },
+        where: {
+          id: validatedData.materialId,
+          tenantId,
+        },
         data: {
           currentStock: {
             increment: validatedData.quantity,
@@ -225,53 +229,40 @@ export async function POST(request: NextRequest) {
         data: {
           materialId: validatedData.materialId,
           batchId: batch.id,
+          tenantId,
           type: 'IN',
           quantity: validatedData.quantity,
           unit: validatedData.unit,
           reason: `Batch ${validatedData.batchNumber} received`,
-          performedBy: 'current-user', // In real app, get from auth context
+          performedBy: user?.email || 'current-user',
         },
       })
 
       return batch
     })
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-      message: 'Batch created successfully',
-    }, { status: 201 })
+    return apiResponse(
+      { data: result, message: 'Batch created successfully' },
+      201
+    )
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400)
     }
 
     console.error('Error creating batch:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to create batch' },
-      { status: 500 }
-    )
+    return apiError('Failed to create batch', 500)
   }
-}
+})
 
 // PUT /api/inventory/batches - Bulk update batches
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json()
     const { ids, updates } = body
 
     if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Batch IDs are required' },
-        { status: 400 }
-      )
+      return apiError('Batch IDs are required', 400)
     }
 
     // Validate updates
@@ -287,16 +278,26 @@ export async function PUT(request: NextRequest) {
       }, {} as any)
 
     if (Object.keys(filteredUpdates).length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No valid updates provided' },
-        { status: 400 }
-      )
+      return apiError('No valid updates provided', 400)
+    }
+
+    // Verify all batches belong to tenant
+    const batchCount = await prisma.materialBatch.count({
+      where: {
+        id: { in: ids },
+        tenantId,
+      },
+    })
+
+    if (batchCount !== ids.length) {
+      return apiError('Some batches do not belong to your organization', 403)
     }
 
     // Perform bulk update
     const result = await prisma.materialBatch.updateMany({
       where: {
         id: { in: ids },
+        tenantId,
       },
       data: {
         ...filteredUpdates,
@@ -304,16 +305,12 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: { count: result.count },
       message: `Updated ${result.count} batches`,
     })
   } catch (error) {
     console.error('Error bulk updating batches:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to update batches' },
-      { status: 500 }
-    )
+    return apiError('Failed to update batches', 500)
   }
-}
+})

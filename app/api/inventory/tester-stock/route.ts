@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
     const lowStockOnly = searchParams.get('lowStockOnly') === 'true';
 
-    // Build where clause
-    const where: any = {};
+    // Build where clause with tenantId
+    const where: any = {
+      tenantId,
+    };
 
     if (productId) {
       where.productId = productId;
@@ -59,39 +62,46 @@ export async function GET(request: NextRequest) {
       updatedAt: stock.updatedAt
     }));
 
-    return NextResponse.json({
+    return apiResponse({
       testerStocks: formattedStocks,
       total: formattedStocks.length,
       lowStockCount: formattedStocks.filter(s => s.isLowStock).length
-    }, { status: 200 });
+    });
 
   } catch (error) {
     console.error('Error fetching tester stock:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch tester stock',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch tester stock: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
-}
+});
 
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { productId, minLevel } = body;
 
     if (!productId || minLevel === undefined) {
-      return NextResponse.json(
-        { error: 'Missing required fields: productId or minLevel' },
-        { status: 400 }
-      );
+      return apiError('Missing required fields: productId or minLevel', 400);
+    }
+
+    // Verify product belongs to tenant
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      return apiError('Product not found', 404);
+    }
+
+    if (product.tenantId !== tenantId) {
+      return apiError('Product does not belong to your organization', 403);
     }
 
     // Update minimum level
     const updatedStock = await prisma.testerStock.update({
-      where: { productId },
+      where: {
+        productId,
+        tenantId,
+      },
       data: {
         minLevel: parseFloat(minLevel)
       },
@@ -106,7 +116,7 @@ export async function PUT(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       testerStock: {
         id: updatedStock.id,
@@ -116,16 +126,10 @@ export async function PUT(request: NextRequest) {
         minLevel: parseFloat(updatedStock.minLevel.toString()),
         unit: updatedStock.unit
       }
-    }, { status: 200 });
+    });
 
   } catch (error) {
     console.error('Error updating tester stock:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to update tester stock',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to update tester stock: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
-}
+});

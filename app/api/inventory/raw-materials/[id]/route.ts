@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 
 const updateMaterialSchema = z.object({
   name: z.string().min(1).optional(),
@@ -28,13 +29,16 @@ const updateMaterialSchema = z.object({
 })
 
 // GET /api/inventory/raw-materials/[id] - Get material by ID
-export async function GET(
+export const GET = withTenant(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params, tenantId, user }: { params: { id: string }, tenantId: string, user: any }
+) => {
   try {
     const material = await prisma.material.findUnique({
-      where: { id: params.id },
+      where: {
+        id: params.id,
+        tenantId,
+      },
       include: {
         category: true,
         batches: {
@@ -59,63 +63,75 @@ export async function GET(
     })
 
     if (!material) {
-      return NextResponse.json(
-        { success: false, error: 'Material not found' },
-        { status: 404 }
-      )
+      return apiError('Material not found', 404)
     }
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: material,
     })
   } catch (error) {
     console.error('Error fetching material:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch material' },
-      { status: 500 }
-    )
+    return apiError('Failed to fetch material', 500)
   }
-}
+})
 
 // PUT /api/inventory/raw-materials/[id] - Update material
-export async function PUT(
+export const PUT = withTenant(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params, tenantId, user }: { params: { id: string }, tenantId: string, user: any }
+) => {
   try {
     const body = await request.json()
     const validatedData = updateMaterialSchema.parse(body)
 
-    // Check if material exists
+    // Check if material exists and belongs to tenant
     const existingMaterial = await prisma.material.findUnique({
       where: { id: params.id },
     })
 
     if (!existingMaterial) {
-      return NextResponse.json(
-        { success: false, error: 'Material not found' },
-        { status: 404 }
-      )
+      return apiError('Material not found', 404)
+    }
+
+    if (existingMaterial.tenantId !== tenantId) {
+      return apiError('Material does not belong to your organization', 403)
     }
 
     // Check for duplicate SKU if updating
     if (validatedData.sku && validatedData.sku !== existingMaterial.sku) {
-      const duplicateMaterial = await prisma.material.findUnique({
-        where: { sku: validatedData.sku },
+      const duplicateMaterial = await prisma.material.findFirst({
+        where: {
+          sku: validatedData.sku,
+          tenantId,
+        },
       })
 
       if (duplicateMaterial) {
-        return NextResponse.json(
-          { success: false, error: 'SKU already exists' },
-          { status: 400 }
-        )
+        return apiError('SKU already exists', 400)
+      }
+    }
+
+    // If updating category, verify it belongs to tenant
+    if (validatedData.categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: validatedData.categoryId },
+      })
+
+      if (!category) {
+        return apiError('Category not found', 404)
+      }
+
+      if (category.tenantId !== tenantId) {
+        return apiError('Category does not belong to your organization', 403)
       }
     }
 
     // Update material
     const material = await prisma.material.update({
-      where: { id: params.id },
+      where: {
+        id: params.id,
+        tenantId,
+      },
       data: {
         ...validatedData,
         alternateUnits: validatedData.alternateUnits
@@ -148,47 +164,37 @@ export async function PUT(
       await prisma.stockMovement.create({
         data: {
           materialId: material.id,
+          tenantId,
           type: 'ADJUSTMENT',
           quantity: 0,
           unit: material.unitOfMeasure,
           reason: 'Material settings updated',
-          performedBy: 'current-user', // In real app, get from auth context
+          performedBy: user?.email || 'current-user',
         },
       })
     }
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: material,
       message: 'Material updated successfully',
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400)
     }
 
     console.error('Error updating material:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to update material' },
-      { status: 500 }
-    )
+    return apiError('Failed to update material', 500)
   }
-}
+})
 
 // DELETE /api/inventory/raw-materials/[id] - Delete material
-export async function DELETE(
+export const DELETE = withTenant(async (
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  { params, tenantId, user }: { params: { id: string }, tenantId: string, user: any }
+) => {
   try {
-    // Check if material exists
+    // Check if material exists and belongs to tenant
     const material = await prisma.material.findUnique({
       where: { id: params.id },
       include: {
@@ -199,30 +205,24 @@ export async function DELETE(
     })
 
     if (!material) {
-      return NextResponse.json(
-        { success: false, error: 'Material not found' },
-        { status: 404 }
-      )
+      return apiError('Material not found', 404)
+    }
+
+    if (material.tenantId !== tenantId) {
+      return apiError('Material does not belong to your organization', 403)
     }
 
     // Check if material has active stock
     if (material.currentStock > 0 || material.batches.length > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Cannot delete material with active stock',
-          details: {
-            currentStock: material.currentStock,
-            activeBatches: material.batches.length,
-          },
-        },
-        { status: 400 }
-      )
+      return apiError(`Cannot delete material with active stock. Current stock: ${material.currentStock}, Active batches: ${material.batches.length}`, 400)
     }
 
     // Soft delete by setting isActive to false
     const updatedMaterial = await prisma.material.update({
-      where: { id: params.id },
+      where: {
+        id: params.id,
+        tenantId,
+      },
       data: {
         isActive: false,
         updatedAt: new Date(),
@@ -233,23 +233,20 @@ export async function DELETE(
     await prisma.stockMovement.create({
       data: {
         materialId: material.id,
+        tenantId,
         type: 'ADJUSTMENT',
         quantity: 0,
         unit: material.unitOfMeasure,
         reason: 'Material deleted',
-        performedBy: 'current-user', // In real app, get from auth context
+        performedBy: user?.email || 'current-user',
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       message: 'Material deleted successfully',
     })
   } catch (error) {
     console.error('Error deleting material:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete material' },
-      { status: 500 }
-    )
+    return apiError('Failed to delete material', 500)
   }
-}
+})

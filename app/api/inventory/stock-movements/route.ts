@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 
 const createMovementSchema = z.object({
   materialId: z.string().min(1, 'Material ID is required'),
@@ -27,7 +28,7 @@ const adjustmentSchema = z.object({
 })
 
 // GET /api/inventory/stock-movements - Get stock movements with filtering
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url)
 
@@ -42,8 +43,10 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'createdAt'
     const sortOrder = searchParams.get('sortOrder') || 'desc'
 
-    // Build where clause
-    const where: any = {}
+    // Build where clause with tenantId
+    const where: any = {
+      tenantId,
+    }
 
     if (materialId) {
       where.materialId = materialId
@@ -105,14 +108,17 @@ export async function GET(request: NextRequest) {
     const pages = Math.ceil(total / limit)
 
     // Calculate summary statistics
+    const summaryWhere: any = { tenantId }
+    if (dateFrom || dateTo) {
+      summaryWhere.createdAt = {
+        gte: dateFrom ? new Date(dateFrom) : undefined,
+        lte: dateTo ? new Date(dateTo) : undefined,
+      }
+    }
+
     const summary = await prisma.stockMovement.groupBy({
       by: ['type'],
-      where: dateFrom || dateTo ? {
-        createdAt: {
-          gte: dateFrom ? new Date(dateFrom) : undefined,
-          lte: dateTo ? new Date(dateTo) : undefined,
-        }
-      } : {},
+      where: summaryWhere,
       _sum: {
         quantity: true,
       },
@@ -121,8 +127,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: movements,
       pagination: {
         page,
@@ -140,20 +145,17 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching stock movements:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch stock movements' },
-      { status: 500 }
-    )
+    return apiError('Failed to fetch stock movements', 500)
   }
-}
+})
 
 // POST /api/inventory/stock-movements - Create stock movement
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json()
     const validatedData = createMovementSchema.parse(body)
 
-    // Check if material exists
+    // Check if material exists and belongs to tenant
     const material = await prisma.material.findUnique({
       where: { id: validatedData.materialId },
       include: {
@@ -164,10 +166,11 @@ export async function POST(request: NextRequest) {
     })
 
     if (!material) {
-      return NextResponse.json(
-        { success: false, error: 'Material not found' },
-        { status: 404 }
-      )
+      return apiError('Material not found', 404)
+    }
+
+    if (material.tenantId !== tenantId) {
+      return apiError('Material does not belong to your organization', 403)
     }
 
     // Validate batch if specified
@@ -178,17 +181,15 @@ export async function POST(request: NextRequest) {
       })
 
       if (!selectedBatch) {
-        return NextResponse.json(
-          { success: false, error: 'Batch not found' },
-          { status: 404 }
-        )
+        return apiError('Batch not found', 404)
+      }
+
+      if (selectedBatch.tenantId !== tenantId) {
+        return apiError('Batch does not belong to your organization', 403)
       }
 
       if (selectedBatch.materialId !== validatedData.materialId) {
-        return NextResponse.json(
-          { success: false, error: 'Batch does not belong to the specified material' },
-          { status: 400 }
-        )
+        return apiError('Batch does not belong to the specified material', 400)
       }
     }
 
@@ -197,17 +198,7 @@ export async function POST(request: NextRequest) {
       const availableStock = selectedBatch?.currentStock || material.availableStock
 
       if (availableStock < validatedData.quantity) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Insufficient stock available',
-            details: {
-              requested: validatedData.quantity,
-              available: availableStock,
-            }
-          },
-          { status: 400 }
-        )
+        return apiError(`Insufficient stock available. Requested: ${validatedData.quantity}, Available: ${availableStock}`, 400)
       }
     }
 
@@ -217,7 +208,8 @@ export async function POST(request: NextRequest) {
       const movement = await tx.stockMovement.create({
         data: {
           ...validatedData,
-          performedBy: validatedData.performedBy || 'current-user', // In real app, get from auth
+          tenantId,
+          performedBy: user?.email || validatedData.performedBy || 'current-user',
         },
         include: {
           material: {
@@ -244,7 +236,10 @@ export async function POST(request: NextRequest) {
       // Update material stock
       if (validatedData.type !== 'TRANSFER') {
         await tx.material.update({
-          where: { id: validatedData.materialId },
+          where: {
+            id: validatedData.materialId,
+            tenantId,
+          },
           data: {
             currentStock: {
               increment: stockChange,
@@ -259,7 +254,10 @@ export async function POST(request: NextRequest) {
       // Update batch stock if specified
       if (validatedData.batchId && selectedBatch) {
         await tx.materialBatch.update({
-          where: { id: validatedData.batchId },
+          where: {
+            id: validatedData.batchId,
+            tenantId,
+          },
           data: {
             currentStock: {
               increment: stockChange,
@@ -270,7 +268,10 @@ export async function POST(request: NextRequest) {
 
       // Check for alerts after stock update
       const updatedMaterial = await tx.material.findUnique({
-        where: { id: validatedData.materialId },
+        where: {
+          id: validatedData.materialId,
+          tenantId,
+        },
       })
 
       if (updatedMaterial) {
@@ -291,6 +292,7 @@ export async function POST(request: NextRequest) {
             },
             create: {
               materialId: validatedData.materialId,
+              tenantId,
               type: 'LOW_STOCK',
               severity: 'MEDIUM',
               title: `Low Stock: ${updatedMaterial.name}`,
@@ -316,6 +318,7 @@ export async function POST(request: NextRequest) {
             },
             create: {
               materialId: validatedData.materialId,
+              tenantId,
               type: 'OUT_OF_STOCK',
               severity: 'HIGH',
               title: `Out of Stock: ${updatedMaterial.name}`,
@@ -343,6 +346,7 @@ export async function POST(request: NextRequest) {
             },
             create: {
               materialId: validatedData.materialId,
+              tenantId,
               type: 'OVERSTOCK',
               severity: 'LOW',
               title: `Overstock: ${updatedMaterial.name}`,
@@ -357,47 +361,37 @@ export async function POST(request: NextRequest) {
       return movement
     })
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-      message: 'Stock movement recorded successfully',
-    }, { status: 201 })
+    return apiResponse(
+      { data: result, message: 'Stock movement recorded successfully' },
+      201
+    )
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400)
     }
 
     console.error('Error creating stock movement:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to record stock movement' },
-      { status: 500 }
-    )
+    return apiError('Failed to record stock movement', 500)
   }
-}
+})
 
 // PUT /api/inventory/stock-movements/adjust - Stock adjustment
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json()
     const validatedData = adjustmentSchema.parse(body)
 
-    // Check if material exists
+    // Check if material exists and belongs to tenant
     const material = await prisma.material.findUnique({
       where: { id: validatedData.materialId },
     })
 
     if (!material) {
-      return NextResponse.json(
-        { success: false, error: 'Material not found' },
-        { status: 404 }
-      )
+      return apiError('Material not found', 404)
+    }
+
+    if (material.tenantId !== tenantId) {
+      return apiError('Material does not belong to your organization', 403)
     }
 
     // Calculate adjustment amount
@@ -425,12 +419,13 @@ export async function PUT(request: NextRequest) {
       const movement = await tx.stockMovement.create({
         data: {
           materialId: validatedData.materialId,
+          tenantId,
           type: 'ADJUSTMENT',
           quantity: Math.abs(adjustmentQuantity),
           unit: material.unitOfMeasure,
           reason: `Stock adjustment: ${validatedData.reason}`,
           notes: validatedData.notes,
-          performedBy: 'current-user', // In real app, get from auth
+          performedBy: user?.email || 'current-user',
         },
         include: {
           material: {
@@ -443,7 +438,10 @@ export async function PUT(request: NextRequest) {
 
       // Update material stock
       await tx.material.update({
-        where: { id: validatedData.materialId },
+        where: {
+          id: validatedData.materialId,
+          tenantId,
+        },
         data: {
           currentStock: newStock,
           availableStock: newStock,
@@ -453,8 +451,7 @@ export async function PUT(request: NextRequest) {
       return movement
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: result,
       message: 'Stock adjustment completed successfully',
       stockChange: {
@@ -465,20 +462,10 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400)
     }
 
     console.error('Error adjusting stock:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to adjust stock' },
-      { status: 500 }
-    )
+    return apiError('Failed to adjust stock', 500)
   }
-}
+})

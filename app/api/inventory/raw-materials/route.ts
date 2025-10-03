@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import type { MaterialFilters } from '@/types/inventory'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 
 // Validation schemas
 const createMaterialSchema = z.object({
@@ -29,7 +30,7 @@ const createMaterialSchema = z.object({
 })
 
 // GET /api/inventory/raw-materials - Get all materials with filtering and pagination
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url)
 
@@ -44,8 +45,9 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sortBy') || 'name'
     const sortOrder = searchParams.get('sortOrder') || 'asc'
 
-    // Build where clause
+    // Build where clause with tenantId
     const where: any = {
+      tenantId,
       isActive: true,
     }
 
@@ -147,8 +149,7 @@ export async function GET(request: NextRequest) {
 
     const pages = Math.ceil(total / limit)
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: materials,
       pagination: {
         page,
@@ -159,35 +160,46 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching materials:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch materials' },
-      { status: 500 }
-    )
+    return apiError('Failed to fetch materials', 500)
   }
-}
+})
 
 // POST /api/inventory/raw-materials - Create new material
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json()
     const validatedData = createMaterialSchema.parse(body)
 
-    // Check for duplicate SKU
-    const existingMaterial = await prisma.material.findUnique({
-      where: { sku: validatedData.sku },
+    // Check for duplicate SKU within tenant
+    const existingMaterial = await prisma.material.findFirst({
+      where: {
+        sku: validatedData.sku,
+        tenantId,
+      },
     })
 
     if (existingMaterial) {
-      return NextResponse.json(
-        { success: false, error: 'SKU already exists' },
-        { status: 400 }
-      )
+      return apiError('SKU already exists', 400)
+    }
+
+    // Verify category belongs to tenant
+    const category = await prisma.category.findUnique({
+      where: { id: validatedData.categoryId },
+    })
+
+    if (!category) {
+      return apiError('Category not found', 404)
+    }
+
+    if (category.tenantId !== tenantId) {
+      return apiError('Category does not belong to your organization', 403)
     }
 
     // Create material
     const material = await prisma.material.create({
       data: {
         ...validatedData,
+        tenantId,
         alternateUnits: validatedData.alternateUnits ? JSON.stringify(validatedData.alternateUnits) : null,
         availableStock: 0,
         reservedStock: 0,
@@ -207,50 +219,37 @@ export async function POST(request: NextRequest) {
     await prisma.stockMovement.create({
       data: {
         materialId: material.id,
+        tenantId,
         type: 'ADJUSTMENT',
         quantity: 0,
         unit: material.unitOfMeasure,
         reason: 'Initial material setup',
-        performedBy: 'system', // In real app, get from auth context
+        performedBy: user?.email || 'system',
       },
     })
 
-    return NextResponse.json({
-      success: true,
-      data: material,
-      message: 'Material created successfully',
-    }, { status: 201 })
+    return apiResponse(
+      { data: material, message: 'Material created successfully' },
+      201
+    )
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation error',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400)
     }
 
     console.error('Error creating material:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to create material' },
-      { status: 500 }
-    )
+    return apiError('Failed to create material', 500)
   }
-}
+})
 
 // PUT /api/inventory/raw-materials - Bulk update materials
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json()
     const { ids, updates } = body
 
     if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Material IDs are required' },
-        { status: 400 }
-      )
+      return apiError('Material IDs are required', 400)
     }
 
     // Validate updates
@@ -266,16 +265,26 @@ export async function PUT(request: NextRequest) {
       }, {} as any)
 
     if (Object.keys(filteredUpdates).length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No valid updates provided' },
-        { status: 400 }
-      )
+      return apiError('No valid updates provided', 400)
+    }
+
+    // Verify all materials belong to tenant
+    const materialCount = await prisma.material.count({
+      where: {
+        id: { in: ids },
+        tenantId,
+      },
+    })
+
+    if (materialCount !== ids.length) {
+      return apiError('Some materials do not belong to your organization', 403)
     }
 
     // Perform bulk update
     const result = await prisma.material.updateMany({
       where: {
         id: { in: ids },
+        tenantId,
       },
       data: {
         ...filteredUpdates,
@@ -283,37 +292,31 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: { count: result.count },
       message: `Updated ${result.count} materials`,
     })
   } catch (error) {
     console.error('Error bulk updating materials:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to update materials' },
-      { status: 500 }
-    )
+    return apiError('Failed to update materials', 500)
   }
-}
+})
 
 // DELETE /api/inventory/raw-materials - Bulk delete materials
-export async function DELETE(request: NextRequest) {
+export const DELETE = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json()
     const { ids } = body
 
     if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Material IDs are required' },
-        { status: 400 }
-      )
+      return apiError('Material IDs are required', 400)
     }
 
     // Check for materials with stock or active batches
     const materialsWithStock = await prisma.material.findMany({
       where: {
         id: { in: ids },
+        tenantId,
         OR: [
           { currentStock: { gt: 0 } },
           {
@@ -327,20 +330,14 @@ export async function DELETE(request: NextRequest) {
     })
 
     if (materialsWithStock.length > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Cannot delete materials with active stock',
-          details: materialsWithStock,
-        },
-        { status: 400 }
-      )
+      return apiError('Cannot delete materials with active stock: ' + materialsWithStock.map(m => m.name).join(', '), 400)
     }
 
     // Soft delete by setting isActive to false
     const result = await prisma.material.updateMany({
       where: {
         id: { in: ids },
+        tenantId,
       },
       data: {
         isActive: false,
@@ -348,16 +345,12 @@ export async function DELETE(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiResponse({
       data: { count: result.count },
       message: `Deleted ${result.count} materials`,
     })
   } catch (error) {
     console.error('Error bulk deleting materials:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete materials' },
-      { status: 500 }
-    )
+    return apiError('Failed to delete materials', 500)
   }
-}
+})
