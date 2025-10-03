@@ -30,6 +30,9 @@ import {
   PackageSearch,
   TrendingUp,
   Droplet,
+  Calendar,
+  Repeat,
+  MapPin,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -217,6 +220,18 @@ const navigationItems: NavItem[] = [
     ],
   },
   {
+    title: 'Events & Exhibitions',
+    href: '/events',
+    icon: Calendar,
+    roles: ['OWNER', 'MANAGER'],
+  },
+  {
+    title: 'Subscriptions',
+    href: '/subscriptions',
+    icon: Repeat,
+    roles: ['OWNER', 'MANAGER', 'SALES_STAFF'],
+  },
+  {
     title: 'Reports & Analytics',
     icon: BarChart3,
     roles: ['OWNER', 'MANAGER'],
@@ -235,8 +250,9 @@ const navigationItems: NavItem[] = [
     children: [
       { title: 'General', href: '/settings', icon: Settings, roles: ['OWNER', 'MANAGER'] },
       { title: 'Permissions', href: '/settings/permissions', icon: UserSquare2, roles: ['OWNER'] },
+      { title: 'Multi-Currency', href: '/settings/currencies', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Country Profiles', href: '/settings/countries', icon: MapPin, roles: ['OWNER', 'MANAGER'] },
       { title: 'Tax Settings', href: '/settings/tax', icon: FileText, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Currency', href: '/settings/currency', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
       { title: 'Language', href: '/settings/language', icon: Globe, roles: ['OWNER', 'MANAGER'] },
       { title: 'Loyalty Settings', href: '/settings/loyalty', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
       { title: 'Theme', href: '/settings/theme', icon: Settings, roles: ['OWNER', 'MANAGER'] },
