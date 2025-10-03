@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -16,13 +15,9 @@ const auditTrailSchema = z.object({
 });
 
 // Get VAT audit trail
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const vatTransactionId = searchParams.get('vatTransactionId');
     const startDate = searchParams.get('startDate');
@@ -115,7 +110,7 @@ export async function GET(request: NextRequest) {
 
     const totalCount = (total as any[])[0]?.count || 0;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: formattedTrails,
       pagination: {
@@ -127,21 +122,14 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('VAT Audit Trail GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch VAT audit trail' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch VAT audit trail', 500);
   }
-}
+});
 
 // Create VAT audit trail entry
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = auditTrailSchema.parse(body);
 
@@ -151,10 +139,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!vatTransaction) {
-      return NextResponse.json(
-        { success: false, error: 'VAT transaction not found' },
-        { status: 404 }
-      );
+      return apiError('VAT transaction not found', 404);
     }
 
     // Create audit trail entry (using raw SQL since the table might not be in Prisma schema)
@@ -175,38 +160,28 @@ export async function POST(request: NextRequest) {
         ${JSON.stringify(validatedData.oldValue)},
         ${JSON.stringify(validatedData.newValue)},
         ${validatedData.reason || null},
-        ${session.user.id},
+        ${user.id},
         ${new Date()}
       )
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       message: 'VAT audit trail entry created successfully',
     });
   } catch (error) {
     console.error('VAT Audit Trail POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to create audit trail entry' },
-      { status: 500 }
-    );
+    return apiError('Failed to create audit trail entry', 500);
   }
-}
+});
 
 // Get audit trail summary/statistics
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || getCurrentPeriod();
 
@@ -258,7 +233,7 @@ export async function PUT(request: NextRequest) {
       LIMIT 20
     `;
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         period,
@@ -277,12 +252,9 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error('VAT Audit Trail Stats error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch audit trail statistics' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch audit trail statistics', 500);
   }
-}
+});
 
 // Helper functions
 function getCurrentPeriod(): string {

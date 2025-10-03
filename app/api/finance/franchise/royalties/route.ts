@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Franchise Royalty Calculation Schema
 const franchiseRoyaltySchema = z.object({
@@ -77,21 +77,17 @@ const marketingFundSchema = z.object({
   })).optional(),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const { action } = body;
 
     switch (action) {
       case 'calculate_royalties':
-        return await calculateRoyalties(body);
+        return await calculateRoyalties(body, user);
       case 'create_agreement':
-        return await createFranchiseAgreement(body);
+        return await createFranchiseAgreement(body, user);
       case 'update_agreement':
         return await updateFranchiseAgreement(body);
       case 'calculate_marketing_fund':
@@ -103,33 +99,27 @@ export async function POST(request: NextRequest) {
       case 'calculate_commissions':
         return await calculateFranchiseCommissions(body);
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return apiError('Invalid action', 400);
     }
   } catch (error) {
     console.error('Franchise Royalty error:', error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
-    return NextResponse.json(
-      { error: 'Failed to process franchise royalty request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process franchise royalty request', 500);
   }
-}
+});
 
-async function calculateRoyalties(requestData: any) {
+async function calculateRoyalties(requestData: any, user: any) {
   const validatedData = franchiseRoyaltySchema.parse(requestData);
   const { franchiseId, period, royaltyType, currency, adjustments, includeDetails } = validatedData;
 
   // Get franchise agreement details
   const franchise = await getFranchiseAgreement(franchiseId);
   if (!franchise) {
-    return NextResponse.json({ error: 'Franchise not found' }, { status: 404 });
+    return apiError('Franchise not found', 404);
   }
 
   // Get sales data for the period
@@ -218,14 +208,14 @@ async function calculateRoyalties(requestData: any) {
       total_royalties: totalRoyalties,
       currency,
       status: 'CALCULATED',
-      created_by: session?.user?.email,
+      created_by: user.email,
     },
   });
 
-  return NextResponse.json(royaltyCalculation);
+  return apiResponse({ success: true, data: royaltyCalculation });
 }
 
-async function createFranchiseAgreement(requestData: any) {
+async function createFranchiseAgreement(requestData: any, user: any) {
   const validatedData = franchiseAgreementSchema.parse(requestData);
 
   const agreement = await prisma.franchiseAgreement.create({
@@ -254,7 +244,7 @@ async function createFranchiseAgreement(requestData: any) {
       quality_standards: validatedData.performanceTargets.qualityStandards,
       training_requirements: validatedData.performanceTargets.trainingRequirements,
       status: 'ACTIVE',
-      created_by: session?.user?.email,
+      created_by: user.email,
     },
   });
 
@@ -270,15 +260,18 @@ async function createFranchiseAgreement(requestData: any) {
     });
   }
 
-  return NextResponse.json({
-    agreementId: agreement.id,
-    franchiseId: validatedData.franchiseId,
-    status: 'created',
-    initialPayment: {
-      amount: validatedData.financialTerms.initialFee,
-      dueDate: validatedData.agreementTerms.startDate,
+  return apiResponse({
+    success: true,
+    data: {
+      agreementId: agreement.id,
+      franchiseId: validatedData.franchiseId,
+      status: 'created',
+      initialPayment: {
+        amount: validatedData.financialTerms.initialFee,
+        dueDate: validatedData.agreementTerms.startDate,
+      },
+      nextRoyaltyDue: calculateNextRoyaltyDate(validatedData.financialTerms.paymentFrequency, validatedData.agreementTerms.startDate),
     },
-    nextRoyaltyDue: calculateNextRoyaltyDate(validatedData.financialTerms.paymentFrequency, validatedData.agreementTerms.startDate),
   });
 }
 
@@ -305,7 +298,7 @@ async function calculateMarketingFund(requestData: any) {
     utilizationReport: await getMarketingFundUtilization(franchiseId, period),
   };
 
-  return NextResponse.json(fundCalculation);
+  return apiResponse({ success: true, data: fundCalculation });
 }
 
 async function generateRoyaltyStatement(requestData: any) {
@@ -323,7 +316,7 @@ async function generateRoyaltyStatement(requestData: any) {
   });
 
   if (!royaltyData) {
-    return NextResponse.json({ error: 'Royalty calculation not found' }, { status: 404 });
+    return apiError('Royalty calculation not found', 404);
   }
 
   const statement = {
@@ -367,7 +360,7 @@ async function generateRoyaltyStatement(requestData: any) {
     data: { status: 'STATEMENT_GENERATED' },
   });
 
-  return NextResponse.json(statement);
+  return apiResponse({ success: true, data: statement });
 }
 
 async function trackFranchisePerformance(requestData: any) {
@@ -419,7 +412,7 @@ async function trackFranchisePerformance(requestData: any) {
     alerts: await getPerformanceAlerts(franchiseId, salesData, franchise),
   };
 
-  return NextResponse.json(performance);
+  return apiResponse({ success: true, data: performance });
 }
 
 async function calculateFranchiseCommissions(requestData: any) {
@@ -459,7 +452,7 @@ async function calculateFranchiseCommissions(requestData: any) {
     commissionCalculation.deductions.penalties -
     commissionCalculation.deductions.advancesRecovery;
 
-  return NextResponse.json(commissionCalculation);
+  return apiResponse({ success: true, data: commissionCalculation });
 }
 
 // Helper Functions
@@ -732,13 +725,9 @@ async function getPerformanceAlerts(franchiseId: string, salesData: any, franchi
 }
 
 // GET endpoint for franchise information and reports
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
     const franchiseId = searchParams.get('franchiseId');
@@ -756,43 +745,43 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({ franchises });
+      return apiResponse({ success: true, data: { franchises } });
     }
 
     if (action === 'royalty-structure-templates') {
-      return NextResponse.json(getRoyaltyStructureTemplates());
+      return apiResponse({ success: true, data: getRoyaltyStructureTemplates() });
     }
 
     if (action === 'performance-benchmarks') {
-      return NextResponse.json(getPerformanceBenchmarks());
+      return apiResponse({ success: true, data: getPerformanceBenchmarks() });
     }
 
     if (action === 'compliance-checklist' && franchiseId) {
       const checklist = await getComplianceChecklist(franchiseId);
-      return NextResponse.json(checklist);
+      return apiResponse({ success: true, data: checklist });
     }
 
-    return NextResponse.json({
-      message: 'Franchise Royalty Management API',
-      availableActions: [
-        'calculate_royalties',
-        'create_agreement',
-        'calculate_marketing_fund',
-        'generate_statement',
-        'track_performance',
-        'calculate_commissions',
-      ],
-      royaltyStructures: ['percentage', 'fixed', 'tiered', 'hybrid'],
-      paymentFrequencies: ['monthly', 'quarterly', 'semi_annual', 'annual'],
+    return apiResponse({
+      success: true,
+      data: {
+        message: 'Franchise Royalty Management API',
+        availableActions: [
+          'calculate_royalties',
+          'create_agreement',
+          'calculate_marketing_fund',
+          'generate_statement',
+          'track_performance',
+          'calculate_commissions',
+        ],
+        royaltyStructures: ['percentage', 'fixed', 'tiered', 'hybrid'],
+        paymentFrequencies: ['monthly', 'quarterly', 'semi_annual', 'annual'],
+      },
     });
   } catch (error) {
     console.error('Franchise Royalty GET error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process request', 500);
   }
-}
+});
 
 function getRoyaltyStructureTemplates() {
   return {

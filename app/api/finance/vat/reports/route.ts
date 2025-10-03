@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -15,13 +14,9 @@ const vatReportSchema = z.object({
 });
 
 // Generate VAT reports for FTA compliance
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const params = {
       type: searchParams.get('type') || 'summary',
@@ -32,10 +27,7 @@ export async function GET(request: NextRequest) {
 
     // Validate parameters
     if (!params.startDate || !params.endDate) {
-      return NextResponse.json(
-        { success: false, error: 'Start date and end date are required' },
-        { status: 400 }
-      );
+      return apiError('Start date and end date are required', 400);
     }
 
     const validatedParams = vatReportSchema.parse(params);
@@ -53,10 +45,7 @@ export async function GET(request: NextRequest) {
         reportData = await generateFTAFormatReport(validatedParams.startDate, validatedParams.endDate);
         break;
       default:
-        return NextResponse.json(
-          { success: false, error: 'Invalid report type' },
-          { status: 400 }
-        );
+        return apiError('Invalid report type', 400);
     }
 
     // Handle different output formats
@@ -66,7 +55,7 @@ export async function GET(request: NextRequest) {
       return generateXMLResponse(reportData, validatedParams.type);
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: reportData,
       metadata: {
@@ -76,23 +65,17 @@ export async function GET(request: NextRequest) {
           endDate: validatedParams.endDate,
         },
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user.email,
       },
     });
   } catch (error) {
     console.error('VAT Reports error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate VAT report' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate VAT report', 500);
   }
-}
+});
 
 // Generate VAT summary report
 async function generateVATSummaryReport(startDate: string, endDate: string) {
