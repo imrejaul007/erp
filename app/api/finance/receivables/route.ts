@@ -1,19 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
 // Get receivables aging report
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const asOfDate = searchParams.get('asOfDate') || new Date().toISOString().split('T')[0];
     const currency = searchParams.get('currency') || 'AED';
@@ -21,35 +15,24 @@ export async function GET(request: NextRequest) {
 
     const agingReport = await generateReceivablesAging(asOfDate, currency, customerId);
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: agingReport,
     });
   } catch (error) {
     console.error('Receivables GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch receivables' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch receivables', 500);
   }
-}
+});
 
 // Record payment against receivable
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { saleId, amount, paymentMethod, paymentDate, reference, notes } = body;
 
     if (!saleId || !amount || !paymentMethod) {
-      return NextResponse.json(
-        { success: false, error: 'Sale ID, amount, and payment method are required' },
-        { status: 400 }
-      );
+      return apiError('Sale ID, amount, and payment method are required', 400);
     }
 
     const paymentNo = await generatePaymentNumber();
@@ -108,7 +91,7 @@ export async function POST(request: NextRequest) {
           referenceId: paymentId,
           transactionDate: new Date(paymentDate || new Date()),
           status: 'COMPLETED',
-          createdById: session.user.id,
+          createdById: user.id,
         },
       });
 
@@ -125,24 +108,21 @@ export async function POST(request: NextRequest) {
           referenceId: paymentId,
           transactionDate: new Date(paymentDate || new Date()),
           status: 'COMPLETED',
-          createdById: session.user.id,
+          createdById: user.id,
         },
       });
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: { id: paymentId, paymentNo },
       message: 'Payment recorded successfully',
     });
   } catch (error) {
     console.error('Payment POST error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to record payment' },
-      { status: 500 }
-    );
+    return apiError('Failed to record payment', 500);
   }
-}
+});
 
 // Generate receivables aging report
 async function generateReceivablesAging(asOfDate: string, currency: string, customerId?: string) {

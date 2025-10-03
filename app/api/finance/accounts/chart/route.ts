@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -20,13 +19,8 @@ const accountSchema = z.object({
 });
 
 // Get Chart of Accounts
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const parentId = searchParams.get('parentId');
@@ -81,27 +75,19 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: accountsWithBalances,
     });
   } catch (error) {
     console.error('Chart of Accounts GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch chart of accounts' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch chart of accounts', 500);
   }
-}
+});
 
 // Create new account
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const validatedData = accountSchema.parse(body);
 
@@ -111,10 +97,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingAccount) {
-      return NextResponse.json(
-        { success: false, error: 'Account code already exists' },
-        { status: 400 }
-      );
+      return apiError('Account code already exists', 400);
     }
 
     // Validate parent account exists if provided
@@ -124,18 +107,12 @@ export async function POST(request: NextRequest) {
       });
 
       if (!parentAccount) {
-        return NextResponse.json(
-          { success: false, error: 'Parent account not found' },
-          { status: 400 }
-        );
+        return apiError('Parent account not found', 400);
       }
 
       // Validate account type consistency with parent
       if (parentAccount.type !== validatedData.type) {
-        return NextResponse.json(
-          { success: false, error: 'Account type must match parent account type' },
-          { status: 400 }
-        );
+        return apiError('Account type must match parent account type', 400);
       }
     }
 
@@ -151,7 +128,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: newAccount,
       message: 'Account created successfully',
@@ -159,34 +136,20 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Chart of Accounts POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to create account' },
-      { status: 500 }
-    );
+    return apiError('Failed to create account', 500);
   }
-}
+});
 
 // Update account
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'Account ID is required' },
-        { status: 400 }
-      );
+      return apiError('Account ID is required', 400);
     }
 
     // Validate the account exists
@@ -195,10 +158,7 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!existingAccount) {
-      return NextResponse.json(
-        { success: false, error: 'Account not found' },
-        { status: 404 }
-      );
+      return apiError('Account not found', 404);
     }
 
     // Check if account has transactions before allowing type change
@@ -208,10 +168,7 @@ export async function PUT(request: NextRequest) {
       });
 
       if (hasTransactions > 0) {
-        return NextResponse.json(
-          { success: false, error: 'Cannot change account type - account has transactions' },
-          { status: 400 }
-        );
+        return apiError('Cannot change account type - account has transactions', 400);
       }
     }
 
@@ -228,7 +185,7 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: updatedAccount,
       message: 'Account updated successfully',
@@ -236,17 +193,11 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Chart of Accounts PUT error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to update account' },
-      { status: 500 }
-    );
+    return apiError('Failed to update account', 500);
   }
-}
+});
 
 // Helper functions
 async function getAccountsHierarchy(whereClause: any) {
@@ -317,20 +268,12 @@ async function getAccountLevel(accountId: string): Promise<number> {
 }
 
 // Initialize UAE Standard Chart of Accounts
-export async function PATCH(request: NextRequest) {
+export const PATCH = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check if chart of accounts already exists
     const existingAccounts = await prisma.account.count();
     if (existingAccounts > 0) {
-      return NextResponse.json(
-        { success: false, error: 'Chart of accounts already exists' },
-        { status: 400 }
-      );
+      return apiError('Chart of accounts already exists', 400);
     }
 
     // UAE Standard Chart of Accounts
@@ -433,7 +376,7 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       message: 'UAE Standard Chart of Accounts initialized successfully',
       data: {
@@ -442,9 +385,6 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error) {
     console.error('Initialize Chart of Accounts error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to initialize chart of accounts' },
-      { status: 500 }
-    );
+    return apiError('Failed to initialize chart of accounts', 500);
   }
-}
+});

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Export Financing Documentation Schema
 const exportFinancingSchema = z.object({
@@ -92,13 +92,8 @@ const insuranceCertificateSchema = z.object({
   containerNumber: z.string().optional(),
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const { action } = body;
 
@@ -114,24 +109,18 @@ export async function POST(request: NextRequest) {
       case 'calculate_costs':
         return await calculateFinancingCosts(body);
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return apiError('Invalid action', 400);
     }
   } catch (error) {
     console.error('Export Financing error:', error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
-    return NextResponse.json(
-      { error: 'Failed to process export financing request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process export financing request', 500);
   }
-}
+});
 
 async function generateExportDocuments(requestData: any) {
   const validatedData = exportFinancingSchema.parse(requestData);
@@ -739,30 +728,25 @@ function generateCostRecommendations(costs: any, totalCost: number, shipmentValu
   return recommendations;
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
     if (action === 'document-templates') {
-      return NextResponse.json(getDocumentTemplates());
+      return apiResponse(getDocumentTemplates());
     }
 
     if (action === 'financing-options') {
-      return NextResponse.json(getFinancingOptions());
+      return apiResponse(getFinancingOptions());
     }
 
     if (action === 'country-requirements') {
       const country = searchParams.get('country') || undefined;
-      return NextResponse.json(getCountryRequirements(country));
+      return apiResponse(getCountryRequirements(country));
     }
 
-    return NextResponse.json({
+    return apiResponse({
       message: 'Export Financing Documentation API',
       availableDocuments: [
         'commercial_invoice',
@@ -786,12 +770,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Export Financing GET error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process request', 500);
   }
-}
+});
 
 function getDocumentTemplates() {
   return {

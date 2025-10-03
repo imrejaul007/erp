@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // UAE Tax Reporting Schema
 const uaeTaxReportingSchema = z.object({
@@ -36,13 +36,8 @@ const VAT_RATES = {
   exempt: null,   // Exempt supplies
 };
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const validatedData = uaeTaxReportingSchema.parse(body);
 
@@ -64,7 +59,7 @@ export async function POST(request: NextRequest) {
         reportData = await generateEconomicSubstanceReport(taxPeriod, entityInfo, currency, includeDetails);
         break;
       default:
-        return NextResponse.json({ error: 'Invalid report type' }, { status: 400 });
+        return apiError('Invalid report type', 400);
     }
 
     // Format the response based on requested format
@@ -90,23 +85,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json(reportData);
+    return apiResponse(reportData);
   } catch (error) {
     console.error('UAE Tax Reporting error:', error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
-    return NextResponse.json(
-      { error: 'Failed to generate tax report' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate tax report', 500);
   }
-}
+});
 
 async function generateVATReport(taxPeriod: any, entityInfo: any, currency: string, includeDetails: boolean) {
   const { start, end } = taxPeriod;
@@ -595,44 +584,36 @@ async function calculateDepreciation(start: string, end: string) {
   };
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
     if (action === 'compliance-calendar') {
       const complianceCalendar = generateComplianceCalendar();
-      return NextResponse.json(complianceCalendar);
+      return apiResponse(complianceCalendar);
     }
 
     if (action === 'tax-rates') {
       const currentTaxRates = getCurrentTaxRates();
-      return NextResponse.json(currentTaxRates);
+      return apiResponse(currentTaxRates);
     }
 
     if (action === 'deadlines') {
       const upcomingDeadlines = await getUpcomingDeadlines();
-      return NextResponse.json(upcomingDeadlines);
+      return apiResponse(upcomingDeadlines);
     }
 
-    return NextResponse.json({
+    return apiResponse({
       message: 'UAE Tax Reporting API',
       availableReports: ['vat', 'corporate', 'excise', 'economic_substance'],
       supportedFormats: ['json', 'xml', 'pdf'],
     });
   } catch (error) {
     console.error('UAE Tax Reporting GET error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process request', 500);
   }
-}
+});
 
 function generateComplianceCalendar() {
   const currentYear = new Date().getFullYear();

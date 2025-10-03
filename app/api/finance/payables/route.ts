@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -25,13 +24,8 @@ const purchaseSchema = z.object({
 });
 
 // Get purchases/payables
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
@@ -74,7 +68,7 @@ export async function GET(request: NextRequest) {
       `,
     ]);
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: purchases,
       pagination: {
@@ -86,21 +80,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Payables GET error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch payables' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch payables', 500);
   }
-}
+});
 
 // Create purchase
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const validatedData = purchaseSchema.parse(body);
 
@@ -169,7 +155,7 @@ export async function POST(request: NextRequest) {
           referenceId: purchaseId,
           transactionDate: new Date(validatedData.invoiceDate),
           status: 'COMPLETED',
-          createdById: session.user.id,
+          createdById: user.id,
         },
       });
 
@@ -192,7 +178,7 @@ export async function POST(request: NextRequest) {
             referenceId: purchaseId,
             transactionDate: new Date(validatedData.invoiceDate),
             status: 'COMPLETED',
-            createdById: session.user.id,
+            createdById: user.id,
           },
         });
       }
@@ -211,7 +197,7 @@ export async function POST(request: NextRequest) {
             referenceId: purchaseId,
             transactionDate: new Date(validatedData.invoiceDate),
             status: 'COMPLETED',
-            createdById: session.user.id,
+            createdById: user.id,
           },
         });
 
@@ -233,7 +219,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: { id: purchaseId, purchaseNo, totalAmount },
       message: 'Purchase created successfully',
@@ -241,17 +227,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Purchase POST error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to create purchase' },
-      { status: 500 }
-    );
+    return apiError('Failed to create purchase', 500);
   }
-}
+});
 
 // Helper functions
 function buildWhereClause(whereClause: any): string {

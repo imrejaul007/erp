@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/route';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -55,13 +54,8 @@ const paymentTermsSchema = z.object({
 });
 
 // Get advanced payables with comprehensive analysis
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const analysisType = searchParams.get('analysisType') || 'standard';
     const supplierId = searchParams.get('supplierId');
@@ -96,33 +90,25 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: result,
       metadata: {
         analysisType,
         currency,
         generatedAt: new Date().toISOString(),
-        generatedBy: session.user?.email,
+        generatedBy: user?.email,
       },
     });
   } catch (error) {
     console.error('Advanced Payables Analysis error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to generate advanced payables analysis' },
-      { status: 500 }
-    );
+    return apiError('Failed to generate advanced payables analysis', 500);
   }
-}
+});
 
 // Create advanced payable with workflow and terms
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const validatedData = advancedPayableSchema.parse(body);
 
@@ -138,10 +124,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!supplier) {
-      return NextResponse.json(
-        { success: false, error: 'Supplier not found' },
-        { status: 404 }
-      );
+      return apiError('Supplier not found', 404);
     }
 
     // Check for duplicate invoice
@@ -158,10 +141,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingInvoice) {
-      return NextResponse.json(
-        { success: false, error: 'Invoice already exists' },
-        { status: 400 }
-      );
+      return apiError('Invoice already exists', 400);
     }
 
     // Calculate amounts with currency conversion
@@ -210,16 +190,16 @@ export async function POST(request: NextRequest) {
 
     // Create approval workflow if required
     if (requiresApproval) {
-      await createApprovalWorkflow(supplierInvoice.id, session.user.id);
+      await createApprovalWorkflow(supplierInvoice.id, user.id);
     }
 
     // Create accounting transactions
-    await createAdvancedPayableTransactions(supplierInvoice, validatedData, session.user.id);
+    await createAdvancedPayableTransactions(supplierInvoice, validatedData, user.id);
 
     // Update supplier credit utilization
     await updateSupplierCreditUtilization(validatedData.supplierId);
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         ...supplierInvoice,
@@ -232,55 +212,38 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Advanced Payable creation error:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid data', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
-    return NextResponse.json(
-      { success: false, error: 'Failed to create advanced payable' },
-      { status: 500 }
-    );
+    return apiError('Failed to create advanced payable', 500);
   }
-}
+});
 
 // Process batch payments with optimization
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const action = body.action;
 
     if (action === 'batch_payment') {
-      const result = await processBatchPayment(body.data, session.user.id);
-      return NextResponse.json(result);
+      const result = await processBatchPayment(body.data, user.id);
+      return apiResponse(result);
     } else if (action === 'update_payment_terms') {
-      const result = await updatePaymentTerms(body.data, session.user.id);
-      return NextResponse.json(result);
+      const result = await updatePaymentTerms(body.data, user.id);
+      return apiResponse(result);
     } else if (action === 'approve_invoice') {
-      const result = await approveInvoice(body.invoiceId, session.user.id);
-      return NextResponse.json(result);
+      const result = await approveInvoice(body.invoiceId, user.id);
+      return apiResponse(result);
     } else if (action === 'optimize_payments') {
       const result = await optimizePaymentSchedule(body.currency || 'AED');
-      return NextResponse.json(result);
+      return apiResponse(result);
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Invalid action' },
-      { status: 400 }
-    );
+    return apiError('Invalid action', 400);
   } catch (error) {
     console.error('Advanced Payables PUT error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to process request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process request', 500);
   }
-}
+});
 
 // Helper functions
 async function generateComprehensivePayablesAnalysis(
