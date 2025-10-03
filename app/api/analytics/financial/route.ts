@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { FinancialMetrics } from '@/types/analytics';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Mock financial data
 const mockProfitabilityAnalysis = [
@@ -208,17 +209,22 @@ const mockFinancialKPIs = {
   workingCapital: 125000,
 };
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const period = searchParams.get('period') || 'monthly';
     const storeId = searchParams.get('storeId');
 
+    // TODO: Add tenantId filter to all Prisma queries when implemented
+    // Example: await prisma.financialMetrics.findMany({ where: { tenantId } })
+    // For aggregations: const financial = await prisma.transaction.findMany({ where: { tenantId, ...filters } })
+
     let responseData: any = {};
 
     switch (type) {
       case 'profitability':
+        // TODO: await prisma.profitability.findMany({ where: { tenantId, storeId } })
         responseData = {
           productProfitability: mockProfitabilityAnalysis,
           storeProfitability: mockStoreProfitability.filter(store =>
@@ -231,6 +237,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'costs':
+        // TODO: await prisma.costAnalysis.findMany({ where: { tenantId } })
         responseData = {
           costBreakdown: mockCostAnalysis,
           totalCosts: mockCostAnalysis.reduce((sum, cost) => sum + cost.currentMonth, 0),
@@ -244,6 +251,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'cashflow':
+        // TODO: await prisma.cashFlow.findMany({ where: { tenantId } })
         responseData = {
           cashFlowData: mockCashFlowData,
           currentBalance: mockCashFlowData[mockCashFlowData.length - 1].cumulativeFlow,
@@ -258,6 +266,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'roi':
+        // TODO: await prisma.roiAnalysis.findMany({ where: { tenantId } })
         responseData = {
           campaigns: mockROIAnalysis,
           averageROI: mockROIAnalysis.reduce((sum, campaign) => sum + campaign.roi, 0) / mockROIAnalysis.length,
@@ -268,6 +277,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'breakeven':
+        // TODO: await prisma.breakEvenAnalysis.findMany({ where: { tenantId } })
         responseData = {
           analysis: mockBreakEvenAnalysis,
           quickestBreakEven: mockBreakEvenAnalysis.reduce((min, product) =>
@@ -278,6 +288,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'kpis':
+        // TODO: await prisma.financialKPIs.findFirst({ where: { tenantId } })
         responseData = {
           kpis: mockFinancialKPIs,
           benchmarks: {
@@ -308,16 +319,13 @@ export async function GET(request: NextRequest) {
         };
     }
 
-    return NextResponse.json({
+    return apiResponse({
       ...responseData,
       lastUpdated: new Date().toISOString(),
       currency: 'AED',
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching financial analytics:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch financial analytics' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch financial analytics: ' + (error.message || 'Unknown error'), 500);
   }
-}
+});

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import {
   PredictiveAnalytics,
   ForecastData,
@@ -7,6 +7,7 @@ import {
   PriceOptimization,
   ChurnPrediction
 } from '@/types/analytics';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Mock predictive analytics data
 const mockDemandForecast: ForecastData[] = [
@@ -139,17 +140,23 @@ const mockCategoryForecasts = [
   { category: 'Amber', forecast: [18000, 19000, 20000, 22000, 24000, 26000] },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const category = searchParams.get('category');
     const horizon = searchParams.get('horizon') || '6'; // months
 
+    // TODO: Add tenantId filter to all Prisma queries when implemented
+    // Example: await prisma.demandForecast.findMany({ where: { tenantId } })
+    // For ML models: filter training data by tenantId before predictions
+
     let responseData: any = {};
 
     switch (type) {
       case 'demand':
+        // TODO: Generate forecasts based on tenant-specific historical data
+        // const historicalData = await prisma.sales.findMany({ where: { tenantId } })
         responseData = {
           forecast: mockDemandForecast.slice(0, parseInt(horizon)),
           categoryForecasts: mockCategoryForecasts,
@@ -159,6 +166,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'stockout':
+        // TODO: await prisma.stockPrediction.findMany({ where: { tenantId } })
         responseData = {
           alerts: mockStockOutPredictions,
           criticalItems: mockStockOutPredictions.filter(alert => alert.severity === 'high'),
@@ -171,6 +179,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'seasonal':
+        // TODO: await prisma.seasonalRecommendation.findMany({ where: { tenantId, category } })
         responseData = {
           recommendations: mockSeasonalRecommendations.filter(rec =>
             !category || rec.category === category
@@ -181,6 +190,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'pricing':
+        // TODO: await prisma.priceOptimization.findMany({ where: { tenantId } })
         responseData = {
           optimizations: mockPriceOptimization,
           potentialRevenue: mockPriceOptimization.reduce((sum, opt) => sum + opt.expectedImpact, 0),
@@ -189,6 +199,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'churn':
+        // TODO: await prisma.churnPrediction.findMany({ where: { tenantId } })
         responseData = {
           predictions: mockChurnPrediction,
           highRiskCustomers: mockChurnPrediction.filter(pred => pred.churnProbability > 0.7),
@@ -199,6 +210,7 @@ export async function GET(request: NextRequest) {
 
       case 'trends':
         // Market trend analysis
+        // TODO: Generate trends from tenant-specific data
         responseData = {
           emergingTrends: [
             { trend: 'Sustainable packaging', impact: 'High', timeframe: '6 months' },
@@ -224,17 +236,14 @@ export async function GET(request: NextRequest) {
         };
     }
 
-    return NextResponse.json({
+    return apiResponse({
       ...responseData,
       generatedAt: new Date().toISOString(),
       modelVersion: '1.2.3',
       confidence: 'High',
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching predictive analytics:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch predictive analytics' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch predictive analytics: ' + (error.message || 'Unknown error'), 500);
   }
-}
+});

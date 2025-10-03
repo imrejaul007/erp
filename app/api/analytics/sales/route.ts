@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { SalesData, ProductPerformance, SeasonalTrend, StorePerformance } from '@/types/analytics';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Mock sales data
 const mockSalesData: SalesData[] = [
@@ -122,13 +123,17 @@ const mockStorePerformance: StorePerformance[] = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const dateRange = searchParams.get('dateRange');
     const storeId = searchParams.get('storeId');
     const category = searchParams.get('category');
+
+    // TODO: Add tenantId filter to all Prisma queries when implemented
+    // Example: await prisma.sales.findMany({ where: { tenantId } })
+    // For aggregations: const sales = await prisma.sale.findMany({ where: { tenantId, ...otherFilters } })
 
     let responseData: any = {};
 
@@ -173,6 +178,7 @@ export async function GET(request: NextRequest) {
 
       case 'staff':
         // Mock staff performance data
+        // TODO: await prisma.staffPerformance.findMany({ where: { tenantId } })
         responseData = {
           staffPerformance: [
             { id: 'staff_001', name: 'Ahmad Hassan', sales: 45200, orders: 152, conversion: 72.5 },
@@ -191,15 +197,12 @@ export async function GET(request: NextRequest) {
         };
     }
 
-    return NextResponse.json({
+    return apiResponse({
       ...responseData,
       lastUpdated: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching sales analytics:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch sales analytics' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch sales analytics: ' + (error.message || 'Unknown error'), 500);
   }
-}
+});

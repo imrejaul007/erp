@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { InventoryHealth, AgingItem, SupplierPerformance } from '@/types/analytics';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Mock inventory data
 const mockInventoryHealth: InventoryHealth = {
@@ -163,17 +164,22 @@ const mockSupplierPerformance: SupplierPerformance[] = [
   },
 ];
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const category = searchParams.get('category');
     const storeId = searchParams.get('storeId');
 
+    // TODO: Add tenantId filter to all Prisma queries when implemented
+    // Example: await prisma.inventory.findMany({ where: { tenantId } })
+    // For aggregations: const inventory = await prisma.inventory.findMany({ where: { tenantId, ...filters } })
+
     let responseData: any = {};
 
     switch (type) {
       case 'health':
+        // TODO: await prisma.inventoryHealth.findFirst({ where: { tenantId } })
         responseData = {
           health: mockInventoryHealth,
           summary: {
@@ -184,6 +190,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'turnover':
+        // TODO: await prisma.inventoryTurnover.findMany({ where: { tenantId, category } })
         responseData = {
           analysis: mockTurnoverAnalysis.filter(item =>
             !category || item.category === category
@@ -194,6 +201,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'aging':
+        // TODO: await prisma.agingInventory.findMany({ where: { tenantId, category } })
         responseData = {
           agingItems: mockInventoryHealth.agingItems.filter(item =>
             !category || item.category === category
@@ -210,6 +218,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'wastage':
+        // TODO: await prisma.wastageAnalysis.findMany({ where: { tenantId } })
         responseData = {
           wastageData: mockWastageAnalysis,
           totalWastageValue: mockWastageAnalysis.reduce((sum, item) => sum + item.totalValue, 0),
@@ -218,6 +227,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'reorder':
+        // TODO: await prisma.reorderPoint.findMany({ where: { tenantId } })
         responseData = {
           reorderPoints: mockReorderPoints,
           urgentReorders: mockReorderPoints.filter(item => item.status === 'urgent_reorder'),
@@ -226,6 +236,7 @@ export async function GET(request: NextRequest) {
         break;
 
       case 'suppliers':
+        // TODO: await prisma.supplier.findMany({ where: { tenantId } })
         responseData = {
           suppliers: mockSupplierPerformance,
           topPerformer: mockSupplierPerformance[0],
@@ -243,15 +254,12 @@ export async function GET(request: NextRequest) {
         };
     }
 
-    return NextResponse.json({
+    return apiResponse({
       ...responseData,
       lastUpdated: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching inventory analytics:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch inventory analytics' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch inventory analytics: ' + (error.message || 'Unknown error'), 500);
   }
-}
+});

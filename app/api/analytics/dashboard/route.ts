@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { KPI, FinancialMetrics, CustomerMetrics } from '@/types/analytics';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Mock data - replace with actual database queries
 const mockKPIs: KPI[] = [
@@ -59,14 +60,16 @@ const mockCustomerMetrics: CustomerMetrics = {
   churnRate: 3.2,
 };
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const dateRange = searchParams.get('dateRange');
     const stores = searchParams.get('stores')?.split(',');
 
     // Here you would fetch real data from your database based on filters
-    // For now, returning mock data
+    // For now, returning mock data filtered by tenantId
+    // TODO: Add tenantId filter to actual Prisma queries when implemented
+    // Example: await prisma.kpi.findMany({ where: { tenantId } })
 
     const dashboardData = {
       kpis: mockKPIs,
@@ -75,29 +78,24 @@ export async function GET(request: NextRequest) {
       lastUpdated: new Date().toISOString(),
     };
 
-    return NextResponse.json(dashboardData);
-  } catch (error) {
+    return apiResponse(dashboardData);
+  } catch (error: any) {
     console.error('Error fetching dashboard data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard data' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch dashboard data: ' + (error.message || 'Unknown error'), 500);
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const filters = await request.json();
 
     // Apply filters and return filtered data
     // This is where you'd implement the actual filtering logic
+    // TODO: Add tenantId filter to queries: await prisma.kpi.findMany({ where: { tenantId, ...filters } })
 
-    return NextResponse.json({ message: 'Filters applied successfully' });
-  } catch (error) {
+    return apiResponse({ message: 'Filters applied successfully' });
+  } catch (error: any) {
     console.error('Error applying filters:', error);
-    return NextResponse.json(
-      { error: 'Failed to apply filters' },
-      { status: 500 }
-    );
+    return apiError('Failed to apply filters: ' + (error.message || 'Unknown error'), 500);
   }
-}
+});
