@@ -56,6 +56,7 @@ async function main() {
       showSocial: true,
       showVatNumber: true,
       showCompanyInfo: true,
+      updatedAt: new Date(),
     },
   });
   console.log('✅ Branding created');
