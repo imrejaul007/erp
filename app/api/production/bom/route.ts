@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -24,7 +25,7 @@ const updateBOMSchema = createBOMSchema.partial().extend({
 });
 
 // GET /api/production/bom
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -34,10 +35,17 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build filters
-    const where: any = {};
+    // Build filters with tenantId
+    const where: any = { tenantId };
 
     if (recipeId) {
+      // Verify recipe belongs to tenant
+      const recipe = await prisma.recipe.findUnique({
+        where: { id: recipeId }
+      });
+      if (!recipe || recipe.tenantId !== tenantId) {
+        return apiError('Recipe not found or does not belong to your tenant', 403);
+      }
       where.recipeId = recipeId;
     }
 
@@ -101,7 +109,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         boms: bomsWithAvailability,
@@ -116,42 +124,40 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching BOMs:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch BOMs' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch BOMs', 500);
   }
-}
+});
 
 // POST /api/production/bom
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const validatedData = createBOMSchema.parse(body);
 
-    // Check if recipe exists
+    // Check if recipe exists and belongs to tenant
     const recipe = await prisma.recipe.findUnique({
       where: { id: validatedData.recipeId }
     });
 
     if (!recipe) {
-      return NextResponse.json(
-        { success: false, error: 'Recipe not found' },
-        { status: 404 }
-      );
+      return apiError('Recipe not found', 404);
     }
 
-    // Verify all materials exist
+    if (recipe.tenantId !== tenantId) {
+      return apiError('Recipe does not belong to your tenant', 403);
+    }
+
+    // Verify all materials exist and belong to tenant
     const materialIds = validatedData.items.map(item => item.materialId);
     const materials = await prisma.material.findMany({
-      where: { id: { in: materialIds } }
+      where: {
+        id: { in: materialIds },
+        tenantId
+      }
     });
 
     if (materials.length !== materialIds.length) {
-      return NextResponse.json(
-        { success: false, error: 'One or more materials not found' },
-        { status: 400 }
-      );
+      return apiError('One or more materials not found or do not belong to your tenant', 400);
     }
 
     // Calculate total cost
@@ -161,7 +167,8 @@ export async function POST(request: NextRequest) {
     const existingActiveBOM = await prisma.bom.findFirst({
       where: {
         recipeId: validatedData.recipeId,
-        isActive: true
+        isActive: true,
+        tenantId
       }
     });
 
@@ -181,7 +188,8 @@ export async function POST(request: NextRequest) {
           name: validatedData.name,
           version: validatedData.version,
           totalCost,
-          isActive: true, // New BOM is always active
+          isActive: true,
+          tenantId,
           items: {
             create: validatedData.items.map(item => ({
               materialId: item.materialId,
@@ -216,7 +224,7 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: bom,
       message: 'BOM created successfully'
@@ -224,60 +232,55 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating BOM:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create BOM' },
-      { status: 500 }
-    );
+    return apiError('Failed to create BOM', 500);
   }
-}
+});
 
 // PUT /api/production/bom
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'BOM ID is required' },
-        { status: 400 }
-      );
+      return apiError('BOM ID is required', 400);
     }
 
     const validatedData = updateBOMSchema.parse(updateData);
 
-    // Check if BOM exists
+    // Check if BOM exists and belongs to tenant
     const existingBOM = await prisma.bom.findUnique({
       where: { id },
       include: { items: true }
     });
 
     if (!existingBOM) {
-      return NextResponse.json(
-        { success: false, error: 'BOM not found' },
-        { status: 404 }
-      );
+      return apiError('BOM not found', 404);
+    }
+
+    if (existingBOM.tenantId !== tenantId) {
+      return apiError('BOM does not belong to your tenant', 403);
     }
 
     // Update BOM in transaction
     const updatedBOM = await prisma.$transaction(async (tx) => {
       // If items are being updated, replace them
       if (validatedData.items) {
-        // Verify all materials exist
+        // Verify all materials exist and belong to tenant
         const materialIds = validatedData.items.map(item => item.materialId);
         const materials = await tx.material.findMany({
-          where: { id: { in: materialIds } }
+          where: {
+            id: { in: materialIds },
+            tenantId
+          }
         });
 
         if (materials.length !== materialIds.length) {
-          throw new Error('One or more materials not found');
+          throw new Error('One or more materials not found or do not belong to your tenant');
         }
 
         // Calculate new total cost
@@ -360,13 +363,14 @@ export async function PUT(request: NextRequest) {
       await prisma.bom.updateMany({
         where: {
           recipeId: existingBOM.recipeId,
-          id: { not: id }
+          id: { not: id },
+          tenantId
         },
         data: { isActive: false }
       });
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: updatedBOM,
       message: 'BOM updated successfully'
@@ -374,16 +378,10 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error updating BOM:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update BOM' },
-      { status: 500 }
-    );
+    return apiError(error instanceof Error ? error.message : 'Failed to update BOM', 500);
   }
-}
+});

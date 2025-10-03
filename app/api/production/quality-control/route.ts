@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ const createQualityControlSchema = z.object({
 const updateQualityControlSchema = createQualityControlSchema.partial();
 
 // GET /api/production/quality-control
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -31,10 +32,17 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build filters
-    const where: any = {};
+    // Build filters with tenantId
+    const where: any = { tenantId };
 
     if (batchId) {
+      // Verify batch belongs to tenant
+      const batch = await prisma.productionBatch.findUnique({
+        where: { id: batchId }
+      });
+      if (!batch || batch.tenantId !== tenantId) {
+        return apiError('Batch not found or does not belong to your tenant', 403);
+      }
       where.batchId = batchId;
     }
 
@@ -122,7 +130,7 @@ export async function GET(request: NextRequest) {
       topTestTypes: testTypeCounts
     };
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         qualityControls,
@@ -138,20 +146,17 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching quality control records:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch quality control records' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch quality control records', 500);
   }
-}
+});
 
 // POST /api/production/quality-control
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const validatedData = createQualityControlSchema.parse(body);
 
-    // Verify batch exists
+    // Verify batch exists and belongs to tenant
     const batch = await prisma.productionBatch.findUnique({
       where: { id: validatedData.batchId },
       include: {
@@ -165,15 +170,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (!batch) {
-      return NextResponse.json(
-        { success: false, error: 'Production batch not found' },
-        { status: 404 }
-      );
+      return apiError('Production batch not found', 404);
+    }
+
+    if (batch.tenantId !== tenantId) {
+      return apiError('Production batch does not belong to your tenant', 403);
     }
 
     // Create quality control record
     const qualityControl = await prisma.qualityControl.create({
-      data: validatedData,
+      data: {
+        ...validatedData,
+        tenantId
+      },
       include: {
         batch: {
           include: {
@@ -189,7 +198,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: qualityControl,
       message: 'Quality control record created successfully'
@@ -197,45 +206,37 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating quality control record:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create quality control record' },
-      { status: 500 }
-    );
+    return apiError('Failed to create quality control record', 500);
   }
-}
+});
 
 // PUT /api/production/quality-control
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'Quality control ID is required' },
-        { status: 400 }
-      );
+      return apiError('Quality control ID is required', 400);
     }
 
     const validatedData = updateQualityControlSchema.parse(updateData);
 
-    // Check if quality control record exists
+    // Check if quality control record exists and belongs to tenant
     const existingQC = await prisma.qualityControl.findUnique({
       where: { id }
     });
 
     if (!existingQC) {
-      return NextResponse.json(
-        { success: false, error: 'Quality control record not found' },
-        { status: 404 }
-      );
+      return apiError('Quality control record not found', 404);
+    }
+
+    if (existingQC.tenantId !== tenantId) {
+      return apiError('Quality control record does not belong to your tenant', 403);
     }
 
     // Update quality control record
@@ -257,7 +258,7 @@ export async function PUT(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: updatedQC,
       message: 'Quality control record updated successfully'
@@ -265,16 +266,10 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error updating quality control record:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update quality control record' },
-      { status: 500 }
-    );
+    return apiError('Failed to update quality control record', 500);
   }
-}
+});

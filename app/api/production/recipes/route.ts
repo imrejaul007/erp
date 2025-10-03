@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -38,7 +39,7 @@ const updateRecipeSchema = createRecipeSchema.partial().omit({ ingredients: true
 });
 
 // GET /api/production/recipes
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -49,8 +50,8 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build filters
-    const where: any = {};
+    // Build filters with tenantId
+    const where: any = { tenantId };
 
     if (search) {
       where.OR = [
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         recipes: recipesWithCosts,
@@ -133,42 +134,39 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching recipes:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch recipes' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch recipes', 500);
   }
-}
+});
 
 // POST /api/production/recipes
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const validatedData = createRecipeSchema.parse(body);
 
-    // Check if recipe name already exists
+    // Check if recipe name already exists for this tenant
     const existingRecipe = await prisma.recipe.findFirst({
-      where: { name: validatedData.name }
+      where: {
+        name: validatedData.name,
+        tenantId
+      }
     });
 
     if (existingRecipe) {
-      return NextResponse.json(
-        { success: false, error: 'Recipe name already exists' },
-        { status: 400 }
-      );
+      return apiError('Recipe name already exists', 400);
     }
 
-    // Verify all materials exist
+    // Verify all materials exist and belong to tenant
     const materialIds = validatedData.ingredients.map(ing => ing.materialId);
     const materials = await prisma.material.findMany({
-      where: { id: { in: materialIds } }
+      where: {
+        id: { in: materialIds },
+        tenantId
+      }
     });
 
     if (materials.length !== materialIds.length) {
-      return NextResponse.json(
-        { success: false, error: 'One or more materials not found' },
-        { status: 400 }
-      );
+      return apiError('One or more materials not found or do not belong to your tenant', 400);
     }
 
     // Calculate total cost
@@ -191,6 +189,7 @@ export async function POST(request: NextRequest) {
           costPerUnit,
           instructions: validatedData.instructions,
           notes: validatedData.notes,
+          tenantId,
           ingredients: {
             create: validatedData.ingredients.map((ingredient, index) => ({
               materialId: ingredient.materialId,
@@ -223,14 +222,14 @@ export async function POST(request: NextRequest) {
           recipeId: newRecipe.id,
           version: '1.0',
           changes: 'Initial recipe creation',
-          createdBy: 'System' // TODO: Get from auth context
+          createdBy: user.email || 'System'
         }
       });
 
       return newRecipe;
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: { ...recipe, totalCost, costPerUnit },
       message: 'Recipe created successfully'
@@ -238,36 +237,27 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating recipe:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create recipe' },
-      { status: 500 }
-    );
+    return apiError('Failed to create recipe', 500);
   }
-}
+});
 
 // PUT /api/production/recipes
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'Recipe ID is required' },
-        { status: 400 }
-      );
+      return apiError('Recipe ID is required', 400);
     }
 
     const validatedData = updateRecipeSchema.parse(updateData);
 
-    // Check if recipe exists
+    // Check if recipe exists and belongs to tenant
     const existingRecipe = await prisma.recipe.findUnique({
       where: { id },
       include: {
@@ -277,10 +267,11 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!existingRecipe) {
-      return NextResponse.json(
-        { success: false, error: 'Recipe not found' },
-        { status: 404 }
-      );
+      return apiError('Recipe not found', 404);
+    }
+
+    if (existingRecipe.tenantId !== tenantId) {
+      return apiError('Recipe does not belong to your tenant', 403);
     }
 
     // Check if name is being changed and if it conflicts
@@ -288,15 +279,13 @@ export async function PUT(request: NextRequest) {
       const nameExists = await prisma.recipe.findFirst({
         where: {
           name: validatedData.name,
-          id: { not: id }
+          id: { not: id },
+          tenantId
         }
       });
 
       if (nameExists) {
-        return NextResponse.json(
-          { success: false, error: 'Recipe name already exists' },
-          { status: 400 }
-        );
+        return apiError('Recipe name already exists', 400);
       }
     }
 
@@ -304,14 +293,17 @@ export async function PUT(request: NextRequest) {
     const updatedRecipe = await prisma.$transaction(async (tx) => {
       // If ingredients are being updated, replace them
       if (validatedData.ingredients) {
-        // Verify all materials exist
+        // Verify all materials exist and belong to tenant
         const materialIds = validatedData.ingredients.map(ing => ing.materialId);
         const materials = await tx.material.findMany({
-          where: { id: { in: materialIds } }
+          where: {
+            id: { in: materialIds },
+            tenantId
+          }
         });
 
         if (materials.length !== materialIds.length) {
-          throw new Error('One or more materials not found');
+          throw new Error('One or more materials not found or do not belong to your tenant');
         }
 
         // Delete existing ingredients
@@ -392,8 +384,8 @@ export async function PUT(request: NextRequest) {
         data: {
           recipeId: id,
           version: newVersion,
-          changes: 'Recipe updated', // TODO: Generate detailed change log
-          createdBy: 'System' // TODO: Get from auth context
+          changes: 'Recipe updated',
+          createdBy: user.email || 'System'
         }
       });
 
@@ -404,7 +396,7 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: updatedRecipe,
       message: 'Recipe updated successfully'
@@ -412,16 +404,10 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error updating recipe:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update recipe' },
-      { status: 500 }
-    );
+    return apiError(error instanceof Error ? error.message : 'Failed to update recipe', 500);
   }
-}
+});

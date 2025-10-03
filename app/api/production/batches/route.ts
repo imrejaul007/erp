@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -45,7 +46,7 @@ function generateBatchNumber(): string {
 }
 
 // GET /api/production/batches
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -58,14 +59,21 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build filters
-    const where: any = {};
+    // Build filters with tenantId
+    const where: any = { tenantId };
 
     if (status) {
       where.status = status;
     }
 
     if (recipeId) {
+      // Verify recipe belongs to tenant
+      const recipe = await prisma.recipe.findUnique({
+        where: { id: recipeId }
+      });
+      if (!recipe || recipe.tenantId !== tenantId) {
+        return apiError('Recipe not found or does not belong to your tenant', 403);
+      }
       where.recipeId = recipeId;
     }
 
@@ -168,7 +176,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: {
         batches: batchesWithStats,
@@ -183,45 +191,43 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching production batches:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch production batches' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch production batches', 500);
   }
-}
+});
 
 // POST /api/production/batches
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const validatedData = createProductionBatchSchema.parse(body);
 
-    // Verify recipe exists if provided
+    // Verify recipe exists and belongs to tenant if provided
     if (validatedData.recipeId) {
       const recipe = await prisma.recipe.findUnique({
         where: { id: validatedData.recipeId }
       });
 
       if (!recipe) {
-        return NextResponse.json(
-          { success: false, error: 'Recipe not found' },
-          { status: 404 }
-        );
+        return apiError('Recipe not found', 404);
+      }
+
+      if (recipe.tenantId !== tenantId) {
+        return apiError('Recipe does not belong to your tenant', 403);
       }
     }
 
-    // Verify materials exist if inputs provided
+    // Verify materials exist and belong to tenant if inputs provided
     if (validatedData.inputs && validatedData.inputs.length > 0) {
       const materialIds = validatedData.inputs.map(input => input.materialId);
       const materials = await prisma.material.findMany({
-        where: { id: { in: materialIds } }
+        where: {
+          id: { in: materialIds },
+          tenantId
+        }
       });
 
       if (materials.length !== materialIds.length) {
-        return NextResponse.json(
-          { success: false, error: 'One or more materials not found' },
-          { status: 400 }
-        );
+        return apiError('One or more materials not found or do not belong to your tenant', 400);
       }
 
       // Check material availability
@@ -234,18 +240,9 @@ export async function POST(request: NextRequest) {
         const materialNames = insufficientMaterials.map(input => {
           const material = materials.find(m => m.id === input.materialId);
           return material?.name;
-        });
+        }).join(', ');
 
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Insufficient stock for materials',
-            details: {
-              insufficientMaterials: materialNames
-            }
-          },
-          { status: 400 }
-        );
+        return apiError(`Insufficient stock for materials: ${materialNames}`, 400);
       }
     }
 
@@ -262,10 +259,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (attempts >= 10) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to generate unique batch number' },
-        { status: 500 }
-      );
+      return apiError('Failed to generate unique batch number', 500);
     }
 
     // Create production batch with inputs in transaction
@@ -279,6 +273,7 @@ export async function POST(request: NextRequest) {
           status: 'PLANNED',
           startDate: validatedData.startDate,
           notes: validatedData.notes,
+          tenantId,
           inputs: validatedData.inputs ? {
             create: validatedData.inputs.map(input => ({
               materialId: input.materialId,
@@ -320,7 +315,7 @@ export async function POST(request: NextRequest) {
       return newBatch;
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: batch,
       message: 'Production batch created successfully'
@@ -328,45 +323,37 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating production batch:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create production batch' },
-      { status: 500 }
-    );
+    return apiError('Failed to create production batch', 500);
   }
-}
+});
 
 // PUT /api/production/batches
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'Batch ID is required' },
-        { status: 400 }
-      );
+      return apiError('Batch ID is required', 400);
     }
 
     const validatedData = updateProductionBatchSchema.parse(updateData);
 
-    // Check if batch exists
+    // Check if batch exists and belongs to tenant
     const existingBatch = await prisma.productionBatch.findUnique({
       where: { id }
     });
 
     if (!existingBatch) {
-      return NextResponse.json(
-        { success: false, error: 'Production batch not found' },
-        { status: 404 }
-      );
+      return apiError('Production batch not found', 404);
+    }
+
+    if (existingBatch.tenantId !== tenantId) {
+      return apiError('Production batch does not belong to your tenant', 403);
     }
 
     // Update batch
@@ -411,7 +398,7 @@ export async function PUT(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: updatedBatch,
       message: 'Production batch updated successfully'
@@ -419,16 +406,10 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error updating production batch:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update production batch' },
-      { status: 500 }
-    );
+    return apiError('Failed to update production batch', 500);
   }
-}
+});

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 import InventoryIntegrationService from '@/services/inventory-integration';
 
 // Validation schemas
@@ -53,7 +54,7 @@ const checkAvailabilitySchema = z.object({
 });
 
 // POST /api/production/inventory
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { action, ...data } = body;
@@ -64,9 +65,10 @@ export async function POST(request: NextRequest) {
         await InventoryIntegrationService.deductProductionMaterials(
           deductData.batchId,
           deductData.materials,
-          deductData.reference
+          deductData.reference,
+          tenantId
         );
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           message: 'Materials deducted successfully'
         });
@@ -76,9 +78,10 @@ export async function POST(request: NextRequest) {
         await InventoryIntegrationService.addProductionOutputs(
           outputData.batchId,
           outputData.outputs,
-          outputData.reference
+          outputData.reference,
+          tenantId
         );
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           message: 'Production outputs added to inventory successfully'
         });
@@ -86,13 +89,10 @@ export async function POST(request: NextRequest) {
       case 'reverse_deductions':
         const { batchId, reference } = data;
         if (!batchId || !reference) {
-          return NextResponse.json(
-            { success: false, error: 'Batch ID and reference are required' },
-            { status: 400 }
-          );
+          return apiError('Batch ID and reference are required', 400);
         }
-        await InventoryIntegrationService.reverseProductionDeductions(batchId, reference);
-        return NextResponse.json({
+        await InventoryIntegrationService.reverseProductionDeductions(batchId, reference, tenantId);
+        return apiResponse({
           success: true,
           message: 'Production deductions reversed successfully'
         });
@@ -106,9 +106,10 @@ export async function POST(request: NextRequest) {
           wastageData.reason,
           wastageData.cost,
           wastageData.batchId,
-          wastageData.notes
+          wastageData.notes,
+          tenantId
         );
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           message: 'Wastage recorded successfully'
         });
@@ -116,9 +117,10 @@ export async function POST(request: NextRequest) {
       case 'check_availability':
         const availabilityData = checkAvailabilitySchema.parse(data);
         const availability = await InventoryIntegrationService.checkMaterialAvailability(
-          availabilityData.materials
+          availabilityData.materials,
+          tenantId
         );
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           data: availability
         });
@@ -127,9 +129,10 @@ export async function POST(request: NextRequest) {
         const reserveData = reserveMaterialsSchema.parse(data);
         await InventoryIntegrationService.reserveMaterials(
           reserveData.batchId,
-          reserveData.materials
+          reserveData.materials,
+          tenantId
         );
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           message: 'Materials reserved successfully'
         });
@@ -138,9 +141,10 @@ export async function POST(request: NextRequest) {
         const releaseData = reserveMaterialsSchema.parse(data);
         await InventoryIntegrationService.releaseReservedMaterials(
           releaseData.batchId,
-          releaseData.materials
+          releaseData.materials,
+          tenantId
         );
-        return NextResponse.json({
+        return apiResponse({
           success: true,
           message: 'Reserved materials released successfully'
         });
@@ -148,52 +152,37 @@ export async function POST(request: NextRequest) {
       case 'update_cost':
         const { materialId, newCostPerUnit, notes } = data;
         if (!materialId || typeof newCostPerUnit !== 'number') {
-          return NextResponse.json(
-            { success: false, error: 'Material ID and new cost per unit are required' },
-            { status: 400 }
-          );
+          return apiError('Material ID and new cost per unit are required', 400);
         }
-        await InventoryIntegrationService.updateMaterialCosts(materialId, newCostPerUnit, notes);
-        return NextResponse.json({
+        await InventoryIntegrationService.updateMaterialCosts(materialId, newCostPerUnit, notes, tenantId);
+        return apiResponse({
           success: true,
           message: 'Material cost updated successfully'
         });
 
       case 'generate_alerts':
-        await InventoryIntegrationService.generateLowStockAlerts();
-        return NextResponse.json({
+        await InventoryIntegrationService.generateLowStockAlerts(tenantId);
+        return apiResponse({
           success: true,
           message: 'Low stock alerts generated successfully'
         });
 
       default:
-        return NextResponse.json(
-          { success: false, error: 'Invalid action specified' },
-          { status: 400 }
-        );
+        return apiError('Invalid action specified', 400);
     }
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Inventory integration error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to process inventory operation'
-      },
-      { status: 500 }
-    );
+    return apiError(error instanceof Error ? error.message : 'Failed to process inventory operation', 500);
   }
-}
+});
 
 // GET /api/production/inventory
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
@@ -204,37 +193,26 @@ export async function GET(request: NextRequest) {
       const dateTo = searchParams.get('dateTo');
 
       if (!materialId || !dateFrom || !dateTo) {
-        return NextResponse.json(
-          { success: false, error: 'Material ID, dateFrom, and dateTo are required' },
-          { status: 400 }
-        );
+        return apiError('Material ID, dateFrom, and dateTo are required', 400);
       }
 
       const analytics = await InventoryIntegrationService.getMaterialConsumptionAnalytics(
         materialId,
         new Date(dateFrom),
-        new Date(dateTo)
+        new Date(dateTo),
+        tenantId
       );
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: analytics
       });
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Invalid or missing action parameter' },
-      { status: 400 }
-    );
+    return apiError('Invalid or missing action parameter', 400);
 
   } catch (error) {
     console.error('Inventory integration error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to retrieve inventory data'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to retrieve inventory data', 500);
   }
-}
+});

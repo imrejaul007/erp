@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 const prisma = new PrismaClient();
 
@@ -38,13 +39,14 @@ const createProcessingBatchSchema = z.object({
 });
 
 // GET /api/production/processing-stages
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'stages'; // 'stages', 'flows', or 'batches'
 
     if (type === 'flows') {
       const flows = await prisma.processingFlow.findMany({
+        where: { tenantId },
         include: {
           stages: {
             include: {
@@ -63,7 +65,7 @@ export async function GET(request: NextRequest) {
         ]
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: { flows }
       });
@@ -73,9 +75,18 @@ export async function GET(request: NextRequest) {
       const status = searchParams.get('status');
       const flowId = searchParams.get('flowId');
 
-      const where: any = {};
+      const where: any = { tenantId };
       if (status) where.status = status;
-      if (flowId) where.flowId = flowId;
+      if (flowId) {
+        // Verify flow belongs to tenant
+        const flow = await prisma.processingFlow.findUnique({
+          where: { id: flowId }
+        });
+        if (!flow || flow.tenantId !== tenantId) {
+          return apiError('Flow not found or does not belong to your tenant', 403);
+        }
+        where.flowId = flowId;
+      }
 
       const batches = await prisma.processingBatch.findMany({
         where,
@@ -108,7 +119,7 @@ export async function GET(request: NextRequest) {
         ]
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: { batches }
       });
@@ -116,6 +127,7 @@ export async function GET(request: NextRequest) {
 
     // Default: return stages
     const stages = await prisma.processingStage.findMany({
+      where: { tenantId },
       include: {
         _count: {
           select: {
@@ -127,22 +139,19 @@ export async function GET(request: NextRequest) {
       orderBy: { order: 'asc' }
     });
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       data: { stages }
     });
 
   } catch (error) {
     console.error('Error fetching processing data:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch processing data' },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch processing data', 500);
   }
-}
+});
 
 // POST /api/production/processing-stages
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { type, ...data } = body;
@@ -150,24 +159,33 @@ export async function POST(request: NextRequest) {
     if (type === 'stage') {
       const validatedData = createProcessingStageSchema.parse(data);
 
-      // Check if order is already taken
+      // Check if order is already taken within tenant
       const existingStage = await prisma.processingStage.findFirst({
-        where: { order: validatedData.order }
+        where: {
+          order: validatedData.order,
+          tenantId
+        }
       });
 
       if (existingStage) {
         // Shift existing stages to make room
         await prisma.processingStage.updateMany({
-          where: { order: { gte: validatedData.order } },
+          where: {
+            order: { gte: validatedData.order },
+            tenantId
+          },
           data: { order: { increment: 1 } }
         });
       }
 
       const stage = await prisma.processingStage.create({
-        data: validatedData
+        data: {
+          ...validatedData,
+          tenantId
+        }
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: stage,
         message: 'Processing stage created successfully'
@@ -177,17 +195,17 @@ export async function POST(request: NextRequest) {
     if (type === 'flow') {
       const validatedData = createProcessingFlowSchema.parse(data);
 
-      // Verify all stages exist
+      // Verify all stages exist and belong to tenant
       const stageIds = validatedData.stages.map(s => s.stageId);
       const stages = await prisma.processingStage.findMany({
-        where: { id: { in: stageIds } }
+        where: {
+          id: { in: stageIds },
+          tenantId
+        }
       });
 
       if (stages.length !== stageIds.length) {
-        return NextResponse.json(
-          { success: false, error: 'One or more stages not found' },
-          { status: 400 }
-        );
+        return apiError('One or more stages not found or do not belong to your tenant', 400);
       }
 
       const flow = await prisma.processingFlow.create({
@@ -195,6 +213,7 @@ export async function POST(request: NextRequest) {
           name: validatedData.name,
           description: validatedData.description,
           isActive: validatedData.isActive,
+          tenantId,
           stages: {
             create: validatedData.stages.map(stage => ({
               stageId: stage.stageId,
@@ -213,7 +232,7 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: flow,
         message: 'Processing flow created successfully'
@@ -223,7 +242,7 @@ export async function POST(request: NextRequest) {
     if (type === 'batch') {
       const validatedData = createProcessingBatchSchema.parse(data);
 
-      // Verify flow exists and get first stage
+      // Verify flow exists and belongs to tenant, get first stage
       const flow = await prisma.processingFlow.findUnique({
         where: { id: validatedData.flowId },
         include: {
@@ -237,31 +256,29 @@ export async function POST(request: NextRequest) {
       });
 
       if (!flow) {
-        return NextResponse.json(
-          { success: false, error: 'Processing flow not found' },
-          { status: 404 }
-        );
+        return apiError('Processing flow not found', 404);
+      }
+
+      if (flow.tenantId !== tenantId) {
+        return apiError('Processing flow does not belong to your tenant', 403);
       }
 
       if (flow.stages.length === 0) {
-        return NextResponse.json(
-          { success: false, error: 'Processing flow has no stages' },
-          { status: 400 }
-        );
+        return apiError('Processing flow has no stages', 400);
       }
 
       // Verify materials if inputs provided
       if (validatedData.inputs && validatedData.inputs.length > 0) {
         const materialIds = validatedData.inputs.map(input => input.materialId);
         const materials = await prisma.material.findMany({
-          where: { id: { in: materialIds } }
+          where: {
+            id: { in: materialIds },
+            tenantId
+          }
         });
 
         if (materials.length !== materialIds.length) {
-          return NextResponse.json(
-            { success: false, error: 'One or more materials not found' },
-            { status: 400 }
-          );
+          return apiError('One or more materials not found or do not belong to your tenant', 400);
         }
       }
 
@@ -272,6 +289,7 @@ export async function POST(request: NextRequest) {
           status: 'PENDING',
           startDate: validatedData.startDate,
           notes: validatedData.notes,
+          tenantId,
           inputs: validatedData.inputs ? {
             create: validatedData.inputs.map(input => ({
               materialId: input.materialId,
@@ -301,45 +319,33 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: batch,
         message: 'Processing batch created successfully'
       });
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Invalid type specified' },
-      { status: 400 }
-    );
+    return apiError('Invalid type specified', 400);
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400);
     }
 
     console.error('Error creating processing data:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create processing data' },
-      { status: 500 }
-    );
+    return apiError('Failed to create processing data', 500);
   }
-}
+});
 
 // PUT /api/production/processing-stages
-export async function PUT(request: NextRequest) {
+export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const body = await request.json();
     const { type, id, action, ...data } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'ID is required' },
-        { status: 400 }
-      );
+      return apiError('ID is required', 400);
     }
 
     if (type === 'batch' && action) {
@@ -361,10 +367,11 @@ export async function PUT(request: NextRequest) {
       });
 
       if (!batch) {
-        return NextResponse.json(
-          { success: false, error: 'Processing batch not found' },
-          { status: 404 }
-        );
+        return apiError('Processing batch not found', 404);
+      }
+
+      if (batch.tenantId !== tenantId) {
+        return apiError('Processing batch does not belong to your tenant', 403);
       }
 
       let updateData: any = {};
@@ -413,10 +420,7 @@ export async function PUT(request: NextRequest) {
           break;
 
         default:
-          return NextResponse.json(
-            { success: false, error: 'Invalid action' },
-            { status: 400 }
-          );
+          return apiError('Invalid action', 400);
       }
 
       if (data.notes) {
@@ -451,23 +455,17 @@ export async function PUT(request: NextRequest) {
         }
       });
 
-      return NextResponse.json({
+      return apiResponse({
         success: true,
         data: updatedBatch,
         message: `Processing batch ${action} successfully`
       });
     }
 
-    return NextResponse.json(
-      { success: false, error: 'Invalid type or action' },
-      { status: 400 }
-    );
+    return apiError('Invalid type or action', 400);
 
   } catch (error) {
     console.error('Error updating processing data:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to update processing data' },
-      { status: 500 }
-    );
+    return apiError('Failed to update processing data', 500);
   }
-}
+});
