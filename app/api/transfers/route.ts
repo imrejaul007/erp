@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Validation schemas
 const TransferCreateSchema = z.object({
@@ -32,27 +31,24 @@ const TransferFiltersSchema = z.object({
 });
 
 // GET /api/transfers - List transfers with filters
-export async function GET(req: NextRequest) {
+export const GET = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Parse query parameters
     const url = new URL(req.url);
     const params = Object.fromEntries(url.searchParams.entries());
     const filters = TransferFiltersSchema.parse(params);
 
     // Build where clause
-    const whereClause: any = {};
+    const whereClause: any = { tenantId };
 
     // Check permissions - non-admin users can only see transfers from/to their stores
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN'].includes(userRole)) {
       const userStoreIds = await prisma.userStore.findMany({
-        where: { userId: session.user.id },
+        where: {
+          userId: user.id,
+          tenantId
+        },
         select: { storeId: true }
       });
       const storeIds = userStoreIds.map(us => us.storeId);
@@ -162,30 +158,21 @@ export async function GET(req: NextRequest) {
       }
     };
 
-    return NextResponse.json(response);
+    return apiResponse(response);
 
   } catch (error) {
     console.error('Error fetching transfers:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // POST /api/transfers - Create new transfer request
-export async function POST(req: NextRequest) {
+export const POST = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     // Check permissions
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER', 'INVENTORY'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
     const body = await req.json();
@@ -194,7 +181,10 @@ export async function POST(req: NextRequest) {
     // Check store access permissions
     if (!['OWNER', 'ADMIN'].includes(userRole)) {
       const userStoreIds = await prisma.userStore.findMany({
-        where: { userId: session.user.id },
+        where: {
+          userId: user.id,
+          tenantId
+        },
         select: { storeId: true }
       });
       const storeIds = userStoreIds.map(us => us.storeId);
@@ -203,18 +193,28 @@ export async function POST(req: NextRequest) {
       const canAccessToStore = storeIds.includes(transferData.toStoreId);
 
       if (!canAccessFromStore || !canAccessToStore) {
-        return NextResponse.json({ error: 'Access denied to one or both stores' }, { status: 403 });
+        return apiError('Access denied to one or both stores', 403);
       }
     }
 
-    // Verify stores exist
+    // Verify stores exist and belong to tenant
     const [fromStore, toStore] = await Promise.all([
-      prisma.store.findUnique({ where: { id: transferData.fromStoreId } }),
-      prisma.store.findUnique({ where: { id: transferData.toStoreId } })
+      prisma.store.findFirst({
+        where: {
+          id: transferData.fromStoreId,
+          tenantId
+        }
+      }),
+      prisma.store.findFirst({
+        where: {
+          id: transferData.toStoreId,
+          tenantId
+        }
+      })
     ]);
 
     if (!fromStore || !toStore) {
-      return NextResponse.json({ error: 'One or both stores not found' }, { status: 404 });
+      return apiError('One or both stores not found', 404);
     }
 
     // Check inventory availability at source store
@@ -229,10 +229,16 @@ export async function POST(req: NextRequest) {
       });
 
       if (!inventory || inventory.quantity < item.quantity) {
-        const product = await prisma.product.findUnique({ where: { id: item.productId } });
-        return NextResponse.json({
-          error: `Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`
-        }, { status: 400 });
+        const product = await prisma.product.findFirst({
+          where: {
+            id: item.productId,
+            tenantId
+          }
+        });
+        return apiError(
+          `Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`,
+          400
+        );
       }
     }
 
@@ -245,8 +251,9 @@ export async function POST(req: NextRequest) {
           toStoreId: transferData.toStoreId,
           notes: transferData.notes,
           totalItems: transferData.items.length,
-          createdById: session.user.id,
-          status: 'PENDING'
+          createdById: user.id,
+          status: 'PENDING',
+          tenantId
         },
         include: {
           fromStore: { select: { id: true, name: true, code: true } },
@@ -294,57 +301,45 @@ export async function POST(req: NextRequest) {
       return { ...transfer, items };
     });
 
-    return NextResponse.json(newTransfer, { status: 201 });
+    return apiResponse(newTransfer, 201);
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
+      return apiError('Validation error', 400, { details: error.errors });
     }
 
     console.error('Error creating transfer:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // PUT /api/transfers - Update transfer status
-export async function PUT(req: NextRequest) {
+export const PUT = withTenant(async (req, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { transferId, action, receivedQuantities } = body;
 
     if (!transferId || !action) {
-      return NextResponse.json(
-        { error: 'Transfer ID and action are required' },
-        { status: 400 }
-      );
+      return apiError('Transfer ID and action are required', 400);
     }
 
     // Check permissions based on action
-    const userRole = session.user.role;
+    const userRole = user.role;
     if (!['OWNER', 'ADMIN', 'MANAGER'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return apiError('Insufficient permissions', 403);
     }
 
-    // Get transfer
-    const transfer = await prisma.transfer.findUnique({
-      where: { id: transferId },
+    // Get transfer and verify it belongs to tenant
+    const transfer = await prisma.transfer.findFirst({
+      where: {
+        id: transferId,
+        tenantId
+      },
       include: { items: true }
     });
 
     if (!transfer) {
-      return NextResponse.json({ error: 'Transfer not found' }, { status: 404 });
+      return apiError('Transfer not found', 404);
     }
 
     let updatedTransfer;
@@ -352,7 +347,7 @@ export async function PUT(req: NextRequest) {
     switch (action) {
       case 'approve':
         if (transfer.status !== 'PENDING') {
-          return NextResponse.json({ error: 'Transfer must be in PENDING status' }, { status: 400 });
+          return apiError('Transfer must be in PENDING status', 400);
         }
         updatedTransfer = await prisma.transfer.update({
           where: { id: transferId },
@@ -365,7 +360,7 @@ export async function PUT(req: NextRequest) {
 
       case 'ship':
         if (transfer.status !== 'APPROVED') {
-          return NextResponse.json({ error: 'Transfer must be in APPROVED status' }, { status: 400 });
+          return apiError('Transfer must be in APPROVED status', 400);
         }
         updatedTransfer = await prisma.$transaction(async (tx) => {
           // Update transfer status
@@ -401,7 +396,7 @@ export async function PUT(req: NextRequest) {
 
       case 'receive':
         if (transfer.status !== 'SHIPPED') {
-          return NextResponse.json({ error: 'Transfer must be in SHIPPED status' }, { status: 400 });
+          return apiError('Transfer must be in SHIPPED status', 400);
         }
         updatedTransfer = await prisma.$transaction(async (tx) => {
           // Update transfer status
@@ -451,7 +446,7 @@ export async function PUT(req: NextRequest) {
 
       case 'cancel':
         if (transfer.status === 'RECEIVED') {
-          return NextResponse.json({ error: 'Cannot cancel a received transfer' }, { status: 400 });
+          return apiError('Cannot cancel a received transfer', 400);
         }
         updatedTransfer = await prisma.$transaction(async (tx) => {
           // Update transfer status
@@ -484,19 +479,16 @@ export async function PUT(req: NextRequest) {
         break;
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return apiError('Invalid action', 400);
     }
 
-    return NextResponse.json({
+    return apiResponse({
       message: `Transfer ${action}ed successfully`,
       transfer: updatedTransfer
     });
 
   } catch (error) {
     console.error('Error updating transfer:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});

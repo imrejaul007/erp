@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Validation schemas
 const TransactionItemSchema = z.object({
@@ -185,13 +184,8 @@ function mapPaymentMethod(method: string): any {
 }
 
 // GET - Fetch recent POS transactions
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
     const page = parseInt(searchParams.get('page') || '1');
@@ -199,7 +193,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    const where: any = {};
+    const where: any = { tenantId };
 
     if (storeId) {
       where.storeId = storeId;
@@ -245,7 +239,7 @@ export async function GET(request: NextRequest) {
       prisma.posTransaction.count({ where })
     ]);
 
-    return NextResponse.json({
+    return apiResponse({
       transactions,
       pagination: {
         total,
@@ -257,32 +251,40 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return apiError('Internal server error', 500);
   }
-}
+});
 
 // POST - Create new POS transaction
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     const transactionData = TransactionDataSchema.parse(body);
 
-    // Verify store exists
-    const store = await prisma.store.findUnique({
-      where: { id: transactionData.storeId }
+    // Verify store exists and belongs to tenant
+    const store = await prisma.store.findFirst({
+      where: {
+        id: transactionData.storeId,
+        tenantId
+      }
     });
 
     if (!store) {
-      return NextResponse.json({ error: 'Store not found' }, { status: 404 });
+      return apiError('Store not found', 404);
+    }
+
+    // Verify customer belongs to tenant if customerId is provided
+    if (transactionData.customerId) {
+      const customer = await prisma.customer.findFirst({
+        where: {
+          id: transactionData.customerId,
+          tenantId
+        }
+      });
+
+      if (!customer) {
+        return apiError('Customer not found', 404);
+      }
     }
 
     // Verify all products exist and have sufficient stock
@@ -297,9 +299,10 @@ export async function POST(request: NextRequest) {
       });
 
       if (!inventory || inventory.quantity < item.quantity) {
-        return NextResponse.json({
-          error: `Insufficient stock for product ${item.name}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`
-        }, { status: 400 });
+        return apiError(
+          `Insufficient stock for product ${item.name}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`,
+          400
+        );
       }
     }
 
@@ -325,7 +328,8 @@ export async function POST(request: NextRequest) {
           status: 'COMPLETED',
           paymentStatus: 'PAID',
           notes: transactionData.notes,
-          createdById: session.user.id
+          createdById: user.id,
+          tenantId
         }
       });
 
@@ -354,7 +358,8 @@ export async function POST(request: NextRequest) {
           status: 'COMPLETED',
           reference: transactionData.paymentDetails.transactionId || receiptNumber,
           notes: JSON.stringify(transactionData.paymentDetails),
-          processedById: session.user.id
+          processedById: user.id,
+          tenantId
         }
       });
 
@@ -384,7 +389,8 @@ export async function POST(request: NextRequest) {
             points: transactionData.loyaltyPointsEarned,
             type: 'EARN',
             description: `Points earned from order ${receiptNumber}`,
-            expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year expiry
+            expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year expiry
+            tenantId
           }
         });
       }
@@ -397,7 +403,8 @@ export async function POST(request: NextRequest) {
             points: -transactionData.loyaltyPointsUsed,
             type: 'REDEEM',
             description: `Points redeemed for order ${receiptNumber}`,
-            expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+            expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            tenantId
           }
         });
       }
@@ -473,23 +480,13 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    return NextResponse.json(response, { status: 201 });
+    return apiResponse(response, 201);
 
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-
     console.error('Transaction processing error:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to process transaction',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
+    return apiError(
+      'Failed to process transaction: ' + (error instanceof Error ? error.message : 'Unknown error'),
+      500
     );
   }
-}
+});

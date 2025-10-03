@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 
 const supplierSchema = z.object({
   code: z.string().min(1),
@@ -38,13 +37,8 @@ const supplierSchema = z.object({
   notes: z.string().optional()
 })
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -56,6 +50,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     const where: any = {
+      tenantId,
       isActive: true
     }
 
@@ -116,7 +111,10 @@ export async function GET(request: NextRequest) {
     const suppliersWithMetrics = await Promise.all(
       suppliers.map(async (supplier) => {
         const orders = await prisma.purchaseOrder.findMany({
-          where: { supplierId: supplier.id },
+          where: {
+            supplierId: supplier.id,
+            tenantId
+          },
           select: {
             deliveryDate: true,
             expectedDate: true,
@@ -144,7 +142,7 @@ export async function GET(request: NextRequest) {
       })
     )
 
-    return NextResponse.json({
+    return apiResponse({
       suppliers: suppliersWithMetrics,
       pagination: {
         page,
@@ -155,55 +153,42 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching suppliers:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return apiError('Internal server error', 500)
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await request.json()
     const validatedData = supplierSchema.parse(body)
 
-    // Check if supplier code already exists
-    const existingSupplier = await prisma.supplier.findUnique({
-      where: { code: validatedData.code }
+    // Check if supplier code already exists for this tenant
+    const existingSupplier = await prisma.supplier.findFirst({
+      where: {
+        code: validatedData.code,
+        tenantId
+      }
     })
 
     if (existingSupplier) {
-      return NextResponse.json(
-        { error: 'Supplier code already exists' },
-        { status: 400 }
-      )
+      return apiError('Supplier code already exists', 400)
     }
 
     const supplier = await prisma.supplier.create({
       data: {
         ...validatedData,
-        certifications: validatedData.certifications || []
+        certifications: validatedData.certifications || [],
+        tenantId
       }
     })
 
-    return NextResponse.json(supplier, { status: 201 })
+    return apiResponse(supplier, 201)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return apiError('Validation error', 400, { details: error.errors })
     }
 
     console.error('Error creating supplier:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return apiError('Internal server error', 500)
   }
-}
+});
