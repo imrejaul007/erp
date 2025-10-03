@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware'
 
 const purchaseOrderItemSchema = z.object({
   rawMaterialId: z.string().optional(),
@@ -40,10 +39,11 @@ const purchaseOrderSchema = z.object({
 })
 
 // Generate PO number
-async function generatePONumber(): Promise<string> {
+async function generatePONumber(tenantId: string): Promise<string> {
   const year = new Date().getFullYear()
   const count = await prisma.purchaseOrder.count({
     where: {
+      tenantId,
       poNumber: {
         startsWith: `PO-${year}-`
       }
@@ -52,13 +52,8 @@ async function generatePONumber(): Promise<string> {
   return `PO-${year}-${String(count + 1).padStart(3, '0')}`
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -69,24 +64,34 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit
 
-    const where: any = {}
+    const where: any = { tenantId }
 
     if (search) {
       where.OR = [
         { poNumber: { contains: search, mode: 'insensitive' } },
         {
           supplier: {
-            OR: [
-              { name: { contains: search, mode: 'insensitive' } },
-              { code: { contains: search, mode: 'insensitive' } }
+            AND: [
+              { tenantId },
+              {
+                OR: [
+                  { name: { contains: search, mode: 'insensitive' } },
+                  { code: { contains: search, mode: 'insensitive' } }
+                ]
+              }
             ]
           }
         },
         {
           requestedBy: {
-            OR: [
-              { firstName: { contains: search, mode: 'insensitive' } },
-              { lastName: { contains: search, mode: 'insensitive' } }
+            AND: [
+              { tenantId },
+              {
+                OR: [
+                  { firstName: { contains: search, mode: 'insensitive' } },
+                  { lastName: { contains: search, mode: 'insensitive' } }
+                ]
+              }
             ]
           }
         }
@@ -196,7 +201,7 @@ export async function GET(request: NextRequest) {
       isOverdue: po.expectedDate && new Date() > new Date(po.expectedDate) && !['COMPLETED', 'CANCELLED'].includes(po.status)
     }))
 
-    return NextResponse.json({
+    return apiResponse({
       purchaseOrders: enrichedPOs,
       pagination: {
         page,
@@ -207,84 +212,73 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching purchase orders:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return apiError('Internal server error', 500)
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await request.json()
     const validatedData = purchaseOrderSchema.parse(body)
 
-    // Validate supplier exists
-    const supplier = await prisma.supplier.findUnique({
-      where: { id: validatedData.supplierId }
+    // Validate supplier exists and belongs to tenant
+    const supplier = await prisma.supplier.findFirst({
+      where: {
+        id: validatedData.supplierId,
+        tenantId
+      }
     })
 
     if (!supplier) {
-      return NextResponse.json(
-        { error: 'Supplier not found' },
-        { status: 404 }
-      )
+      return apiError('Supplier not found', 404)
     }
 
-    // Validate store if provided
+    // Validate store if provided and belongs to tenant
     if (validatedData.storeId) {
-      const store = await prisma.store.findUnique({
-        where: { id: validatedData.storeId }
+      const store = await prisma.store.findFirst({
+        where: {
+          id: validatedData.storeId,
+          tenantId
+        }
       })
 
       if (!store) {
-        return NextResponse.json(
-          { error: 'Store not found' },
-          { status: 404 }
-        )
+        return apiError('Store not found', 404)
       }
     }
 
-    // Validate raw materials and products in items
+    // Validate raw materials and products in items belong to tenant
     for (const item of validatedData.items) {
       if (item.rawMaterialId) {
-        const rawMaterial = await prisma.rawMaterial.findUnique({
-          where: { id: item.rawMaterialId }
+        const rawMaterial = await prisma.rawMaterial.findFirst({
+          where: {
+            id: item.rawMaterialId,
+            tenantId
+          }
         })
         if (!rawMaterial) {
-          return NextResponse.json(
-            { error: `Raw material not found: ${item.rawMaterialId}` },
-            { status: 404 }
-          )
+          return apiError(`Raw material not found: ${item.rawMaterialId}`, 404)
         }
       }
 
       if (item.productId) {
-        const product = await prisma.product.findUnique({
-          where: { id: item.productId }
+        const product = await prisma.product.findFirst({
+          where: {
+            id: item.productId,
+            tenantId
+          }
         })
         if (!product) {
-          return NextResponse.json(
-            { error: `Product not found: ${item.productId}` },
-            { status: 404 }
-          )
+          return apiError(`Product not found: ${item.productId}`, 404)
         }
       }
 
       if (!item.rawMaterialId && !item.productId) {
-        return NextResponse.json(
-          { error: 'Each item must have either rawMaterialId or productId' },
-          { status: 400 }
-        )
+        return apiError('Each item must have either rawMaterialId or productId', 400)
       }
     }
 
-    const poNumber = await generatePONumber()
+    const poNumber = await generatePONumber(tenantId)
 
     // Calculate pending quantity for each item
     const itemsWithPendingQty = validatedData.items.map(item => ({
@@ -295,9 +289,10 @@ export async function POST(request: NextRequest) {
 
     const purchaseOrder = await prisma.purchaseOrder.create({
       data: {
+        tenantId,
         poNumber,
         supplierId: validatedData.supplierId,
-        requestedById: session.user.id,
+        requestedById: user.id,
         storeId: validatedData.storeId,
         priority: validatedData.priority,
         type: validatedData.type,
@@ -336,19 +331,13 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(purchaseOrder, { status: 201 })
+    return apiResponse(purchaseOrder, 201)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
+      return apiError('Validation error: ' + error.errors.map(e => e.message).join(', '), 400)
     }
 
     console.error('Error creating purchase order:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return apiError('Internal server error', 500)
   }
-}
+})

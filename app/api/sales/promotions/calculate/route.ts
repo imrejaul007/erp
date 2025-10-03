@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 export interface CartItem {
   id: string;
@@ -584,24 +585,18 @@ function calculatePromotions(cart: CartItem[], customer?: Customer, promoCodes: 
 }
 
 // POST endpoint for calculating promotions
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { cart, customer, promoCodes = [] } = await request.json();
 
     if (!Array.isArray(cart) || cart.length === 0) {
-      return NextResponse.json(
-        { error: 'Cart is required and must contain items' },
-        { status: 400 }
-      );
+      return apiError('Cart is required and must contain items', 400);
     }
 
     // Validate cart items
     for (const item of cart) {
       if (!item.id || !item.sku || !item.name || item.quantity <= 0 || item.unitPrice < 0) {
-        return NextResponse.json(
-          { error: 'Invalid cart item format' },
-          { status: 400 }
-        );
+        return apiError('Invalid cart item format', 400);
       }
     }
 
@@ -644,7 +639,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       promotions: result,
       recommendations: recommendations.slice(0, 3), // Limit to top 3 recommendations
@@ -661,15 +656,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Promotion calculation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to calculate promotions' },
-      { status: 500 }
-    );
+    return apiError('Failed to calculate promotions', 500);
   }
-}
+})
 
 // GET endpoint for available promotions
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const customerTier = searchParams.get('customerTier');
@@ -722,7 +714,7 @@ export async function GET(request: NextRequest) {
       usageCount: p.usageCount
     }));
 
-    return NextResponse.json({
+    return apiResponse({
       promotions: promotionsResponse,
       total: promotionsResponse.length,
       lastUpdated: new Date().toISOString()
@@ -730,9 +722,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Get promotions error:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve promotions' },
-      { status: 500 }
-    );
+    return apiError('Failed to retrieve promotions', 500);
   }
-}
+})

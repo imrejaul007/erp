@@ -1,17 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma, SamplingOutcome } from '@prisma/client';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const sessionData = await request.json();
 
     // Validate required fields
     if (!sessionData.storeId || !sessionData.staffId || !sessionData.testedProducts?.length) {
-      return NextResponse.json(
-        { error: 'Missing required fields: storeId, staffId, or testedProducts' },
-        { status: 400 }
-      );
+      return apiError('Missing required fields: storeId, staffId, or testedProducts', 400);
+    }
+
+    // Verify store belongs to tenant
+    const store = await prisma.store.findFirst({
+      where: {
+        id: sessionData.storeId,
+        tenantId
+      }
+    });
+
+    if (!store) {
+      return apiError('Store not found', 404);
+    }
+
+    // Verify staff belongs to tenant
+    const staff = await prisma.user.findFirst({
+      where: {
+        id: sessionData.staffId,
+        tenantId
+      }
+    });
+
+    if (!staff) {
+      return apiError('Staff not found', 404);
+    }
+
+    // Verify products belong to tenant
+    for (const product of sessionData.testedProducts) {
+      if (product.productId) {
+        const productExists = await prisma.product.findFirst({
+          where: {
+            id: product.productId,
+            tenantId
+          }
+        });
+
+        if (!productExists) {
+          return apiError(`Product not found: ${product.productId}`, 404);
+        }
+      }
     }
 
     // Generate session number
@@ -26,6 +64,7 @@ export async function POST(request: NextRequest) {
     // Create sampling session with related products
     const session = await prisma.samplingSession.create({
       data: {
+        tenantId,
         sessionNumber,
         customerId: sessionData.customer?.id || null,
         customerName: sessionData.customer?.name || sessionData.customer?.anonymous ? 'Anonymous' : null,
@@ -74,27 +113,21 @@ export async function POST(request: NextRequest) {
 
     // Deduct tester stock for each product
     for (const product of sessionData.testedProducts) {
-      await deductTesterStock(product.productId, parseFloat(product.quantityUsed));
+      await deductTesterStock(tenantId, product.productId, parseFloat(product.quantityUsed));
     }
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       session
-    }, { status: 201 });
+    }, 201);
 
   } catch (error) {
     console.error('Error creating sampling session:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to create sampling session',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to create sampling session: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
-}
+})
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
@@ -104,7 +137,7 @@ export async function GET(request: NextRequest) {
     const staffId = searchParams.get('staffId');
 
     // Build where clause
-    const where: any = {};
+    const where: any = { tenantId };
 
     if (startDate && endDate) {
       where.createdAt = {
@@ -150,26 +183,25 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({ sessions }, { status: 200 });
+    return apiResponse({ sessions });
 
   } catch (error) {
     console.error('Error fetching sampling sessions:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch sessions',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch sessions: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
-}
+})
 
 // Helper function to deduct tester stock
-async function deductTesterStock(productId: string, quantityUsed: number) {
+async function deductTesterStock(tenantId: string, productId: string, quantityUsed: number) {
   try {
     // Check if tester stock exists for this product
-    const testerStock = await prisma.testerStock.findUnique({
-      where: { productId }
+    const testerStock = await prisma.testerStock.findFirst({
+      where: {
+        productId,
+        product: {
+          tenantId
+        }
+      }
     });
 
     if (testerStock) {
@@ -177,7 +209,7 @@ async function deductTesterStock(productId: string, quantityUsed: number) {
       const newStock = parseFloat(testerStock.currentStock.toString()) - quantityUsed;
 
       await prisma.testerStock.update({
-        where: { productId },
+        where: { id: testerStock.id },
         data: {
           currentStock: new Prisma.Decimal(Math.max(0, newStock)),
           monthlyUsage: {
@@ -186,6 +218,18 @@ async function deductTesterStock(productId: string, quantityUsed: number) {
         }
       });
     } else {
+      // Verify product belongs to tenant before creating tester stock
+      const product = await prisma.product.findFirst({
+        where: {
+          id: productId,
+          tenantId
+        }
+      });
+
+      if (!product) {
+        throw new Error(`Product ${productId} not found or does not belong to tenant`);
+      }
+
       // Create tester stock entry with negative balance to track usage
       await prisma.testerStock.create({
         data: {

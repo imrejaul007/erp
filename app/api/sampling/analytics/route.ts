@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { SamplingOutcome } from '@prisma/client';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     const storeId = searchParams.get('storeId');
 
     // Build where clause
-    const where: any = {};
+    const where: any = { tenantId };
 
     if (startDate && endDate) {
       where.createdAt = {
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
     // Product popularity
     const productPopularity = await calculateProductPopularity(where);
 
-    return NextResponse.json({
+    return apiResponse({
       overview: {
         totalSessions,
         totalPurchased,
@@ -79,19 +80,13 @@ export async function GET(request: NextRequest) {
       lostSaleReasons,
       staffPerformance,
       productPopularity
-    }, { status: 200 });
+    });
 
   } catch (error) {
     console.error('Error fetching analytics:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch analytics',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return apiError('Failed to fetch analytics: ' + (error instanceof Error ? error.message : 'Unknown error'), 500);
   }
-}
+})
 
 async function calculateStaffPerformance(where: any) {
   const sessions = await prisma.samplingSession.findMany({

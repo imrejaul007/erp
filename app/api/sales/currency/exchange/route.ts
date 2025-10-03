@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Mock exchange rates - in production, these would come from a real forex API
 const baseCurrency = 'AED';
@@ -40,7 +41,7 @@ const exchangeRates = {
 };
 
 // Currency information including symbols, names, and formatting
-const currencyInfo = {
+const currencyInfo: Record<string, any> = {
   'AED': { name: 'UAE Dirham', symbol: 'د.إ', symbolPosition: 'before', decimals: 2, popular: true },
   'USD': { name: 'US Dollar', symbol: '$', symbolPosition: 'before', decimals: 2, popular: true },
   'EUR': { name: 'Euro', symbol: '€', symbolPosition: 'before', decimals: 2, popular: true },
@@ -77,7 +78,7 @@ const currencyInfo = {
 };
 
 // Tourist-friendly currency groups
-const currencyGroups = {
+const currencyGroups: Record<string, string[]> = {
   'gulf': ['AED', 'SAR', 'KWD', 'BHD', 'OMR', 'QAR'],
   'major': ['USD', 'EUR', 'GBP', 'JPY'],
   'asian': ['CNY', 'INR', 'PKR', 'BDT', 'LKR', 'PHP', 'THB', 'MYR', 'SGD'],
@@ -177,7 +178,7 @@ function getPopularCurrencies(): any[] {
 }
 
 // GET endpoint for exchange rates and currency information
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const from = searchParams.get('from')?.toUpperCase();
@@ -189,16 +190,13 @@ export async function GET(request: NextRequest) {
     // If specific conversion requested
     if (from && to) {
       if (!exchangeRates.hasOwnProperty(from) || !exchangeRates.hasOwnProperty(to)) {
-        return NextResponse.json(
-          { error: 'Currency not supported' },
-          { status: 400 }
-        );
+        return apiError('Currency not supported', 400);
       }
 
       const convertedAmount = convertCurrency(amount, from, to);
       const rate = convertCurrency(1, from, to);
 
-      return NextResponse.json({
+      return apiResponse({
         conversion: {
           from: {
             currency: from,
@@ -228,7 +226,7 @@ export async function GET(request: NextRequest) {
         formatted: formatCurrency(amount, code)
       }));
 
-      return NextResponse.json({
+      return apiResponse({
         group,
         currencies: groupCurrencies,
         baseCurrency,
@@ -238,7 +236,7 @@ export async function GET(request: NextRequest) {
 
     // If popular currencies requested
     if (popular) {
-      return NextResponse.json({
+      return apiResponse({
         popularCurrencies: getPopularCurrencies(),
         baseCurrency,
         lastUpdated: new Date().toISOString()
@@ -256,7 +254,7 @@ export async function GET(request: NextRequest) {
       decimals: currencyInfo[code]?.decimals || 2
     }));
 
-    return NextResponse.json({
+    return apiResponse({
       baseCurrency,
       baseAmount: amount,
       rates: allRates,
@@ -267,30 +265,21 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Currency exchange error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process currency exchange request' },
-      { status: 500 }
-    );
+    return apiError('Failed to process currency exchange request', 500);
   }
-}
+})
 
 // POST endpoint for bulk currency conversion (for cart totals)
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { items, fromCurrency, toCurrency, customerType = 'tourist' } = await request.json();
 
     if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { error: 'Items array is required' },
-        { status: 400 }
-      );
+      return apiError('Items array is required', 400);
     }
 
     if (!exchangeRates.hasOwnProperty(fromCurrency) || !exchangeRates.hasOwnProperty(toCurrency)) {
-      return NextResponse.json(
-        { error: 'Currency not supported' },
-        { status: 400 }
-      );
+      return apiError('Currency not supported', 400);
     }
 
     // Apply margin based on customer type
@@ -321,7 +310,7 @@ export async function POST(request: NextRequest) {
     const originalTotal = convertedItems.reduce((sum, item) => sum + item.originalAmount, 0);
     const convertedTotal = convertedItems.reduce((sum, item) => sum + item.convertedAmount, 0);
 
-    return NextResponse.json({
+    return apiResponse({
       conversion: {
         fromCurrency,
         toCurrency,
@@ -340,9 +329,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Bulk currency conversion error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process bulk currency conversion' },
-      { status: 500 }
-    );
+    return apiError('Failed to process bulk currency conversion', 500);
   }
-}
+})

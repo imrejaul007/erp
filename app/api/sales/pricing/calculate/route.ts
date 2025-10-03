@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 export interface PricingTier {
   id: string;
@@ -683,21 +684,18 @@ function calculatePricing(request: PricingRequest): PricingResult {
 }
 
 // POST endpoint for pricing calculation
-export async function POST(request: NextRequest) {
+export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const pricingRequest: PricingRequest = await request.json();
 
     // Validate request
     if (!pricingRequest.product || !pricingRequest.quantity || pricingRequest.quantity <= 0) {
-      return NextResponse.json(
-        { error: 'Product and valid quantity are required' },
-        { status: 400 }
-      );
+      return apiError('Product and valid quantity are required', 400);
     }
 
     const result = calculatePricing(pricingRequest);
 
-    return NextResponse.json({
+    return apiResponse({
       success: true,
       pricing: result,
       calculatedAt: new Date().toISOString(),
@@ -706,15 +704,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Pricing calculation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to calculate pricing' },
-      { status: 500 }
-    );
+    return apiError('Failed to calculate pricing', 500);
   }
-}
+})
 
 // GET endpoint for pricing tiers and configuration
-export async function GET(request: NextRequest) {
+export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const customerType = searchParams.get('customerType');
@@ -736,7 +731,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    return apiResponse({
       pricingTiers: filteredTiers.map(tier => ({
         id: tier.id,
         name: tier.name,
@@ -756,9 +751,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Get pricing tiers error:', error);
-    return NextResponse.json(
-      { error: 'Failed to retrieve pricing tiers' },
-      { status: 500 }
-    );
+    return apiError('Failed to retrieve pricing tiers', 500);
   }
-}
+})
