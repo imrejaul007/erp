@@ -18,7 +18,6 @@ const ftaXmlSchema = z.object({
 // Generate FTA compliant XML report
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const params = {
       period: searchParams.get('period'),
@@ -36,7 +35,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     const validatedParams = ftaXmlSchema.parse(params);
 
     // Get VAT return data for the period
-    const vatReturnData = await getVATReturnData(validatedParams.period);
+    const vatReturnData = await getVATReturnData(tenantId, validatedParams.period);
 
     if (!vatReturnData) {
       return apiError('No VAT return found for this period', 404);
@@ -80,7 +79,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Validate FTA XML format
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const { period, xmlContent } = body;
 
@@ -99,10 +97,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     const xmlId = generateId();
     await prisma.$executeRaw`
       INSERT INTO fta_xml_submissions (
-        id, period, xml_content, validation_status, validation_errors,
+        id, tenant_id, period, xml_content, validation_status, validation_errors,
         generated_at, generated_by, status
       ) VALUES (
-        ${xmlId}, ${period}, ${xmlContent}, 'valid', null,
+        ${xmlId}, ${tenantId}, ${period}, ${xmlContent}, 'valid', null,
         ${new Date()}, ${user.id}, 'draft'
       )
     `;
@@ -124,9 +122,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 });
 
 // Helper functions
-async function getVATReturnData(period: string) {
+async function getVATReturnData(tenantId: string, period: string) {
   const vatReturn = await prisma.vATRecord.findFirst({
     where: {
+      tenantId,
       period,
       description: 'VAT Return',
       status: 'ACTIVE',
@@ -138,6 +137,7 @@ async function getVATReturnData(period: string) {
   // Get detailed VAT transactions for the period
   const vatTransactions = await prisma.vATRecord.findMany({
     where: {
+      tenantId,
       period,
       status: 'ACTIVE',
       description: { not: 'VAT Return' },

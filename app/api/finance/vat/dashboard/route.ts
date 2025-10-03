@@ -8,21 +8,20 @@ const prisma = new PrismaClient();
 // VAT Dashboard API endpoint for UAE compliance
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || getCurrentPeriod();
 
     // Get VAT summary for the period
-    const vatSummary = await getVATSummaryForPeriod(period);
+    const vatSummary = await getVATSummaryForPeriod(tenantId, period);
 
     // Get current VAT liability
-    const vatLiability = await getCurrentVATLiability();
+    const vatLiability = await getCurrentVATLiability(tenantId);
 
     // Get VAT compliance status
-    const complianceStatus = await getVATComplianceStatus(period);
+    const complianceStatus = await getVATComplianceStatus(tenantId, period);
 
     // Get recent VAT transactions
-    const recentTransactions = await getRecentVATTransactions(10);
+    const recentTransactions = await getRecentVATTransactions(tenantId, 10);
 
     const dashboardData = {
       period,
@@ -74,10 +73,11 @@ function getNextFilingPeriod(period: string): string {
   return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
 }
 
-async function getVATSummaryForPeriod(period: string) {
+async function getVATSummaryForPeriod(tenantId: string, period: string) {
   // Get VAT records for the period
   const vatRecords = await prisma.vATRecord.findMany({
     where: {
+      tenantId,
       period,
       status: 'ACTIVE',
     },
@@ -116,10 +116,11 @@ async function getVATSummaryForPeriod(period: string) {
   };
 }
 
-async function getCurrentVATLiability() {
+async function getCurrentVATLiability(tenantId: string) {
   // Calculate total VAT liability
   const vatRecords = await prisma.vATRecord.findMany({
     where: {
+      tenantId,
       status: 'ACTIVE',
     },
   });
@@ -139,10 +140,11 @@ async function getCurrentVATLiability() {
   };
 }
 
-async function getVATComplianceStatus(period: string) {
+async function getVATComplianceStatus(tenantId: string, period: string) {
   // Check if VAT return has been filed for the period
   const vatReturn = await prisma.vATRecord.findFirst({
     where: {
+      tenantId,
       period,
       description: 'VAT Return Filed',
     },
@@ -160,8 +162,11 @@ async function getVATComplianceStatus(period: string) {
   };
 }
 
-async function getRecentVATTransactions(limit: number) {
+async function getRecentVATTransactions(tenantId: string, limit: number) {
   return await prisma.vATRecord.findMany({
+    where: {
+      tenantId,
+    },
     take: limit,
     orderBy: {
       recordDate: 'desc',

@@ -18,14 +18,15 @@ const vatReturnSchema = z.object({
 // Get VAT returns
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
 
-    const whereClause: any = {};
+    const whereClause: any = {
+      tenantId,
+    };
     if (period) {
       whereClause.period = period;
     }
@@ -54,7 +55,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     // Calculate VAT return details for each period
     const vatReturnDetails = await Promise.all(
       vatReturns.map(async (vatReturn) => {
-        const periodTransactions = await getVATTransactionsForPeriod(vatReturn.period);
+        const periodTransactions = await getVATTransactionsForPeriod(tenantId, vatReturn.period);
         return {
           id: vatReturn.id,
           period: vatReturn.period,
@@ -85,13 +86,13 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Create/Submit VAT return
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = vatReturnSchema.parse(body);
 
     // Check if VAT return already exists for this period
     const existingReturn = await prisma.vATRecord.findFirst({
       where: {
+        tenantId,
         period: validatedData.period,
         description: 'VAT Return',
       },
@@ -107,11 +108,12 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     const netVATDue = outputVAT - inputVAT + validatedData.reverseChargeVAT;
 
     // Generate VAT return number
-    const vatReturnNo = await generateVATReturnNumber(validatedData.period);
+    const vatReturnNo = await generateVATReturnNumber(tenantId, validatedData.period);
 
     // Create VAT return record
     const vatReturn = await prisma.vATRecord.create({
       data: {
+        tenantId,
         recordNo: vatReturnNo,
         type: 'OUTPUT',
         amount: validatedData.standardRatedSupplies + validatedData.zeroRatedSupplies + validatedData.exemptSupplies,
@@ -127,11 +129,12 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     });
 
     // Create detailed VAT return breakdown
-    await createVATReturnBreakdown(vatReturnNo, validatedData, outputVAT, inputVAT);
+    await createVATReturnBreakdown(tenantId, vatReturnNo, validatedData, outputVAT, inputVAT);
 
     // Update VAT filing status for all transactions in the period
     await prisma.vATRecord.updateMany({
       where: {
+        tenantId,
         period: validatedData.period,
         status: 'ACTIVE',
       },
@@ -164,9 +167,10 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 });
 
 // Helper functions
-async function getVATTransactionsForPeriod(period: string) {
+async function getVATTransactionsForPeriod(tenantId: string, period: string) {
   const vatRecords = await prisma.vATRecord.findMany({
     where: {
+      tenantId,
       period,
       status: 'ACTIVE',
       description: { not: 'VAT Return' },
@@ -214,9 +218,10 @@ async function getVATTransactionsForPeriod(period: string) {
   };
 }
 
-async function generateVATReturnNumber(period: string): Promise<string> {
+async function generateVATReturnNumber(tenantId: string, period: string): Promise<string> {
   const count = await prisma.vATRecord.count({
     where: {
+      tenantId,
       description: 'VAT Return',
     },
   });
@@ -225,6 +230,7 @@ async function generateVATReturnNumber(period: string): Promise<string> {
 }
 
 async function createVATReturnBreakdown(
+  tenantId: string,
   vatReturnNo: string,
   data: z.infer<typeof vatReturnSchema>,
   outputVAT: number,
@@ -232,6 +238,7 @@ async function createVATReturnBreakdown(
 ) {
   const breakdown = [
     {
+      tenantId,
       recordNo: `${vatReturnNo}-SALES`,
       type: 'OUTPUT' as const,
       amount: data.standardRatedSupplies,
@@ -245,6 +252,7 @@ async function createVATReturnBreakdown(
       status: 'ACTIVE' as const,
     },
     {
+      tenantId,
       recordNo: `${vatReturnNo}-ZERO`,
       type: 'OUTPUT' as const,
       amount: data.zeroRatedSupplies,
@@ -258,6 +266,7 @@ async function createVATReturnBreakdown(
       status: 'ACTIVE' as const,
     },
     {
+      tenantId,
       recordNo: `${vatReturnNo}-EXEMPT`,
       type: 'OUTPUT' as const,
       amount: data.exemptSupplies,
@@ -271,6 +280,7 @@ async function createVATReturnBreakdown(
       status: 'ACTIVE' as const,
     },
     {
+      tenantId,
       recordNo: `${vatReturnNo}-PURCHASES`,
       type: 'INPUT' as const,
       amount: data.standardRatedPurchases,
@@ -284,6 +294,7 @@ async function createVATReturnBreakdown(
       status: 'ACTIVE' as const,
     },
     {
+      tenantId,
       recordNo: `${vatReturnNo}-REVERSE`,
       type: 'INPUT' as const,
       amount: 0,

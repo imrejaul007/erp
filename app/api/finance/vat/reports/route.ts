@@ -16,7 +16,6 @@ const vatReportSchema = z.object({
 // Generate VAT reports for FTA compliance
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const params = {
       type: searchParams.get('type') || 'summary',
@@ -36,13 +35,13 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 
     switch (validatedParams.type) {
       case 'summary':
-        reportData = await generateVATSummaryReport(validatedParams.startDate, validatedParams.endDate);
+        reportData = await generateVATSummaryReport(tenantId, validatedParams.startDate, validatedParams.endDate);
         break;
       case 'detailed':
-        reportData = await generateVATDetailedReport(validatedParams.startDate, validatedParams.endDate);
+        reportData = await generateVATDetailedReport(tenantId, validatedParams.startDate, validatedParams.endDate);
         break;
       case 'fta_format':
-        reportData = await generateFTAFormatReport(validatedParams.startDate, validatedParams.endDate);
+        reportData = await generateFTAFormatReport(tenantId, validatedParams.startDate, validatedParams.endDate);
         break;
       default:
         return apiError('Invalid report type', 400);
@@ -78,13 +77,14 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 });
 
 // Generate VAT summary report
-async function generateVATSummaryReport(startDate: string, endDate: string) {
+async function generateVATSummaryReport(tenantId: string, startDate: string, endDate: string) {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
   // Get all VAT records for the period
   const vatRecords = await prisma.vATRecord.findMany({
     where: {
+      tenantId,
       recordDate: {
         gte: start,
         lte: end,
@@ -178,12 +178,13 @@ async function generateVATSummaryReport(startDate: string, endDate: string) {
 }
 
 // Generate detailed VAT report
-async function generateVATDetailedReport(startDate: string, endDate: string) {
+async function generateVATDetailedReport(tenantId: string, startDate: string, endDate: string) {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
   const vatRecords = await prisma.vATRecord.findMany({
     where: {
+      tenantId,
       recordDate: {
         gte: start,
         lte: end,
@@ -239,12 +240,13 @@ async function generateVATDetailedReport(startDate: string, endDate: string) {
 }
 
 // Generate FTA format report for compliance
-async function generateFTAFormatReport(startDate: string, endDate: string) {
+async function generateFTAFormatReport(tenantId: string, startDate: string, endDate: string) {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
   const vatRecords = await prisma.vATRecord.findMany({
     where: {
+      tenantId,
       recordDate: {
         gte: start,
         lte: end,

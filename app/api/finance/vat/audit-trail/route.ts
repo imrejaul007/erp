@@ -17,7 +17,6 @@ const auditTrailSchema = z.object({
 // Get VAT audit trail
 export const GET = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const vatTransactionId = searchParams.get('vatTransactionId');
     const startDate = searchParams.get('startDate');
@@ -26,24 +25,6 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = (page - 1) * limit;
-
-    // Build where clause
-    const whereClause: any = {};
-
-    if (vatTransactionId) {
-      whereClause.vatTransactionId = vatTransactionId;
-    }
-
-    if (startDate && endDate) {
-      whereClause.performedAt = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
-      };
-    }
-
-    if (action) {
-      whereClause.action = action;
-    }
 
     // Get audit trails with related data
     const [auditTrails, total] = await Promise.all([
@@ -68,20 +49,21 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
         FROM vat_audit_trail vat_audit
         LEFT JOIN users ON vat_audit.performed_by = users.id
         LEFT JOIN vat_records ON vat_audit.vat_transaction_id = vat_records.id
-        WHERE 1=1
-        ${vatTransactionId ? `AND vat_audit.vat_transaction_id = '${vatTransactionId}'` : ''}
-        ${startDate && endDate ? `AND vat_audit.performed_at BETWEEN '${startDate}' AND '${endDate}'` : ''}
-        ${action ? `AND vat_audit.action = '${action}'` : ''}
+        WHERE vat_records.tenant_id = ${tenantId}
+        ${vatTransactionId ? prisma.$queryRaw`AND vat_audit.vat_transaction_id = ${vatTransactionId}` : prisma.$queryRaw``}
+        ${startDate && endDate ? prisma.$queryRaw`AND vat_audit.performed_at BETWEEN ${new Date(startDate)} AND ${new Date(endDate)}` : prisma.$queryRaw``}
+        ${action ? prisma.$queryRaw`AND vat_audit.action = ${action}` : prisma.$queryRaw``}
         ORDER BY vat_audit.performed_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `,
       prisma.$queryRaw`
         SELECT COUNT(*) as count
         FROM vat_audit_trail vat_audit
-        WHERE 1=1
-        ${vatTransactionId ? `AND vat_audit.vat_transaction_id = '${vatTransactionId}'` : ''}
-        ${startDate && endDate ? `AND vat_audit.performed_at BETWEEN '${startDate}' AND '${endDate}'` : ''}
-        ${action ? `AND vat_audit.action = '${action}'` : ''}
+        LEFT JOIN vat_records ON vat_audit.vat_transaction_id = vat_records.id
+        WHERE vat_records.tenant_id = ${tenantId}
+        ${vatTransactionId ? prisma.$queryRaw`AND vat_audit.vat_transaction_id = ${vatTransactionId}` : prisma.$queryRaw``}
+        ${startDate && endDate ? prisma.$queryRaw`AND vat_audit.performed_at BETWEEN ${new Date(startDate)} AND ${new Date(endDate)}` : prisma.$queryRaw``}
+        ${action ? prisma.$queryRaw`AND vat_audit.action = ${action}` : prisma.$queryRaw``}
       `,
     ]);
 
@@ -129,13 +111,15 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
 // Create VAT audit trail entry
 export const POST = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const body = await request.json();
     const validatedData = auditTrailSchema.parse(body);
 
     // Verify the VAT transaction exists
     const vatTransaction = await prisma.vATRecord.findUnique({
-      where: { id: validatedData.vatTransactionId },
+      where: {
+        id: validatedData.vatTransactionId,
+        tenantId,
+      },
     });
 
     if (!vatTransaction) {
@@ -146,6 +130,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     const auditTrail = await prisma.$executeRaw`
       INSERT INTO vat_audit_trail (
         id,
+        tenant_id,
         vat_transaction_id,
         action,
         old_value,
@@ -155,6 +140,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
         performed_at
       ) VALUES (
         ${generateId()},
+        ${tenantId},
         ${validatedData.vatTransactionId},
         ${validatedData.action},
         ${JSON.stringify(validatedData.oldValue)},
@@ -181,7 +167,6 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 // Get audit trail summary/statistics
 export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) => {
   try {
-    // TODO: Add tenantId filter to all Prisma queries in this handler
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || getCurrentPeriod();
 
@@ -193,7 +178,8 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
         DATE_TRUNC('day', performed_at) as date
       FROM vat_audit_trail vat_audit
       LEFT JOIN vat_records ON vat_audit.vat_transaction_id = vat_records.id
-      WHERE vat_records.period = ${period}
+      WHERE vat_records.tenant_id = ${tenantId}
+        AND vat_records.period = ${period}
       GROUP BY action, DATE_TRUNC('day', performed_at)
       ORDER BY date DESC
     `;
@@ -209,7 +195,8 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
       FROM vat_audit_trail vat_audit
       LEFT JOIN users ON vat_audit.performed_by = users.id
       LEFT JOIN vat_records ON vat_audit.vat_transaction_id = vat_records.id
-      WHERE vat_records.period = ${period}
+      WHERE vat_records.tenant_id = ${tenantId}
+        AND vat_records.period = ${period}
       GROUP BY users.id, users.first_name, users.last_name, users.email
       ORDER BY audit_count DESC
       LIMIT 10
@@ -228,7 +215,8 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
       FROM vat_audit_trail vat_audit
       LEFT JOIN users ON vat_audit.performed_by = users.id
       LEFT JOIN vat_records ON vat_audit.vat_transaction_id = vat_records.id
-      WHERE vat_records.period = ${period}
+      WHERE vat_records.tenant_id = ${tenantId}
+        AND vat_records.period = ${period}
       ORDER BY vat_audit.performed_at DESC
       LIMIT 20
     `;
@@ -268,6 +256,7 @@ function generateId(): string {
 
 // Helper function to log VAT transaction changes
 async function logVATChange(
+  tenantId: string,
   vatTransactionId: string,
   action: string,
   oldValue: any,
@@ -279,6 +268,7 @@ async function logVATChange(
     await prisma.$executeRaw`
       INSERT INTO vat_audit_trail (
         id,
+        tenant_id,
         vat_transaction_id,
         action,
         old_value,
@@ -288,6 +278,7 @@ async function logVATChange(
         performed_at
       ) VALUES (
         ${generateId()},
+        ${tenantId},
         ${vatTransactionId},
         ${action},
         ${JSON.stringify(oldValue)},
