@@ -100,10 +100,10 @@ export default function HomePage() {
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" asChild>
-              <Link href="/login"><span>Sign In</span></Link>
+              <Link href="/login">Sign In</Link>
             </Button>
             <Button variant="luxury" asChild>
-              <Link href="/login"><span>Get Started</span></Link>
+              <Link href="/login">Get Started</Link>
             </Button>
           </div>
         </div>
@@ -128,7 +128,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/demo"><span>View Demo</span></Link>
+              <Link href="/demo">View Demo</Link>
             </Button>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function HomePage() {
                   Join hundreds of perfume businesses already using our ERP system to streamline their operations.
                 </p>
                 <Button size="lg" className="w-full bg-white text-oud-600 hover:bg-oud-50" asChild>
-                  <Link href="/login"><span>Get Started</span></Link>
+                  <Link href="/login">Get Started</Link>
                 </Button>
               </div>
             </div>
