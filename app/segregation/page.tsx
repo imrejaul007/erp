@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import EventsDashboard from '@/components/events/events-dashboard';
+import SegregationDashboard from '@/components/segregation/segregation-dashboard';
 
-export default function EventsPage() {
+export default function SegregationPage() {
   const router = useRouter();
   return (
     <div>
@@ -14,7 +14,7 @@ export default function EventsPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
       </div>
-      <EventsDashboard />
+      <SegregationDashboard />
     </div>
   );
 }
