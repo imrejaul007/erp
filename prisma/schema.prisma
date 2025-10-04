@@ -95,6 +95,10 @@ model User {
   createdBillingRules BillingRule[]       @relation("BillingRuleCreatedBy")
   createdLateFees    LateFeeCharge[]      @relation("LateFeeCreatedBy")
   createdInstallmentPlans InstallmentPlan[] @relation("InstallmentPlanCreatedBy")
+  expenses           Expense[]            @relation("EmployeeExpenses")
+  stockAdjustments   StockAdjustment[]    @relation("StockAdjustmentCreatedBy")
+  stockTransfers     StockTransfer[]      @relation("TransferCreatedBy")
+  savedReports       SavedReport[]        @relation("SavedReportCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -160,6 +164,8 @@ model Customer {
   recurringInvoices   RecurringInvoice[]
   installmentPlans    InstallmentPlan[]
   invoiceDisputes     InvoiceDispute[]
+  portalAccess        CustomerPortalAccess?
+  supportTickets      SupportTicket[]
 
   @@index([tenantId])
   @@map("customers")
@@ -281,6 +287,9 @@ model Product {
   agingBatches AgingBatch[] @relation("AgingProduct")
   feedbacks CustomerFeedback[] @relation("FeedbackProduct")
   eventInventory EventInventory[] @relation("EventInventoryProduct")
+  stockAdjustments StockAdjustment[]
+  stockTransfers StockTransfer[]
+  stockAlerts StockAlert[]
 
   @@index([tenantId])
   @@map("products")
@@ -1866,6 +1875,15 @@ model Tenant {
   vendorInvoices    VendorInvoice[]
   vendorPayments    VendorPayment[]
   vendorCredits     VendorCredit[]
+  expenseCategories ExpenseCategory[]
+  expenses          Expense[]
+  stockAdjustments  StockAdjustment[]
+  stockTransfers    StockTransfer[]
+  stockAlerts       StockAlert[]
+  savedReports      SavedReport[]
+  customerPortalAccess CustomerPortalAccess[]
+  supportTickets    SupportTicket[]
+  ticketComments    TicketComment[]
 
   @@map("tenants")
 }
@@ -3141,4 +3159,340 @@ model VendorCredit {
 
   @@index([tenantId])
   @@map("vendor_credits")
+}
+
+// ============================================
+// EXPENSE MANAGEMENT SYSTEM
+// ============================================
+
+// Expense Categories
+model ExpenseCategory {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean   @default(true)
+  parentId    String?   // For nested categories
+
+  // Multi-tenancy
+  tenantId    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parent      ExpenseCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    ExpenseCategory[] @relation("CategoryHierarchy")
+  expenses    Expense[]
+
+  @@index([tenantId])
+  @@map("expense_categories")
+}
+
+// Employee Expenses
+model Expense {
+  id              String   @id @default(cuid())
+  expenseNumber   String   @unique
+  employeeId      String
+  categoryId      String
+
+  // Expense Details
+  amount          Decimal  @db.Decimal(10, 2)
+  description     String   @db.Text
+  expenseDate     DateTime
+
+  // Merchant Info
+  merchantName    String?
+  merchantLocation String?
+
+  // Status & Approval
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED, REIMBURSED
+  submittedAt     DateTime @default(now())
+  approvedAt      DateTime?
+  approvedBy      String?
+  rejectedAt      DateTime?
+  rejectedBy      String?
+  rejectionReason String?  @db.Text
+
+  // Reimbursement
+  reimbursedAt    DateTime?
+  reimbursedBy    String?
+  reimbursementReference String?
+
+  // Attachments
+  receiptUrl      String?  @db.Text
+  attachments     Json?    // Array of attachment URLs
+
+  // Notes
+  notes           String?  @db.Text
+
+  // Multi-currency
+  currency        String   @default("AED")
+  exchangeRate    Decimal? @db.Decimal(10, 4)
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee        User            @relation("EmployeeExpenses", fields: [employeeId], references: [id])
+  category        ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@index([tenantId, categoryId])
+  @@map("expenses")
+}
+
+// ============================================
+// INVENTORY ADVANCED FEATURES
+// ============================================
+
+// Stock Adjustments
+model StockAdjustment {
+  id              String   @id @default(cuid())
+  adjustmentNumber String  @unique
+  productId       String
+
+  // Adjustment Details
+  type            String   // INCREASE, DECREASE, RECOUNT, DAMAGE, LOSS, FOUND
+  quantityBefore  Int
+  quantityAfter   Int
+  quantityChange  Int      // Positive or negative
+
+  // Reason
+  reason          String   // DAMAGED, EXPIRED, LOST, THEFT, COUNT_ERROR, etc.
+  description     String?  @db.Text
+
+  // Approval (for significant adjustments)
+  requiresApproval Boolean @default(false)
+  approvedAt      DateTime?
+  approvedBy      String?
+
+  // Cost Impact
+  costImpact      Decimal? @db.Decimal(10, 2)
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+  createdBy       User     @relation("StockAdjustmentCreatedBy", fields: [createdById], references: [id])
+
+  @@index([tenantId, productId])
+  @@index([tenantId, type])
+  @@map("stock_adjustments")
+}
+
+// Stock Transfers (between locations/warehouses)
+model StockTransfer {
+  id              String   @id @default(cuid())
+  transferNumber  String   @unique
+  productId       String
+
+  // Transfer Details
+  fromLocation    String   // Location ID or name
+  toLocation      String
+  quantity        Int
+
+  // Status
+  status          String   @default("PENDING") // PENDING, IN_TRANSIT, COMPLETED, CANCELLED
+  requestedAt     DateTime @default(now())
+  shippedAt       DateTime?
+  receivedAt      DateTime?
+  cancelledAt     DateTime?
+
+  // Tracking
+  notes           String?  @db.Text
+  shippingReference String?
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  receivedById    String?
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+  createdBy       User     @relation("TransferCreatedBy", fields: [createdById], references: [id])
+
+  @@index([tenantId, productId])
+  @@index([tenantId, status])
+  @@map("stock_transfers")
+}
+
+// Stock Alerts
+model StockAlert {
+  id              String   @id @default(cuid())
+  productId       String
+
+  // Alert Configuration
+  alertType       String   // LOW_STOCK, OUT_OF_STOCK, OVERSTOCK, EXPIRING_SOON
+  threshold       Int?     // For low stock alerts
+  isActive        Boolean  @default(true)
+
+  // Notification Settings
+  notifyEmails    Json?    // Array of email addresses
+  notifyUsers     Json?    // Array of user IDs
+  lastNotifiedAt  DateTime?
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+
+  @@index([tenantId, productId])
+  @@index([tenantId, alertType, isActive])
+  @@map("stock_alerts")
+}
+
+// ============================================
+// REPORTING & ANALYTICS
+// ============================================
+
+// Saved Reports
+model SavedReport {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?  @db.Text
+  reportType      String   // FINANCIAL, SALES, INVENTORY, CUSTOM
+
+  // Configuration
+  config          Json     // Report parameters and filters
+  schedule        String?  // DAILY, WEEKLY, MONTHLY, null for manual
+
+  // Sharing
+  isPublic        Boolean  @default(false)
+  sharedWith      Json?    // Array of user IDs
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("ReportCreatedBy", fields: [createdById], references: [id])
+
+  @@index([tenantId, reportType])
+  @@index([tenantId, createdById])
+  @@map("saved_reports")
+}
+
+// ============================================
+// CUSTOMER PORTAL
+// ============================================
+
+// Customer Portal Access
+model CustomerPortalAccess {
+  id              String   @id @default(cuid())
+  customerId      String   @unique
+
+  // Access Credentials
+  email           String   @unique
+  passwordHash    String
+  isActive        Boolean  @default(true)
+
+  // Features Enabled
+  canViewInvoices Boolean  @default(true)
+  canMakePayments Boolean  @default(true)
+  canViewOrders   Boolean  @default(true)
+  canSubmitTickets Boolean @default(true)
+
+  // Security
+  lastLoginAt     DateTime?
+  loginAttempts   Int      @default(0)
+  lockedUntil     DateTime?
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id])
+  supportTickets  SupportTicket[]
+
+  @@index([tenantId])
+  @@map("customer_portal_access")
+}
+
+// Support Tickets
+model SupportTicket {
+  id              String   @id @default(cuid())
+  ticketNumber    String   @unique
+  customerId      String
+  portalAccessId  String?
+
+  // Ticket Details
+  subject         String
+  description     String   @db.Text
+  category        String   // BILLING, TECHNICAL, GENERAL, etc.
+  priority        String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+
+  // Status
+  status          String   @default("OPEN") // OPEN, IN_PROGRESS, WAITING, RESOLVED, CLOSED
+
+  // Assignment
+  assignedTo      String?
+
+  // Resolution
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolution      String?  @db.Text
+
+  // Attachments
+  attachments     Json?
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id])
+  portalAccess    CustomerPortalAccess? @relation(fields: [portalAccessId], references: [id])
+  comments        TicketComment[]
+
+  @@index([tenantId, customerId])
+  @@index([tenantId, status])
+  @@map("support_tickets")
+}
+
+// Ticket Comments
+model TicketComment {
+  id              String   @id @default(cuid())
+  ticketId        String
+
+  // Comment Details
+  comment         String   @db.Text
+  isInternal      Boolean  @default(false)
+  attachments     Json?
+
+  // Author
+  authorId        String
+  authorType      String   // USER, CUSTOMER
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ticket          SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([tenantId])
+  @@map("ticket_comments")
 }
