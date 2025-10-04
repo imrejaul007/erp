@@ -33,6 +33,12 @@ import {
   Calendar,
   Repeat,
   MapPin,
+  Boxes,
+  Beaker,
+  Flame,
+  Wine,
+  MessageSquare,
+  Trophy,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -85,7 +91,7 @@ const navigationItems: NavItem[] = [
       { title: 'Complaints', href: '/crm/complaints', icon: FileText, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Comprehensive CRM', href: '/crm/comprehensive', icon: Users, roles: ['OWNER', 'MANAGER'] },
       { title: 'Events & Exhibitions', href: '/crm/events', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
-      { title: 'Feedback & Surveys', href: '/crm/feedback', icon: FileText, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Customer Feedback', href: '/feedback', icon: MessageSquare, roles: ['OWNER', 'MANAGER'] },
       { title: 'Customer Journey', href: '/crm/customer-journey', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
       { title: 'Gift Registry', href: '/crm/gift-registry', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
     ],
@@ -142,10 +148,10 @@ const navigationItems: NavItem[] = [
     children: [
       { title: 'Collection', href: '/perfume', icon: Flower2, roles: ['OWNER', 'MANAGER'] },
       { title: 'Oud Features', href: '/perfume/oud-features', icon: Flower2, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Distillation', href: '/perfume/distillation', icon: Factory, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Blending Lab', href: '/perfume/blending', icon: Factory, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Aging Programs', href: '/perfume/aging', icon: FileText, roles: ['OWNER', 'MANAGER'] },
-      { title: 'Grading', href: '/perfume/grading', icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Segregation & Grading', href: '/segregation', icon: Boxes, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Blending Recipes', href: '/blending', icon: Beaker, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Distillation', href: '/distillation', icon: Flame, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Aging & Maturation', href: '/aging', icon: Wine, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -221,10 +227,13 @@ const navigationItems: NavItem[] = [
     ],
   },
   {
-    title: 'Events & Exhibitions',
-    href: '/events',
+    title: 'Events & Pop-ups',
     icon: Calendar,
     roles: ['OWNER', 'MANAGER'],
+    children: [
+      { title: 'Pop-up Events', href: '/events', icon: MapPin, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Sales Leaderboard', href: '/leaderboard', icon: Trophy, roles: ['OWNER', 'MANAGER'] },
+    ],
   },
   {
     title: 'Subscriptions',
@@ -243,6 +252,12 @@ const navigationItems: NavItem[] = [
       { title: 'Financial Reports', href: '/reports/financial', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
       { title: 'Customer Reports', href: '/reports/customer', icon: Users, roles: ['OWNER', 'MANAGER'] },
     ],
+  },
+  {
+    title: 'Multi-Country',
+    href: '/countries',
+    icon: Globe,
+    roles: ['OWNER', 'MANAGER'],
   },
   {
     title: 'Settings',
