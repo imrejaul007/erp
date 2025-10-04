@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:render": "prisma generate && prisma db push --accept-data-loss --skip-generate && next build",
-    "build:render:seed": "prisma generate && prisma db push --accept-data-loss && npm run db:seed && next build",
+    "build:render:seed": "prisma generate && prisma db push --accept-data-loss && npm run db:seed && npm run db:seed:platform && next build",
     "build:render:minimal": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
@@ -21,6 +21,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:tenant": "tsx prisma/seed-tenant.ts",
+    "db:seed:platform": "tsx prisma/seed-platform-admin.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
