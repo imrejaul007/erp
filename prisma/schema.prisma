@@ -1922,3 +1922,36 @@ enum InvoiceStatus {
   OVERDUE
   CANCELLED
 }
+
+// ============================================
+// PLATFORM ADMIN (Software Provider)
+// ============================================
+
+model PlatformAdmin {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  name              String
+  phone             String?
+  role              PlatformAdminRole @default(PLATFORM_ADMIN)
+  isActive          Boolean  @default(true)
+  lastLogin         DateTime?
+
+  // Permissions
+  canManageTenants  Boolean  @default(true)
+  canManageBilling  Boolean  @default(true)
+  canViewAnalytics  Boolean  @default(true)
+  canAccessAllData  Boolean  @default(false) // Super dangerous - only for owner
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("platform_admins")
+}
+
+enum PlatformAdminRole {
+  PLATFORM_OWNER      // Full access to everything
+  PLATFORM_ADMIN      // Manage tenants and billing
+  SUPPORT_AGENT       // View-only, help customers
+  DEVELOPER           // Technical access for maintenance
+}
