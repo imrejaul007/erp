@@ -99,6 +99,8 @@ model User {
   stockAdjustments   StockAdjustment[]    @relation("StockAdjustmentCreatedBy")
   stockTransfers     StockTransfer[]      @relation("TransferCreatedBy")
   savedReports       SavedReport[]        @relation("SavedReportCreatedBy")
+  createdShipments   Shipment[]           @relation("ShipmentCreatedBy")
+  uploadedDocuments  Document[]           @relation("DocumentUploadedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -166,6 +168,9 @@ model Customer {
   invoiceDisputes     InvoiceDispute[]
   portalAccess        CustomerPortalAccess?
   supportTickets      SupportTicket[]
+  shipments           Shipment[]
+  returnOrders        ReturnOrder[]
+  documents           Document[]
 
   @@index([tenantId])
   @@map("customers")
@@ -194,6 +199,8 @@ model Supplier {
   purchaseOrders PurchaseOrder[]
   vendorInvoices VendorInvoice[]
   vendorCredit   VendorCredit?
+  shipments      Shipment[]
+  documents      Document[]
 
   @@index([tenantId])
   @@map("suppliers")
@@ -290,6 +297,7 @@ model Product {
   stockAdjustments StockAdjustment[]
   stockTransfers StockTransfer[]
   stockAlerts StockAlert[]
+  warehouseStock WarehouseStock[]
 
   @@index([tenantId])
   @@map("products")
@@ -429,6 +437,9 @@ model Order {
   loyaltyTransactions LoyaltyPointsTransaction[]
   giftCardTransactions GiftCardTransaction[]
   invoices            CustomerInvoice[]
+  shipments           Shipment[]
+  returnOrders        ReturnOrder[]
+  documents           Document[]
 
   @@index([tenantId])
   @@map("orders")
@@ -501,6 +512,7 @@ model PurchaseOrder {
   supplier Supplier            @relation(fields: [supplierId], references: [id])
   items    PurchaseOrderItem[]
   vendorInvoices VendorInvoice[]
+  shipments Shipment[]
 
   @@index([tenantId])
   @@map("purchase_orders")
@@ -1884,6 +1896,11 @@ model Tenant {
   customerPortalAccess CustomerPortalAccess[]
   supportTickets    SupportTicket[]
   ticketComments    TicketComment[]
+  warehouses        Warehouse[]
+  warehouseStock    WarehouseStock[]
+  shipments         Shipment[]
+  returnOrders      ReturnOrder[]
+  documents         Document[]
 
   @@map("tenants")
 }
@@ -3495,4 +3512,430 @@ model TicketComment {
   @@index([ticketId])
   @@index([tenantId])
   @@map("ticket_comments")
+}
+
+// ============================================
+// ADVANCED FEATURES - MULTI-WAREHOUSE
+// ============================================
+
+// Warehouse Management
+model Warehouse {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  type            WarehouseType @default(STANDARD)
+
+  // Location
+  address         String?  @db.Text
+  city            String?
+  country         String?
+  zipCode         String?
+  coordinates     Json?    // {lat: "", lng: ""}
+
+  // Contact
+  manager         String?
+  phone           String?
+  email           String?
+
+  // Capacity
+  totalCapacity   Decimal? @db.Decimal(10, 2) // in cubic meters or custom unit
+  usedCapacity    Decimal  @db.Decimal(10, 2) @default(0)
+  capacityUnit    String   @default("cubic_meter")
+
+  // Features
+  hasClimateControl Boolean @default(false)
+  hasSecurity     Boolean  @default(true)
+  operatingHours  Json?    // {monday: "9-17", tuesday: "9-17"}
+
+  // Status
+  isActive        Boolean  @default(true)
+  notes           String?  @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  stockLocations  WarehouseStock[]
+  outboundShipments Shipment[] @relation("WarehouseOutbound")
+  inboundShipments Shipment[] @relation("WarehouseInbound")
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@map("warehouses")
+}
+
+// Warehouse Stock (Product in specific warehouse)
+model WarehouseStock {
+  id              String   @id @default(cuid())
+  warehouseId     String
+  productId       String
+
+  // Stock Details
+  quantity        Int      @default(0)
+  reservedQuantity Int     @default(0) // Reserved for orders
+  availableQuantity Int    @default(0) // quantity - reservedQuantity
+
+  // Location within warehouse
+  zone            String?  // A, B, C
+  aisle           String?  // 1, 2, 3
+  rack            String?  // R1, R2
+  bin             String?  // B1, B2
+
+  // Min/Max levels
+  minLevel        Int?
+  maxLevel        Int?
+  reorderPoint    Int?
+
+  // Last stock check
+  lastCountDate   DateTime?
+  lastCountBy     String?
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouse       Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+
+  @@unique([warehouseId, productId])
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@index([productId])
+  @@map("warehouse_stock")
+}
+
+enum WarehouseType {
+  STANDARD        // Regular warehouse
+  DISTRIBUTION    // Distribution center
+  RETAIL          // Retail store warehouse
+  COLD_STORAGE    // Climate controlled
+  BONDED          // Customs bonded warehouse
+  CONSIGNMENT     // Consignment stock location
+}
+
+// ============================================
+// SHIPPING & LOGISTICS
+// ============================================
+
+// Shipment Tracking
+model Shipment {
+  id              String   @id @default(cuid())
+  shipmentNumber  String   @unique
+
+  // Type
+  shipmentType    ShipmentType
+
+  // Order/PO Link
+  orderId         String?
+  purchaseOrderId String?
+
+  // From/To
+  fromWarehouseId String?
+  toWarehouseId   String?
+  customerId      String?
+  supplierId      String?
+
+  // Shipping Details
+  carrier         String?  // FedEx, DHL, Aramex, etc.
+  trackingNumber  String?
+  shippingMethod  String?  // Standard, Express, Overnight
+
+  // Addresses
+  fromAddress     Json     // {street, city, country, zip}
+  toAddress       Json
+
+  // Package Details
+  packages        Json     // Array of {weight, dimensions, contents}
+  totalWeight     Decimal? @db.Decimal(10, 2)
+  weightUnit      String   @default("kg")
+
+  // Costs
+  shippingCost    Decimal  @db.Decimal(10, 2) @default(0)
+  insuranceCost   Decimal  @db.Decimal(10, 2) @default(0)
+  customsDuty     Decimal  @db.Decimal(10, 2) @default(0)
+  totalCost       Decimal  @db.Decimal(10, 2)
+
+  // Status & Dates
+  status          ShipmentStatus @default(PENDING)
+  pickupDate      DateTime?
+  shipDate        DateTime?
+  estimatedDelivery DateTime?
+  actualDelivery  DateTime?
+
+  // Tracking Events
+  trackingEvents  Json?    // Array of {timestamp, location, status, notes}
+
+  // Documents
+  invoiceUrl      String?  @db.Text
+  packingListUrl  String?  @db.Text
+  labelUrl        String?  @db.Text
+
+  // Notes
+  notes           String?  @db.Text
+  specialInstructions String? @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fromWarehouse   Warehouse? @relation("WarehouseOutbound", fields: [fromWarehouseId], references: [id])
+  toWarehouse     Warehouse? @relation("WarehouseInbound", fields: [toWarehouseId], references: [id])
+  order           Order?   @relation(fields: [orderId], references: [id])
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  supplier        Supplier? @relation(fields: [supplierId], references: [id])
+  createdBy       User     @relation("ShipmentCreatedBy", fields: [createdById], references: [id])
+  returnOrders    ReturnOrder[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, orderId])
+  @@index([trackingNumber])
+  @@map("shipments")
+}
+
+enum ShipmentType {
+  OUTBOUND        // To customer
+  INBOUND         // From supplier
+  TRANSFER        // Between warehouses
+  RETURN          // Return shipment
+}
+
+enum ShipmentStatus {
+  PENDING         // Not yet picked up
+  PICKED_UP       // Picked up by carrier
+  IN_TRANSIT      // On the way
+  OUT_FOR_DELIVERY // Out for delivery
+  DELIVERED       // Successfully delivered
+  FAILED_DELIVERY // Delivery failed
+  RETURNED        // Returned to sender
+  CANCELLED       // Shipment cancelled
+}
+
+// ============================================
+// RETURNS & RMA MANAGEMENT
+// ============================================
+
+// Return Orders (RMA)
+model ReturnOrder {
+  id              String   @id @default(cuid())
+  rmaNumber       String   @unique
+
+  // Original Transaction
+  orderId         String?
+  shipmentId      String?
+  customerId      String
+
+  // Return Details
+  returnType      ReturnType
+  returnReason    ReturnReason
+  reasonDetails   String?  @db.Text
+
+  // Items
+  items           Json     // Array of {productId, quantity, reason, condition}
+  totalValue      Decimal  @db.Decimal(10, 2)
+
+  // Status & Dates
+  status          ReturnStatus @default(REQUESTED)
+  requestedAt     DateTime @default(now())
+  approvedAt      DateTime?
+  approvedBy      String?
+  receivedAt      DateTime?
+  inspectedAt     DateTime?
+  completedAt     DateTime?
+
+  // Inspection
+  inspectionNotes String?  @db.Text
+  inspectedBy     String?
+  itemsAccepted   Json?    // Which items were accepted
+  itemsRejected   Json?    // Which items were rejected
+
+  // Resolution
+  resolutionType  ResolutionType?
+  refundAmount    Decimal? @db.Decimal(10, 2)
+  replacementOrderId String?
+  creditNoteId    String?  // Link to credit note invoice
+
+  // Shipping back
+  returnShippingCost Decimal @db.Decimal(10, 2) @default(0)
+  customerPaysShipping Boolean @default(false)
+  returnTrackingNumber String?
+
+  // Restocking
+  restockingFee   Decimal  @db.Decimal(10, 2) @default(0)
+  restocked       Boolean  @default(false)
+  restockedAt     DateTime?
+  restockedBy     String?
+
+  // Photos/Evidence
+  photos          Json?    // Array of photo URLs
+
+  // Notes
+  customerNotes   String?  @db.Text
+  internalNotes   String?  @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id])
+  order           Order?   @relation(fields: [orderId], references: [id])
+  shipment        Shipment? @relation(fields: [shipmentId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@index([orderId])
+  @@map("return_orders")
+}
+
+enum ReturnType {
+  REFUND          // Customer wants money back
+  REPLACEMENT     // Customer wants replacement
+  EXCHANGE        // Exchange for different product
+  STORE_CREDIT    // Store credit/gift card
+}
+
+enum ReturnReason {
+  DEFECTIVE       // Product is defective/damaged
+  WRONG_ITEM      // Wrong item sent
+  NOT_AS_DESCRIBED // Doesn't match description
+  QUALITY_ISSUE   // Quality not satisfactory
+  CHANGED_MIND    // Customer changed mind
+  SIZE_ISSUE      // Wrong size/fit
+  LATE_DELIVERY   // Delivered too late
+  OTHER           // Other reason
+}
+
+enum ReturnStatus {
+  REQUESTED       // Customer requested return
+  APPROVED        // Return approved by staff
+  REJECTED        // Return rejected
+  SHIPPED         // Customer shipped back
+  RECEIVED        // Received at warehouse
+  INSPECTING      // Under inspection
+  COMPLETED       // Return processed
+  CANCELLED       // Return cancelled
+}
+
+enum ResolutionType {
+  FULL_REFUND
+  PARTIAL_REFUND
+  REPLACEMENT
+  EXCHANGE
+  STORE_CREDIT
+  REPAIR
+  REJECTED
+}
+
+// ============================================
+// DOCUMENT MANAGEMENT
+// ============================================
+
+// Document Templates & Storage
+model Document {
+  id              String   @id @default(cuid())
+  documentNumber  String   @unique
+
+  // Document Details
+  title           String
+  description     String?  @db.Text
+  documentType    DocumentType
+  category        String?  // Contract, Invoice, Report, Policy, etc.
+
+  // File Details
+  fileName        String
+  fileUrl         String   @db.Text
+  fileSize        Int      // in bytes
+  mimeType        String
+
+  // Version Control
+  version         Int      @default(1)
+  parentDocumentId String? // If this is a newer version
+  isLatestVersion Boolean  @default(true)
+
+  // Metadata
+  tags            Json?    // Array of tags
+  customFields    Json?    // Custom metadata
+
+  // Related Entities
+  customerId      String?
+  supplierId      String?
+  orderId         String?
+  invoiceId       String?
+
+  // Access Control
+  isPublic        Boolean  @default(false)
+  allowedUsers    Json?    // Array of user IDs
+  allowedRoles    Json?    // Array of role names
+
+  // Status
+  status          DocumentStatus @default(DRAFT)
+  expiryDate      DateTime?
+  archivedAt      DateTime?
+
+  // Signatures (for contracts)
+  requiresSignature Boolean @default(false)
+  signatures      Json?    // Array of {userId, signedAt, signature}
+
+  // Audit
+  uploadedBy      String
+  approvedBy      String?
+  approvedAt      DateTime?
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploader        User     @relation("DocumentUploadedBy", fields: [uploadedBy], references: [id])
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  supplier        Supplier? @relation(fields: [supplierId], references: [id])
+  order           Order?   @relation(fields: [orderId], references: [id])
+  parentDocument  Document? @relation("DocumentVersions", fields: [parentDocumentId], references: [id])
+  versions        Document[] @relation("DocumentVersions")
+
+  @@index([tenantId, documentType])
+  @@index([tenantId, status])
+  @@index([customerId])
+  @@index([supplierId])
+  @@map("documents")
+}
+
+enum DocumentType {
+  CONTRACT        // Business contracts
+  INVOICE         // Invoice documents
+  RECEIPT         // Payment receipts
+  PURCHASE_ORDER  // PO documents
+  DELIVERY_NOTE   // Delivery notes
+  CERTIFICATE     // Certificates (COA, etc.)
+  REPORT          // Business reports
+  POLICY          // Company policies
+  PROCEDURE       // SOPs
+  LEGAL           // Legal documents
+  MARKETING       // Marketing materials
+  OTHER           // Other documents
+}
+
+enum DocumentStatus {
+  DRAFT           // Still being created
+  PENDING_REVIEW  // Awaiting review
+  APPROVED        // Approved
+  REJECTED        // Rejected
+  ACTIVE          // Active/Published
+  ARCHIVED        // Archived
+  EXPIRED         // Expired
 }
