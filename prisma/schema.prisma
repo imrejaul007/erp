@@ -186,6 +186,8 @@ model Supplier {
   createdBy    User      @relation("CreatedBy", fields: [createdById], references: [id])
   products     Product[]
   purchaseOrders PurchaseOrder[]
+  vendorInvoices VendorInvoice[]
+  vendorCredit   VendorCredit?
 
   @@index([tenantId])
   @@map("suppliers")
@@ -489,6 +491,7 @@ model PurchaseOrder {
   // Relations
   supplier Supplier            @relation(fields: [supplierId], references: [id])
   items    PurchaseOrderItem[]
+  vendorInvoices VendorInvoice[]
 
   @@index([tenantId])
   @@map("purchase_orders")
@@ -1860,6 +1863,9 @@ model Tenant {
   invoiceDisputes   InvoiceDispute[]
   disputeComments   DisputeComment[]
   disputeStatusHistory DisputeStatusHistory[]
+  vendorInvoices    VendorInvoice[]
+  vendorPayments    VendorPayment[]
+  vendorCredits     VendorCredit[]
 
   @@map("tenants")
 }
@@ -3025,4 +3031,114 @@ model DisputeStatusHistory {
   @@index([disputeId])
   @@index([tenantId])
   @@map("dispute_status_history")
+}
+
+// ============================================
+// VENDOR/SUPPLIER MANAGEMENT & PROCUREMENT
+// ============================================
+
+// Vendor Invoices (Accounts Payable)
+model VendorInvoice {
+  id              String   @id @default(cuid())
+  invoiceNumber   String   // Vendor's invoice number
+  supplierId      String
+  purchaseOrderId String?  // Link to PO if exists
+
+  // Invoice Details
+  subtotal        Decimal  @db.Decimal(10, 2)
+  taxAmount       Decimal  @db.Decimal(10, 2)
+  discount        Decimal  @db.Decimal(10, 2) @default(0)
+  totalAmount     Decimal  @db.Decimal(10, 2)
+
+  // Status & Dates
+  status          String   @default("PENDING") // PENDING, APPROVED, PAID, OVERDUE, CANCELLED
+  invoiceDate     DateTime
+  dueDate         DateTime
+  paidDate        DateTime?
+
+  // Payment Info
+  paymentTerms    String   // "Net 30", "Due on Receipt", etc.
+  paidAmount      Decimal  @db.Decimal(10, 2) @default(0)
+  balanceDue      Decimal  @db.Decimal(10, 2)
+
+  // Details
+  notes           String?  @db.Text
+  lineItems       Json     // Invoice line items
+  attachments     Json?    // Array of document URLs
+
+  // Multi-currency
+  currency        String   @default("AED")
+  exchangeRate    Decimal? @db.Decimal(10, 4)
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier        Supplier       @relation(fields: [supplierId], references: [id])
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  payments        VendorPayment[]
+
+  @@unique([tenantId, invoiceNumber, supplierId])
+  @@index([tenantId, supplierId])
+  @@index([tenantId, status])
+  @@map("vendor_invoices")
+}
+
+// Vendor Payments
+model VendorPayment {
+  id              String   @id @default(cuid())
+  invoiceId       String
+  amount          Decimal  @db.Decimal(10, 2)
+  paymentMethod   PaymentMethod
+  paymentDate     DateTime @default(now())
+  reference       String?
+  notes           String?  @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  invoice         VendorInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([tenantId])
+  @@map("vendor_payments")
+}
+
+// Vendor Credit Management
+model VendorCredit {
+  id              String   @id @default(cuid())
+  supplierId      String   @unique
+  creditLimit     Decimal  @db.Decimal(10, 2)
+  creditUsed      Decimal  @db.Decimal(10, 2) @default(0)
+  creditAvailable Decimal  @db.Decimal(10, 2)
+  paymentTerms    String   @default("Net 30")
+
+  // Performance tracking
+  onTimePayments  Int      @default(0)
+  latePayments    Int      @default(0)
+  avgDaysToPay    Int?     // Average days to pay invoices
+
+  // Risk management
+  isOnHold        Boolean  @default(false)
+  holdReason      String?  @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier        Supplier @relation(fields: [supplierId], references: [id])
+
+  @@index([tenantId])
+  @@map("vendor_credits")
 }
