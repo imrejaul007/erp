@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
@@ -14,6 +14,17 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
   display: 'swap',
 });
+
+// Force all pages to be dynamically rendered (skip static generation)
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -34,12 +45,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'Oud & Perfume ERP Team' }],
   creator: 'Oud & Perfume ERP',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://oud-erp.onrender.com'),
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
