@@ -294,7 +294,10 @@ export default function DashboardPage() {
           </Card>
 
           {/* Inventory Value */}
-          <Card className="cursor-pointer hover:bg-blue-50 transition-colors group">
+          <Card
+            className="cursor-pointer hover:bg-blue-50 transition-colors group"
+            onClick={() => router.push('/inventory')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -311,7 +314,10 @@ export default function DashboardPage() {
           </Card>
 
           {/* New Customers */}
-          <Card className="cursor-pointer hover:bg-blue-50 transition-colors group">
+          <Card
+            className="cursor-pointer hover:bg-blue-50 transition-colors group"
+            onClick={() => router.push('/crm')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -329,7 +335,10 @@ export default function DashboardPage() {
           </Card>
 
           {/* Daily Profit */}
-          <Card className="cursor-pointer hover:bg-blue-50 transition-colors group">
+          <Card
+            className="cursor-pointer hover:bg-blue-50 transition-colors group"
+            onClick={() => router.push('/reports/profitability')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -347,7 +356,10 @@ export default function DashboardPage() {
           </Card>
 
           {/* Alerts */}
-          <Card className="cursor-pointer hover:bg-blue-50 transition-colors group">
+          <Card
+            className="cursor-pointer hover:bg-blue-50 transition-colors group"
+            onClick={() => router.push('/inventory/comprehensive')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -376,7 +388,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-              <Link href="/pos/terminal">
+              <Link href="/pos">
                 <Button className="h-20 w-full flex flex-col space-y-2 bg-blue-600 hover:bg-blue-700">
                   <CreditCard className="h-6 w-6" />
                   <span className="text-sm">New Sale</span>
@@ -840,7 +852,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {[
-                { name: 'Sales & POS', icon: CreditCard, href: '/pos/terminal', color: 'text-blue-600' },
+                { name: 'Sales & POS', icon: CreditCard, href: '/pos', color: 'text-blue-600' },
                 { name: 'Inventory', icon: Package, href: '/inventory', color: 'text-green-600' },
                 { name: 'Production', icon: Beaker, href: '/production', color: 'text-purple-600' },
                 { name: 'Customers', icon: Users, href: '/crm', color: 'text-orange-600' },
