@@ -71,15 +71,15 @@ export default function AnalyticsPage() {
     <div className="min-h-screen bg-gradient-to-br from-oud-50 via-white to-oud-100/30">
       <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
         {/* Page Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="text-center space-y-2 flex-1">
-            <h1 className="text-4xl font-serif font-bold bg-gradient-to-r from-oud-800 to-oud-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold bg-gradient-to-r from-oud-800 to-oud-600 bg-clip-text text-transparent">
               Business Intelligence Dashboard
             </h1>
-            <p className="text-oud-600 text-lg">
+            <p className="text-oud-600 text-base sm:text-lg">
               Comprehensive analytics and insights for your Perfume & Oud business
             </p>
           </div>

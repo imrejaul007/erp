@@ -177,20 +177,20 @@ const DemoPage = () => {
     <div className="container mx-auto p-6 space-y-8">
       {/* Header */}
       <div className="text-center">
-        <div className="flex items-center justify-center gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
           <Button variant="outline" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-900">
-          🌟 Oud Palace ERP + POS System
-        </h1>
-        <p className="text-xl text-gray-600 mb-2">
-          Complete Perfume & Oud Business Management Solution for UAE Market
-        </p>
-        <p className="text-lg text-gray-500">
-          📍 Built specifically for UAE businesses with cultural and regulatory compliance
-        </p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+              🌟 Oud Palace ERP + POS System
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-600 mb-2">
+              Complete Perfume & Oud Business Management Solution for UAE Market
+            </p>
+            <p className="text-base sm:text-lg text-gray-500">
+              📍 Built specifically for UAE businesses with cultural and regulatory compliance
+            </p>
           </div>
         </div>
       </div>

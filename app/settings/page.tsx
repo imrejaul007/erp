@@ -206,22 +206,22 @@ const SettingsPage = () => {
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-                  <Button variant="outline" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-
-
-          <h1 className="text-3xl font-bold text-gray-900">Settings & Administration</h1>
-          <p className="text-gray-600">Configure system settings, user management, and integrations</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Settings & Administration</h1>
+            <p className="text-gray-600">Configure system settings, user management, and integrations</p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <Download className="h-4 w-4 mr-2" />
             Export Settings
           </Button>
-          <Button onClick={handleSaveSettings}>
+          <Button onClick={handleSaveSettings} className="w-full sm:w-auto">
             <Save className="h-4 w-4 mr-2" />
             {saveStatus === 'saved' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
           </Button>
@@ -230,22 +230,22 @@ const SettingsPage = () => {
 
       {/* Settings Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            General
+            <span className="hidden sm:inline">General</span>
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Users & Roles
+            <span className="hidden sm:inline">Users & Roles</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Notifications
+            <span className="hidden sm:inline">Notifications</span>
           </TabsTrigger>
           <TabsTrigger value="integrations" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
-            Integrations
+            <span className="hidden sm:inline">Integrations</span>
           </TabsTrigger>
           <TabsTrigger value="system" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
