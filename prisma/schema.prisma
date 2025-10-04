@@ -159,6 +159,7 @@ model Customer {
   customerCredits     CustomerCredit[]
   recurringInvoices   RecurringInvoice[]
   installmentPlans    InstallmentPlan[]
+  invoiceDisputes     InvoiceDispute[]
 
   @@index([tenantId])
   @@map("customers")
@@ -1856,6 +1857,9 @@ model Tenant {
   lateFeeCharges    LateFeeCharge[]
   installmentPlans  InstallmentPlan[]
   installments      Installment[]
+  invoiceDisputes   InvoiceDispute[]
+  disputeComments   DisputeComment[]
+  disputeStatusHistory DisputeStatusHistory[]
 
   @@map("tenants")
 }
@@ -2513,6 +2517,7 @@ model CustomerInvoice {
   recurringInvoice RecurringInvoice? @relation(fields: [recurringInvoiceId], references: [id])
   lateFeeCharges  LateFeeCharge[]
   installmentPlan InstallmentPlan?
+  disputes        InvoiceDispute[]
 
   @@index([tenantId, customerId])
   @@index([tenantId, status])
@@ -2916,4 +2921,108 @@ model Installment {
   @@index([tenantId, status])
   @@index([dueDate])
   @@map("installments")
+}
+
+// Invoice Disputes
+model InvoiceDispute {
+  id              String   @id @default(cuid())
+  invoiceId       String
+
+  // Dispute Details
+  disputeReason   String   // INCORRECT_AMOUNT, PRODUCT_NOT_RECEIVED, QUALITY_ISSUE, ALREADY_PAID, etc.
+  description     String   @db.Text
+  disputedAmount  Decimal? @db.Decimal(10, 2) // Amount in dispute (null = full invoice)
+
+  // Evidence & Documentation
+  evidence        Json?    // Array of evidence: {type: "document|image|email", url: "", description: ""}
+  customerNotes   String?  @db.Text
+
+  // Status & Resolution
+  status          String   @default("OPEN") // OPEN, UNDER_REVIEW, RESOLVED, REJECTED, ESCALATED
+  priority        String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+
+  // Assignment
+  assignedTo      String?  // User ID
+  assignedAt      DateTime?
+
+  // Resolution
+  resolution      String?  @db.Text
+  resolvedAt      DateTime?
+  resolvedBy      String?  // User ID
+  resolutionType  String?  // FULL_REFUND, PARTIAL_REFUND, CREDIT_NOTE, DISCOUNT, REJECTED, etc.
+  refundedAmount  Decimal? @db.Decimal(10, 2)
+
+  // Communication
+  lastContactAt   DateTime?
+  nextFollowUpAt  DateTime?
+
+  // Multi-tenancy
+  tenantId        String
+  customerId      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id])
+  invoice         CustomerInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  comments        DisputeComment[]
+  statusHistory   DisputeStatusHistory[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@index([invoiceId])
+  @@index([assignedTo])
+  @@map("invoice_disputes")
+}
+
+// Dispute Comments/Communication
+model DisputeComment {
+  id              String   @id @default(cuid())
+  disputeId       String
+
+  // Comment Details
+  comment         String   @db.Text
+  isInternal      Boolean  @default(false) // Internal notes vs customer-visible
+  attachments     Json?    // Array of attachment URLs
+
+  // Author
+  authorId        String
+  authorType      String   // USER, CUSTOMER, SYSTEM
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  dispute         InvoiceDispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  @@index([disputeId])
+  @@index([tenantId])
+  @@map("dispute_comments")
+}
+
+// Dispute Status History
+model DisputeStatusHistory {
+  id              String   @id @default(cuid())
+  disputeId       String
+
+  // Status Change
+  fromStatus      String?
+  toStatus        String
+  reason          String?  @db.Text
+  changedBy       String?  // User ID
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  dispute         InvoiceDispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  @@index([disputeId])
+  @@index([tenantId])
+  @@map("dispute_status_history")
 }
