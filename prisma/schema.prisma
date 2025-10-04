@@ -90,6 +90,11 @@ model User {
   distillationLogs   DistillationLog[]    @relation("DistillationRecordedBy")
   customerFeedback   CustomerFeedback[]   @relation("FeedbackRecordedBy")
   eventStaffAssignments EventStaff[]      @relation("EventStaffAssigned")
+  createdInvoices    CustomerInvoice[]    @relation("InvoiceCreatedBy")
+  createdRecurringInvoices RecurringInvoice[] @relation("RecurringInvoiceCreatedBy")
+  createdBillingRules BillingRule[]       @relation("BillingRuleCreatedBy")
+  createdLateFees    LateFeeCharge[]      @relation("LateFeeCreatedBy")
+  createdInstallmentPlans InstallmentPlan[] @relation("InstallmentPlanCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -150,6 +155,10 @@ model Customer {
   campaignResponses   CampaignResponse[]
   samplingSessions    SamplingSession[]
   feedbacks           CustomerFeedback[]
+  invoices            CustomerInvoice[]
+  customerCredits     CustomerCredit[]
+  recurringInvoices   RecurringInvoice[]
+  installmentPlans    InstallmentPlan[]
 
   @@index([tenantId])
   @@map("customers")
@@ -407,6 +416,7 @@ model Order {
   complaints          CustomerComplaint[]
   loyaltyTransactions LoyaltyPointsTransaction[]
   giftCardTransactions GiftCardTransaction[]
+  invoices            CustomerInvoice[]
 
   @@index([tenantId])
   @@map("orders")
@@ -1835,6 +1845,17 @@ model Tenant {
   eventInventory    EventInventory[]
   countryConfigs    CountryConfig[]
   exchangeRates     ExchangeRate[]
+  customerInvoices  CustomerInvoice[]
+  invoicePayments   InvoicePayment[]
+  customerCredits   CustomerCredit[]
+  recurringInvoices RecurringInvoice[]
+  paymentGateways   PaymentGateway[]
+  invoiceTemplates  InvoiceTemplate[]
+  billingRules      BillingRule[]
+  billingRuleExecutions BillingRuleExecution[]
+  lateFeeCharges    LateFeeCharge[]
+  installmentPlans  InstallmentPlan[]
+  installments      Installment[]
 
   @@map("tenants")
 }
@@ -1941,10 +1962,43 @@ enum SubscriptionStatus {
 }
 
 enum InvoiceStatus {
-  PENDING
+  DRAFT
+  SENT
+  VIEWED
+  PARTIALLY_PAID
   PAID
   OVERDUE
   CANCELLED
+  REFUNDED
+  PENDING // Keep for TenantInvoice backwards compatibility
+}
+
+enum InvoiceType {
+  STANDARD      // Regular invoice
+  PROFORMA      // Pro-forma invoice (quotation/advance invoice)
+  RECURRING     // Auto-generated recurring invoice
+  PARTIAL       // Partial/Advance payment invoice
+  CREDIT_NOTE   // Credit note (negative invoice)
+  DEBIT_NOTE    // Debit note (additional charges)
+}
+
+enum RecurringFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+}
+
+enum BillingRuleType {
+  AUTO_INVOICE          // Automatically create invoices
+  LATE_FEE              // Apply late fees
+  PAYMENT_REMINDER      // Send payment reminders
+  DUNNING               // Escalating collection process
+  AUTO_CREDIT_NOTE      // Auto-create credit notes
+  SUBSCRIPTION_BILLING  // Handle subscription renewals
 }
 
 // ============================================
@@ -2388,4 +2442,478 @@ model ExchangeRate {
 
   @@index([tenantId])
   @@map("exchange_rates")
+}
+
+// ============================================
+// CUSTOMER INVOICING SYSTEM
+// ============================================
+
+model CustomerInvoice {
+  id              String          @id @default(cuid())
+  invoiceNumber   String          @unique
+  customerId      String
+  orderId         String?
+
+  // Invoice Type
+  invoiceType     InvoiceType     @default(STANDARD)
+  recurringInvoiceId String?      // Link to recurring template if auto-generated
+
+  // Invoice Details
+  subtotal        Decimal         @db.Decimal(10, 2)
+  taxAmount       Decimal         @db.Decimal(10, 2)
+  discount        Decimal         @db.Decimal(10, 2) @default(0)
+  totalAmount     Decimal         @db.Decimal(10, 2)
+
+  // Status & Dates
+  status          InvoiceStatus   @default(DRAFT)
+  issueDate       DateTime        @default(now())
+  dueDate         DateTime
+  paidDate        DateTime?
+
+  // Payment Info
+  paymentTerms    String          // "Net 30", "Due on Receipt", etc.
+  paidAmount      Decimal         @db.Decimal(10, 2) @default(0)
+  balanceDue      Decimal         @db.Decimal(10, 2)
+
+  // Details
+  notes           String?         @db.Text
+  terms           String?         @db.Text
+  lineItems       Json            // Invoice line items
+
+  // Multi-currency
+  currency        String          @default("AED")
+  exchangeRate    Decimal?        @db.Decimal(10, 4)
+
+  // Tracking
+  sentAt          DateTime?
+  viewedAt        DateTime?
+  lastReminder    DateTime?
+  reminderCount   Int             @default(0)
+
+  // Proforma specific
+  convertedToInvoiceId String?    // If proforma converted to standard invoice
+
+  // QR Code & Digital Features
+  qrCodeData      String?         @db.Text // QR code payload (TLV format for UAE e-invoice)
+  digitalSignature String?        @db.Text // Digital signature for compliance
+  pdfUrl          String?         @db.Text // Generated PDF URL
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer          @relation(fields: [customerId], references: [id])
+  order           Order?            @relation(fields: [orderId], references: [id])
+  createdBy       User              @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
+  payments        InvoicePayment[]
+  recurringInvoice RecurringInvoice? @relation(fields: [recurringInvoiceId], references: [id])
+  lateFeeCharges  LateFeeCharge[]
+  installmentPlan InstallmentPlan?
+
+  @@index([tenantId, customerId])
+  @@index([tenantId, status])
+  @@index([invoiceNumber])
+  @@map("customer_invoices")
+}
+
+model InvoicePayment {
+  id              String          @id @default(cuid())
+  invoiceId       String
+  amount          Decimal         @db.Decimal(10, 2)
+  paymentMethod   PaymentMethod
+  paymentDate     DateTime        @default(now())
+  reference       String?
+  notes           String?         @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  invoice         CustomerInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([tenantId])
+  @@map("invoice_payments")
+}
+
+model CustomerCredit {
+  id              String   @id @default(cuid())
+  customerId      String   @unique
+  creditLimit     Decimal  @db.Decimal(10, 2)
+  creditUsed      Decimal  @db.Decimal(10, 2) @default(0)
+  creditAvailable Decimal  @db.Decimal(10, 2)
+  paymentTerms    String   @default("Net 30")
+  creditScore     Int?     // 1-100
+
+  // Risk management
+  isOnHold        Boolean  @default(false)
+  holdReason      String?  @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id])
+
+  @@index([tenantId])
+  @@map("customer_credits")
+}
+
+// Recurring Invoice Templates
+model RecurringInvoice {
+  id              String             @id @default(cuid())
+  templateName    String             // e.g., "Monthly Subscription - ABC Corp"
+  customerId      String
+
+  // Recurrence Settings
+  frequency       RecurringFrequency
+  startDate       DateTime
+  endDate         DateTime?          // null = no end date
+  nextInvoiceDate DateTime
+
+  // Invoice Details Template
+  subtotal        Decimal            @db.Decimal(10, 2)
+  taxAmount       Decimal            @db.Decimal(10, 2)
+  discount        Decimal            @db.Decimal(10, 2) @default(0)
+  totalAmount     Decimal            @db.Decimal(10, 2)
+
+  // Payment Info
+  paymentTerms    String
+  daysDue         Int                @default(30) // Days after issue date
+
+  // Details
+  notes           String?            @db.Text
+  terms           String?            @db.Text
+  lineItems       Json               // Template line items
+
+  // Multi-currency
+  currency        String             @default("AED")
+
+  // Status
+  isActive        Boolean            @default(true)
+  lastGeneratedAt DateTime?
+  generatedCount  Int                @default(0)
+
+  // Auto-send settings
+  autoSend        Boolean            @default(false)
+  sendEmailTo     String?            // Override customer email
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer           @relation(fields: [customerId], references: [id])
+  createdBy       User               @relation("RecurringInvoiceCreatedBy", fields: [createdById], references: [id])
+  generatedInvoices CustomerInvoice[]
+
+  @@index([tenantId, customerId])
+  @@index([tenantId, isActive])
+  @@index([nextInvoiceDate])
+  @@map("recurring_invoices")
+}
+
+// Payment Gateway Configuration
+model PaymentGateway {
+  id              String   @id @default(cuid())
+  name            String   // "Stripe", "PayTabs", "PayPal", etc.
+  provider        String   // STRIPE, PAYTABS, PAYPAL, RAZORPAY
+  isActive        Boolean  @default(false)
+
+  // API Credentials (encrypted)
+  apiKey          String?  @db.Text
+  apiSecret       String?  @db.Text
+  merchantId      String?
+  profileId       String?  // For PayTabs
+  serverKey       String?  @db.Text
+
+  // Configuration
+  mode            String   @default("sandbox") // sandbox or live
+  currency        String   @default("AED")
+  returnUrl       String?  @db.Text
+  callbackUrl     String?  @db.Text
+
+  // Features
+  supportsRefunds Boolean  @default(true)
+  supportsRecurring Boolean @default(false)
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, provider])
+  @@index([tenantId, isActive])
+  @@map("payment_gateways")
+}
+
+// Invoice Customization Settings
+model InvoiceTemplate {
+  id              String   @id @default(cuid())
+  name            String   // "Default", "Minimalist", "Professional", etc.
+  isDefault       Boolean  @default(false)
+
+  // Branding
+  logo            String?  @db.Text // Logo URL or base64
+  companyName     String?
+  companyAddress  String?  @db.Text
+  companyPhone    String?
+  companyEmail    String?
+  companyWebsite  String?
+  taxId           String?  // VAT/Tax Registration Number
+
+  // Colors & Styling
+  primaryColor    String   @default("#000000")
+  secondaryColor  String   @default("#666666")
+  accentColor     String   @default("#0066cc")
+
+  // Layout Options
+  layout          String   @default("standard") // standard, compact, detailed
+  showLogo        Boolean  @default(true)
+  showQRCode      Boolean  @default(true)
+  showWatermark   Boolean  @default(false)
+  watermarkText   String?
+
+  // Content Options
+  headerText      String?  @db.Text
+  footerText      String?  @db.Text
+  paymentInstructions String? @db.Text
+
+  // Terms & Conditions
+  defaultTerms    String?  @db.Text
+  defaultNotes    String?  @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, isDefault])
+  @@map("invoice_templates")
+}
+
+// Billing Automation Rules
+model BillingRule {
+  id              String   @id @default(cuid())
+  name            String   // "Auto-invoice on order completion", "Late fee after 30 days"
+  description     String?  @db.Text
+  isActive        Boolean  @default(true)
+
+  // Rule Type
+  ruleType        BillingRuleType
+
+  // Trigger Conditions
+  triggerEvent    String   // ORDER_COMPLETED, INVOICE_OVERDUE, SUBSCRIPTION_RENEWAL, etc.
+  triggerConditions Json   // Flexible conditions: {daysOverdue: 30, customerType: "wholesale"}
+
+  // Actions
+  actionType      String   // CREATE_INVOICE, ADD_LATE_FEE, SEND_REMINDER, etc.
+  actionConfig    Json     // Configuration for the action
+
+  // Late Fee Settings (when actionType is ADD_LATE_FEE)
+  lateFeeType     String?  // FIXED, PERCENTAGE, TIERED
+  lateFeeAmount   Decimal? @db.Decimal(10, 2)
+  lateFeePercent  Decimal? @db.Decimal(5, 2)
+  lateFeeMax      Decimal? @db.Decimal(10, 2)
+
+  // Execution Settings
+  priority        Int      @default(0) // Higher priority rules execute first
+  maxExecutions   Int?     // null = unlimited
+  executionCount  Int      @default(0)
+  lastExecutedAt  DateTime?
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("BillingRuleCreatedBy", fields: [createdById], references: [id])
+  executions      BillingRuleExecution[]
+
+  @@index([tenantId, isActive])
+  @@index([tenantId, ruleType])
+  @@index([triggerEvent])
+  @@map("billing_rules")
+}
+
+// Billing Rule Execution Log
+model BillingRuleExecution {
+  id              String   @id @default(cuid())
+  ruleId          String
+
+  // Execution Details
+  status          String   // SUCCESS, FAILED, SKIPPED
+  triggerData     Json     // Data that triggered the rule
+  resultData      Json?    // Result of the execution
+  errorMessage    String?  @db.Text
+
+  // Related Entities
+  invoiceId       String?  // If an invoice was created/modified
+  customerId      String?
+  orderId         String?
+
+  // Multi-tenancy
+  tenantId        String
+  executedAt      DateTime @default(now())
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rule            BillingRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, ruleId])
+  @@index([tenantId, status])
+  @@index([executedAt])
+  @@map("billing_rule_executions")
+}
+
+// Late Fee Charges
+model LateFeeCharge {
+  id              String   @id @default(cuid())
+  invoiceId       String
+
+  // Fee Details
+  feeAmount       Decimal  @db.Decimal(10, 2)
+  feeType         String   // FIXED, PERCENTAGE
+  calculationBase Decimal? @db.Decimal(10, 2) // Original amount used for percentage calculation
+
+  // Context
+  daysOverdue     Int
+  appliedAt       DateTime @default(now())
+  ruleId          String?  // If applied by a billing rule
+
+  // Status
+  status          String   @default("PENDING") // PENDING, APPLIED, WAIVED
+  waivedAt        DateTime?
+  waivedBy        String?
+  waivedReason    String?  @db.Text
+
+  // Multi-tenancy
+  tenantId        String
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice         CustomerInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("LateFeeCreatedBy", fields: [createdById], references: [id])
+
+  @@index([tenantId, invoiceId])
+  @@index([tenantId, status])
+  @@index([appliedAt])
+  @@map("late_fee_charges")
+}
+
+// Installment Payment Plans (Buy Now Pay Later)
+model InstallmentPlan {
+  id              String   @id @default(cuid())
+  invoiceId       String   @unique
+
+  // Plan Details
+  planName        String   // "3 Monthly Payments", "Pay in 4"
+  numberOfInstallments Int
+  frequency       String   // WEEKLY, BIWEEKLY, MONTHLY
+  totalAmount     Decimal  @db.Decimal(10, 2)
+  installmentAmount Decimal @db.Decimal(10, 2)
+
+  // Fees
+  processingFee   Decimal  @db.Decimal(10, 2) @default(0)
+  interestRate    Decimal? @db.Decimal(5, 2) // Annual percentage rate
+
+  // Schedule
+  startDate       DateTime
+  endDate         DateTime
+
+  // Status
+  status          String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED, DEFAULTED
+  isActive        Boolean  @default(true)
+
+  // Payment Tracking
+  paidInstallments Int     @default(0)
+  totalPaid       Decimal  @db.Decimal(10, 2) @default(0)
+  remainingBalance Decimal @db.Decimal(10, 2)
+
+  // Terms
+  autoPayEnabled  Boolean  @default(false)
+  paymentMethod   String?  // Credit card, bank account reference
+
+  // Multi-tenancy
+  tenantId        String
+  customerId      String
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id])
+  invoice         CustomerInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("InstallmentPlanCreatedBy", fields: [createdById], references: [id])
+  installments    Installment[]
+
+  @@index([tenantId, customerId])
+  @@index([tenantId, status])
+  @@index([invoiceId])
+  @@map("installment_plans")
+}
+
+// Individual Installment Payments
+model Installment {
+  id              String   @id @default(cuid())
+  planId          String
+
+  // Installment Details
+  installmentNumber Int    // 1, 2, 3, etc.
+  dueDate         DateTime
+  amount          Decimal  @db.Decimal(10, 2)
+
+  // Payment Status
+  status          String   @default("PENDING") // PENDING, PAID, OVERDUE, FAILED
+  paidDate        DateTime?
+  paidAmount      Decimal? @db.Decimal(10, 2)
+
+  // Payment Info
+  paymentMethod   PaymentMethod?
+  transactionId   String?
+  paymentReference String?
+
+  // Late Fees
+  lateFeeApplied  Decimal  @db.Decimal(10, 2) @default(0)
+  daysOverdue     Int      @default(0)
+
+  // Multi-tenancy
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan            InstallmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, installmentNumber])
+  @@index([tenantId, status])
+  @@index([dueDate])
+  @@map("installments")
 }

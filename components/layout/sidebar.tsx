@@ -161,7 +161,7 @@ const navigationItems: NavItem[] = [
     children: [
       { title: 'Accounting', href: '/finance/accounting', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Transactions', href: '/finance/transactions', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
-      { title: 'Invoicing', href: '/finance/invoicing', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
+      { title: 'Customer Invoices', href: '/finance/invoices', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Expenses', href: '/finance/expenses', icon: DollarSign, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'VAT Management', href: '/finance/vat', icon: FileText, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
       { title: 'Forex Gain/Loss', href: '/finance/forex', icon: TrendingUp, roles: ['OWNER', 'MANAGER', 'ACCOUNTANT'] },
