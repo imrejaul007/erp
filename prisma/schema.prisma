@@ -58,11 +58,22 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   phone         String?   @unique
+  phoneVerified DateTime?
+  username      String?   @unique
   image         String?
   password      String?
+  passwordSetAt DateTime?
   role          UserRole  @default(USER)
   isActive      Boolean   @default(true)
+  isVerified    Boolean   @default(false)
+  isLocked      Boolean   @default(false)
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
+  language      String    @default("en")
+  timezone      String    @default("UTC")
+  country       String    @default("AE")
   lastLogin     DateTime?
+  lastLoginAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -118,8 +129,17 @@ model User {
   staffPerformance   StaffPerformance[]   @relation("UserPerformance")
   auditLogs          AuditLog[]           @relation("UserAuditLogs")
   dataExports        DataExport[]         @relation("UserDataExports")
+  // Authentication Relations
+  otpTokens          OtpToken[]           @relation("UserOtpTokens")
+  passwordHistory    PasswordHistory[]    @relation("UserPasswordHistory")
+  twoFactorAuth      TwoFactorAuth?       @relation("UserTwoFactor")
+  loginAttempts_log  LoginAttempt[]       @relation("UserLoginAttempts")
+  preferences        UserPreferences?     @relation("UserPreferences")
+  userRoles          UserRole[]           @relation("UserRoles")
 
   @@index([tenantId])
+  @@index([email])
+  @@index([username])
   @@map("users")
 }
 
@@ -1980,6 +2000,7 @@ model Tenant {
   brandingConfig      BrandingConfig?
   auditLogs           AuditLog[]
   dataExports         DataExport[]
+  passwordPolicy      PasswordPolicy?
 
   @@map("tenants")
 }
@@ -5704,4 +5725,240 @@ enum ExportStatus {
   COMPLETED
   FAILED
   EXPIRED
+}
+
+// ============================================
+// AUTHENTICATION & SECURITY MODELS
+// ============================================
+
+// OTP Tokens for email verification and password reset
+model OtpToken {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation("UserOtpTokens", fields: [userId], references: [id], onDelete: Cascade)
+  token      String
+  type       OtpType
+  method     OtpMethod
+  expiresAt  DateTime
+  isUsed     Boolean  @default(false)
+  usedAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, type])
+  @@index([token, type])
+  @@map("otp_tokens")
+}
+
+enum OtpType {
+  EMAIL_VERIFICATION
+  PHONE_VERIFICATION
+  PASSWORD_RESET
+  TWO_FA
+  2FA
+}
+
+enum OtpMethod {
+  EMAIL
+  SMS
+  TEMP
+}
+
+// Password History for preventing password reuse
+model PasswordHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation("UserPasswordHistory", fields: [userId], references: [id], onDelete: Cascade)
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("password_history")
+}
+
+// Two-Factor Authentication
+model TwoFactorAuth {
+  id            String         @id @default(cuid())
+  userId        String         @unique
+  user          User           @relation("UserTwoFactor", fields: [userId], references: [id], onDelete: Cascade)
+  method        TwoFactorMethod
+  secret        String?
+  backupCodes   String[]
+  isEnabled     Boolean        @default(false)
+  phone         String?
+  email         String?
+  lastUsedAt    DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("two_factor_auth")
+}
+
+enum TwoFactorMethod {
+  APP
+  SMS
+  EMAIL
+}
+
+// Login Attempts for security monitoring
+model LoginAttempt {
+  id             String             @id @default(cuid())
+  userId         String?
+  user           User?              @relation("UserLoginAttempts", fields: [userId], references: [id], onDelete: SetNull)
+  email          String?
+  phone          String?
+  username       String?
+  ipAddress      String
+  userAgent      String?
+  result         LoginAttemptResult
+  failureReason  String?
+  location       Json?
+  createdAt      DateTime           @default(now())
+
+  @@index([userId, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([result, createdAt])
+  @@map("login_attempts")
+}
+
+enum LoginAttemptResult {
+  SUCCESS
+  FAILED_INVALID_CREDENTIALS
+  FAILED_ACCOUNT_LOCKED
+  FAILED_ACCOUNT_DISABLED
+  FAILED_2FA_REQUIRED
+  FAILED_2FA_INVALID
+  FAILED_RATE_LIMIT
+}
+
+// User Preferences
+model UserPreferences {
+  id                 String  @id @default(cuid())
+  userId             String  @unique
+  user               User    @relation("UserPreferences", fields: [userId], references: [id], onDelete: Cascade)
+  language           String  @default("en")
+  theme              String  @default("light")
+  timezone           String  @default("UTC")
+  dateFormat         String  @default("MM/DD/YYYY")
+  timeFormat         String  @default("12h")
+  currency           String  @default("AED")
+  emailNotifications Json?
+  uiPreferences      Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("user_preferences")
+}
+
+// User Roles (for advanced RBAC)
+model UserRole {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation("UserRoles", fields: [userId], references: [id], onDelete: Cascade)
+  roleId     String
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedBy String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+// Roles
+model Role {
+  id                 String   @id @default(cuid())
+  name               String   @unique
+  displayName        String
+  displayNameArabic  String?
+  description        String?
+  descriptionArabic  String?
+  color              String?
+  isActive           Boolean  @default(true)
+  permissions        RolePermission[]
+  userRoles          UserRole[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("roles")
+}
+
+// Role Permissions
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  conditions   Json?
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+// Permissions
+model Permission {
+  id                String           @id @default(cuid())
+  action            PermissionAction
+  resource          PermissionResource
+  description       String?
+  descriptionArabic String?
+  conditions        Json?
+  rolePermissions   RolePermission[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([action, resource])
+  @@map("permissions")
+}
+
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  MANAGE
+  EXPORT
+  IMPORT
+  APPROVE
+  REJECT
+}
+
+enum PermissionResource {
+  PRODUCTS
+  CUSTOMERS
+  ORDERS
+  INVOICES
+  PAYMENTS
+  USERS
+  STORES
+  REPORTS
+  SETTINGS
+  ALL
+}
+
+// Password Policy
+model PasswordPolicy {
+  id                String   @id @default(cuid())
+  tenantId          String   @unique
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  minLength         Int      @default(8)
+  requireUppercase  Boolean  @default(true)
+  requireLowercase  Boolean  @default(true)
+  requireNumbers    Boolean  @default(true)
+  requireSpecialChars Boolean @default(true)
+  preventReuse      Int      @default(5)
+  maxAge            Int      @default(90) // days
+  lockoutAttempts   Int      @default(5)
+  lockoutDuration   Int      @default(30) // minutes
+  sessionTimeout    Int      @default(480) // minutes (8 hours)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("password_policies")
 }

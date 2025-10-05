@@ -88,3 +88,44 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// Reset password with token (PUT method for the reset password page)
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const validationResult = resetPasswordSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Validation failed',
+          messageArabic: 'فشل في التحقق',
+          errors: validationResult.error.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+
+    const resetData: PasswordResetData = validationResult.data;
+    const result = await authService.resetPassword(resetData);
+
+    return NextResponse.json(result, {
+      status: result.success ? 200 : 400,
+    });
+
+  } catch (error) {
+    console.error('Password reset error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Internal server error',
+        messageArabic: 'خطأ في الخادم الداخلي',
+      },
+      { status: 500 }
+    );
+  }
+}
