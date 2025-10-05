@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { withTenant } from '@/lib/with-tenant';
 import { apiResponse, apiError } from '@/lib/api-response';
