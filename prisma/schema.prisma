@@ -113,6 +113,11 @@ model User {
   createdPopupLocations PopupLocation[]   @relation("PopupCreatedBy")
   // Phase 2 Relations
   createdFranchises  Franchise[]          @relation("FranchiseCreatedBy")
+  // Phase 4, 5, 6 Relations
+  salesTargets       SalesTarget[]        @relation("UserSalesTargets")
+  staffPerformance   StaffPerformance[]   @relation("UserPerformance")
+  auditLogs          AuditLog[]           @relation("UserAuditLogs")
+  dataExports        DataExport[]         @relation("UserDataExports")
 
   @@index([tenantId])
   @@map("users")
@@ -1966,6 +1971,15 @@ model Tenant {
   franchisePerformance FranchisePerformance[]
   paymentIntegrations PaymentIntegration[]
   paymentTransactions PaymentTransaction[]
+  // Phase 4, 5, 6 Relations
+  salesTargets        SalesTarget[]
+  staffPerformance    StaffPerformance[]
+  demandForecasts     DemandForecast[]
+  autoReorderRules    AutoReorderRule[]
+  customerRecommendations CustomerRecommendation[]
+  brandingConfig      BrandingConfig?
+  auditLogs           AuditLog[]
+  dataExports         DataExport[]
 
   @@map("tenants")
 }
@@ -5350,4 +5364,344 @@ enum PaymentTransactionStatus {
   FAILED
   REFUNDED
   CANCELLED
+}
+
+// ============================================
+// PHASE 4: SALES LEADERBOARD & STAFF PERFORMANCE
+// ============================================
+
+model SalesTarget {
+  id              String   @id @default(cuid())
+
+  // Target details
+  month           DateTime // First day of month
+  year            Int
+  targetAmount    Float
+  achievedAmount  Float    @default(0)
+  achievementRate Float    @default(0) // Percentage
+
+  // Staff/Team
+  userId          String?
+  user            User?    @relation("UserSalesTargets", fields: [userId], references: [id])
+
+  // Product/Category targets
+  productId       String?
+  categoryId      String?
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, month, userId, productId, categoryId])
+  @@index([tenantId, month])
+  @@index([tenantId, userId])
+  @@map("sales_targets")
+}
+
+model StaffPerformance {
+  id              String   @id @default(cuid())
+
+  // Period
+  month           DateTime // First day of month
+  year            Int
+
+  // Staff
+  userId          String
+  user            User     @relation("UserPerformance", fields: [userId], references: [id])
+
+  // Sales metrics
+  totalSales      Float    @default(0)
+  totalOrders     Int      @default(0)
+  avgOrderValue   Float    @default(0)
+  totalCustomers  Int      @default(0)
+  newCustomers    Int      @default(0)
+
+  // Product metrics
+  productsSold    Int      @default(0)
+  topProducts     Json?    // [{productId, name, quantity, revenue}]
+
+  // Performance
+  targetAmount    Float    @default(0)
+  achievementRate Float    @default(0)
+  ranking         Int?     // Rank among staff
+  points          Int      @default(0) // Gamification points
+  badges          String[] // Achievement badges
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, month, userId])
+  @@index([tenantId, month, ranking])
+  @@index([tenantId, userId])
+  @@map("staff_performance")
+}
+
+// ============================================
+// PHASE 5: AI FORECASTING & AUTOMATION
+// ============================================
+
+model DemandForecast {
+  id              String   @id @default(cuid())
+
+  // Product
+  productId       String
+  storeId         String?
+
+  // Forecast period
+  forecastDate    DateTime // Date for forecast
+  forecastMonth   DateTime // Month for aggregate forecast
+
+  // Historical data
+  historicalSales Float    // Actual sales in period
+  historicalDays  Int      // Days of historical data used
+
+  // Forecast
+  predictedDemand Float    // Predicted quantity
+  confidence      Float    @default(0) // 0-100%
+  minDemand       Float    // Lower bound
+  maxDemand       Float    // Upper bound
+
+  // Factors
+  seasonality     Float    @default(0) // Seasonal index
+  trend           Float    @default(0) // Trend factor
+  externalFactors Json?    // {events, promotions, weather, etc}
+
+  // Accuracy tracking
+  actualDemand    Float?   // Actual demand (filled after forecast period)
+  accuracy        Float?   // Accuracy percentage
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, productId, forecastDate])
+  @@index([tenantId, forecastMonth])
+  @@map("demand_forecasts")
+}
+
+model AutoReorderRule {
+  id              String   @id @default(cuid())
+
+  // Product
+  productId       String
+  storeId         String?  // Null = all stores
+
+  // Reorder thresholds
+  reorderPoint    Float    // Trigger reorder at this quantity
+  reorderQuantity Float    // Quantity to reorder
+  maxStock        Float?   // Maximum stock level
+
+  // AI-based rules
+  useAiForecasting Boolean @default(false)
+  leadTimeDays    Int      @default(7) // Lead time for supplier
+  safetyStockDays Int      @default(3) // Safety stock buffer
+
+  // Automation
+  isActive        Boolean  @default(true)
+  autoCreate      Boolean  @default(false) // Auto-create PO
+  supplierId      String?  // Default supplier
+
+  // Performance
+  lastTriggered   DateTime?
+  timesTriggered  Int      @default(0)
+  avgAccuracy     Float    @default(0) // Historical accuracy
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, productId, storeId])
+  @@index([tenantId, isActive])
+  @@map("auto_reorder_rules")
+}
+
+model CustomerRecommendation {
+  id              String   @id @default(cuid())
+
+  // Customer
+  customerId      String
+
+  // Recommended product
+  productId       String
+
+  // Recommendation details
+  score           Float    @default(0) // Recommendation strength (0-1)
+  reason          String   // "frequently_bought_together", "similar_purchases", "trending", etc
+
+  // AI factors
+  basedOn         Json?    // {purchase_history, browsing, similar_customers, etc}
+  confidence      Float    @default(0) // 0-100%
+
+  // Performance tracking
+  viewed          Boolean  @default(false)
+  viewedAt        DateTime?
+  purchased       Boolean  @default(false)
+  purchasedAt     DateTime?
+
+  // Validity
+  validUntil      DateTime
+  isActive        Boolean  @default(true)
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, customerId, isActive])
+  @@index([tenantId, productId])
+  @@map("customer_recommendations")
+}
+
+// ============================================
+// PHASE 6: WHITE-LABELING & PLATFORM FEATURES
+// ============================================
+
+model BrandingConfig {
+  id              String   @id @default(cuid())
+
+  // Branding
+  brandName       String
+  brandNameArabic String?
+  logo            String?  // URL or file path
+  favicon         String?
+
+  // Colors
+  primaryColor    String   @default("#8B4513")
+  secondaryColor  String   @default("#D4AF37")
+  accentColor     String   @default("#2C1810")
+
+  // UI customization
+  fontFamily      String   @default("Inter")
+  borderRadius    String   @default("0.5rem")
+
+  // Contact
+  contactEmail    String?
+  contactPhone    String?
+  address         String?
+
+  // Social media
+  website         String?
+  facebook        String?
+  instagram       String?
+  twitter         String?
+
+  // Custom domain
+  customDomain    String?  @unique
+  sslEnabled      Boolean  @default(false)
+
+  // Features toggle
+  enabledFeatures Json?    // {inventory, pos, wholesale, franchise, etc}
+
+  // Multi-tenancy
+  tenantId        String   @unique
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("branding_configs")
+}
+
+model AuditLog {
+  id              String   @id @default(cuid())
+
+  // Action details
+  action          String   // CREATE, UPDATE, DELETE, LOGIN, EXPORT, etc
+  entityType      String   // Product, Order, Customer, etc
+  entityId        String?  // ID of affected entity
+
+  // Changes
+  oldValue        Json?    // Before state
+  newValue        Json?    // After state
+  changes         Json?    // Specific field changes
+
+  // User
+  userId          String?
+  user            User?    @relation("UserAuditLogs", fields: [userId], references: [id])
+  userEmail       String?
+  userIp          String?
+  userAgent       String?
+
+  // Context
+  metadata        Json?    // Additional context
+  status          String   @default("SUCCESS") // SUCCESS, FAILED, PARTIAL
+  errorMessage    String?
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId, action, createdAt])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, userId, createdAt])
+  @@map("audit_logs")
+}
+
+model DataExport {
+  id              String   @id @default(cuid())
+
+  // Export details
+  exportType      String   // "products", "orders", "customers", "full_backup", etc
+  format          String   // "csv", "excel", "json", "sql"
+
+  // Filters
+  filters         Json?    // Date range, categories, etc
+  includeRelations Boolean @default(false)
+
+  // Status
+  status          ExportStatus @default(PENDING)
+  progress        Float    @default(0) // 0-100%
+
+  // File
+  fileName        String?
+  fileSize        Int?     // Bytes
+  filePath        String?
+  downloadUrl     String?
+  expiresAt       DateTime?
+
+  // Processing
+  totalRecords    Int      @default(0)
+  processedRecords Int     @default(0)
+  errorMessage    String?
+
+  // User
+  requestedBy     User     @relation("UserDataExports", fields: [requestedById], references: [id])
+  requestedById   String
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  @@index([tenantId, status])
+  @@index([tenantId, requestedById])
+  @@map("data_exports")
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
 }
