@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -68,9 +68,74 @@ const AgingProgramPage = () => {
   const [isNewProgramDialogOpen, setIsNewProgramDialogOpen] = useState(false);
   const [isQualityCheckDialogOpen, setIsQualityCheckDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [agingPrograms, setAgingPrograms] = useState<any[]>([]);
+  const [agingStats, setAgingStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Aging programs data
-  const agingPrograms = [
+  // Fetch aging batches and stats from backend
+  useEffect(() => {
+    const fetchAgingData = async () => {
+      try {
+        setLoading(true);
+        const [batchesRes, statsRes] = await Promise.all([
+          fetch('/api/aging'),
+          fetch('/api/aging/stats')
+        ]);
+
+        if (batchesRes.ok && statsRes.ok) {
+          const batchesData = await batchesRes.json();
+          const statsData = await statsRes.json();
+
+          const programs = (batchesData.batches || []).map((b: any) => {
+            const startDate = new Date(b.startDate);
+            const today = new Date();
+            const daysAging = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            const currentAge = Math.floor(daysAging / 365);
+
+            return {
+              id: b.batchNumber || b.id,
+              productName: b.product?.name || 'Unknown',
+              arabicName: b.product?.nameArabic || b.product?.name || 'Unknown',
+              batchId: b.batchNumber,
+              startDate: b.startDate,
+              currentAge,
+              targetAge: Math.floor((b.targetDuration || 0) / 365),
+              agingMethod: b.containerType || 'Traditional',
+              location: b.location || 'Unknown',
+              container: b.containerNumber || 'N/A',
+              volume: `${b.quantity || 0} units`,
+              initialGrade: b.qualityBefore || 'N/A',
+              currentGrade: b.qualityAfter || b.qualityBefore || 'N/A',
+              status: b.status?.toLowerCase() || 'active',
+              nextCheck: b.expectedReadyDate,
+              conditions: {
+                temperature: 20,
+                targetTemp: '18-22°C',
+                humidity: 60,
+                targetHumidity: '55-65%',
+                airFlow: 'Controlled',
+                lighting: 'None'
+              },
+              qualityChecks: [],
+              milestones: []
+            };
+          });
+
+          setAgingPrograms(programs);
+          setAgingStats(statsData);
+        }
+      } catch (error) {
+        console.error('Error fetching aging data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAgingData();
+  }, []);
+
+  // Fallback aging programs data
+  const mockAgingPrograms = [
     {
       id: 'AGE-001',
       productName: 'Royal Cambodian Oud',
@@ -214,6 +279,9 @@ const AgingProgramPage = () => {
       ]
     }
   ];
+
+  // Use real data if available, otherwise fallback to mock
+  const displayPrograms = agingPrograms.length > 0 ? agingPrograms : mockAgingPrograms;
 
   // Aging facilities
   const agingFacilities = [
