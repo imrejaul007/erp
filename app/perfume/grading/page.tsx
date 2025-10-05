@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -72,6 +72,8 @@ const PerfumeGradingPage = () => {
     rarity: { score: 0, notes: '' }
   });
   const [isGradingDialogOpen, setIsGradingDialogOpen] = useState(false);
+  const [gradableProducts, setGradableProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Professional grading criteria with detailed sub-factors
   const gradingCriteria = [
@@ -142,8 +144,45 @@ const PerfumeGradingPage = () => {
     }
   ];
 
-  // Sample products for grading
-  const sampleProducts = [
+  // Fetch products from backend for grading
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/products?limit=100');
+
+        if (response.ok) {
+          const data = await response.json();
+          const products = (data.products || []).map((p: any) => ({
+            id: p.sku || p.id,
+            name: p.name,
+            arabicName: p.nameArabic || p.name,
+            type: p.category || 'Oud',
+            origin: p.origin || 'Unknown',
+            age: p.age || 'N/A',
+            distiller: p.supplier?.name || 'Unknown',
+            currentGrade: p.grade || 'TBD',
+            gradeScore: p.gradeScore || 0,
+            lastGraded: p.lastGraded || null,
+            grader: p.grader || null,
+            status: p.gradeScore > 0 ? 'certified' : 'awaiting_grading',
+            batchId: p.batchId || p.sku,
+            woodType: p.woodType || 'N/A'
+          }));
+          setGradableProducts(products);
+        }
+      } catch (error) {
+        console.error('Error fetching products for grading:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Fallback sample products for grading
+  const mockSampleProducts = [
     {
       id: 'GRADE-001',
       name: 'Royal Cambodian Oud',
@@ -209,6 +248,8 @@ const PerfumeGradingPage = () => {
       woodType: 'Aquilaria Sinensis'
     }
   ];
+
+  const sampleProducts = gradableProducts.length > 0 ? gradableProducts : mockSampleProducts;
 
   // Grading scale definitions
   const gradingScale = [
