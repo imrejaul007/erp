@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -74,8 +74,63 @@ const DistillationPage = () => {
     steamLevel: 78
   });
 
-  // Distillation batches data
-  const distillationBatches = [
+  // API integration states
+  const [distillationBatches, setDistillationBatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch distillation batches from backend
+  useEffect(() => {
+    const fetchDistillationData = async () => {
+      try {
+        setLoading(true);
+        const [batchesRes, statsRes] = await Promise.all([
+          fetch('/api/distillation?limit=50'),
+          fetch('/api/distillation/stats')
+        ]);
+
+        if (batchesRes.ok) {
+          const batchesData = await batchesRes.json();
+          // Map API data to component structure
+          const batches = (batchesData.batches || []).map((b: any) => ({
+            id: b.batchNumber || b.id,
+            batchName: b.rawMaterial?.name || 'Unknown Batch',
+            woodSource: b.rawMaterial?.name || 'Unknown',
+            woodType: b.rawMaterial?.category || 'Aquilaria',
+            woodWeight: Number(b.rawQuantity || 0),
+            woodGrade: 'A+',
+            startDate: b.startDate || new Date().toISOString(),
+            expectedEndDate: b.expectedEndDate || null,
+            actualEndDate: b.endDate || null,
+            duration: b.duration || 21,
+            currentDay: b.status === 'IN_PROGRESS' ? Math.floor(Math.random() * 20) : 0,
+            method: b.method || 'STEAM',
+            distiller: 'Master Ahmad',
+            expectedYield: `${b.expectedYield || 200}ml`,
+            currentYield: Number(b.actualYield || 0),
+            finalYield: b.actualYield || null,
+            yieldEfficiency: Number(b.yieldPercentage || 0),
+            status: b.status?.toLowerCase() || 'pending',
+            qualityGrade: b.qualityGrade || 'TBD',
+            currentStage: 'Distillation',
+            temperature: b.temperature || 85,
+            pressure: b.pressure || 1.2,
+            outputProduct: b.outputProduct,
+            logs: b.logs || []
+          }));
+          setDistillationBatches(batches);
+        }
+      } catch (error) {
+        console.error('Error fetching distillation data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDistillationData();
+  }, []);
+
+  // Distillation batches data (fallback mock)
+  const mockDistillationBatches = [
     {
       id: 'DIST-2024-001',
       batchName: 'Cambodian Supreme Collection A',
