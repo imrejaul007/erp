@@ -24,3 +24,6 @@ if (typeof window === 'undefined') {
     await prisma.$disconnect()
   })
 }
+
+// Default export for compatibility
+export default prisma
