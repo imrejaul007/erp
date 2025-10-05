@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,17 +27,86 @@ import {
   AlertTriangle,
   CheckCircle,
   ArrowLeft} from 'lucide-react';
+import { toast } from 'sonner';
+
+interface InvoiceStats {
+  totalInvoices: number;
+  totalAmount: number;
+  paidAmount: number;
+  unpaidAmount: number;
+  overdueAmount: number;
+  draftCount: number;
+  paidCount: number;
+  unpaidCount: number;
+  overdueCount: number;
+}
+
+interface FinancialData {
+  revenue: number;
+  expenses: number;
+  profit: number;
+  profitMargin: number;
+  vatCollected: number;
+  vatPaid: number;
+  netVat: number;
+}
 
 export default function FinancePage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPeriod, setFilterPeriod] = useState('monthly');
+  const [loading, setLoading] = useState(true);
+  const [invoiceStats, setInvoiceStats] = useState<InvoiceStats | null>(null);
+  const [financialData, setFinancialData] = useState<FinancialData | null>(null);
 
-  // Mock financial data
+  useEffect(() => {
+    fetchFinancialData();
+  }, []);
+
+  const fetchFinancialData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch invoice stats
+      const invoiceStatsRes = await fetch('/api/invoices/stats');
+      if (!invoiceStatsRes.ok) throw new Error('Failed to fetch invoice stats');
+      const invoiceStatsData = await invoiceStatsRes.json();
+      setInvoiceStats(invoiceStatsData.data);
+
+      // Try to fetch profit/loss report for current month
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+
+      try {
+        const plRes = await fetch(`/api/reports/profit-loss?year=${currentYear}&month=${currentMonth}`);
+        if (plRes.ok) {
+          const plData = await plRes.json();
+          setFinancialData({
+            revenue: plData.data.totalRevenue || 0,
+            expenses: plData.data.totalExpenses || 0,
+            profit: plData.data.netProfit || 0,
+            profitMargin: plData.data.profitMargin || 0,
+            vatCollected: plData.data.vatCollected || 0,
+            vatPaid: plData.data.vatPaid || 0,
+            netVat: (plData.data.vatCollected || 0) - (plData.data.vatPaid || 0)
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching P&L data:', error);
+      }
+    } catch (error: any) {
+      console.error('Error fetching financial data:', error);
+      toast.error('Failed to load financial data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const financialStats = [
     {
       title: "Monthly Revenue",
-      value: "AED 89,230",
+      value: financialData ? `AED ${financialData.revenue.toLocaleString('en-AE', { minimumFractionDigits: 2 })}` : "Loading...",
       change: "+12.5%",
       trend: "up",
       icon: DollarSign,
@@ -45,7 +114,7 @@ export default function FinancePage() {
     },
     {
       title: "Monthly Expenses",
-      value: "AED 32,450",
+      value: financialData ? `AED ${financialData.expenses.toLocaleString('en-AE', { minimumFractionDigits: 2 })}` : "Loading...",
       change: "+8.2%",
       trend: "up",
       icon: CreditCard,
@@ -53,7 +122,7 @@ export default function FinancePage() {
     },
     {
       title: "Net Profit",
-      value: "AED 56,780",
+      value: financialData ? `AED ${financialData.profit.toLocaleString('en-AE', { minimumFractionDigits: 2 })}` : "Loading...",
       change: "+15.8%",
       trend: "up",
       icon: TrendingUp,
@@ -61,7 +130,7 @@ export default function FinancePage() {
     },
     {
       title: "VAT Collected",
-      value: "AED 4,461",
+      value: financialData ? `AED ${financialData.vatCollected.toLocaleString('en-AE', { minimumFractionDigits: 2 })}` : "Loading...",
       change: "+12.5%",
       trend: "up",
       icon: Receipt,
@@ -369,17 +438,27 @@ export default function FinancePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 <div className="bg-green-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-green-900">Cash Flow</h3>
-                  <p className="text-xl sm:text-2xl font-bold text-green-600">{formatAED(56780)}</p>
-                  <p className="text-sm text-green-700">Positive this month</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">
+                    {financialData ? formatAED(financialData.profit) : 'Loading...'}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    {financialData && financialData.profit > 0 ? 'Positive this month' : 'Pending calculation'}
+                  </p>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-blue-900">Profit Margin</h3>
-                  <p className="text-xl sm:text-2xl font-bold text-blue-600">63.6%</p>
-                  <p className="text-sm text-blue-700">Above industry average</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">
+                    {financialData ? `${financialData.profitMargin.toFixed(1)}%` : 'Loading...'}
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    {financialData && financialData.profitMargin > 50 ? 'Above industry average' : 'Current performance'}
+                  </p>
                 </div>
                 <div className="bg-amber-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-amber-900">Tax Liability</h3>
-                  <p className="text-xl sm:text-2xl font-bold text-amber-600">{formatAED(2839)}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-amber-600">
+                    {financialData ? formatAED(financialData.netVat) : 'Loading...'}
+                  </p>
                   <p className="text-sm text-amber-700">VAT payable this period</p>
                 </div>
               </div>

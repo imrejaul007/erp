@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +37,40 @@ import {
   Phone,
   Mail,
   ArrowLeft} from 'lucide-react';
+import { toast } from 'sonner';
+
+interface Supplier {
+  id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+}
+
+interface PurchaseOrder {
+  id: string;
+  orderNumber: string;
+}
+
+interface VendorInvoice {
+  id: string;
+  invoiceNumber: string;
+  supplierId: string;
+  supplier: Supplier;
+  purchaseOrder?: PurchaseOrder | null;
+  subtotal: number;
+  taxAmount: number;
+  discount: number;
+  totalAmount: number;
+  paidAmount: number;
+  balanceDue: number;
+  status: string;
+  invoiceDate: string;
+  dueDate: string;
+  paymentTerms: string;
+  notes?: string | null;
+  currency: string;
+  createdAt: string;
+}
 
 export default function AccountsPayablePage() {
   const router = useRouter();
@@ -45,9 +79,81 @@ export default function AccountsPayablePage() {
   const [filterVendor, setFilterVendor] = useState('all');
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
   const [selectedBills, setSelectedBills] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [vendorInvoices, setVendorInvoices] = useState<VendorInvoice[]>([]);
 
-  // Accounts Payable Data
-  const payables = [
+  useEffect(() => {
+    fetchVendorInvoices();
+  }, []);
+
+  const fetchVendorInvoices = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/vendor-invoices');
+      if (!response.ok) throw new Error('Failed to fetch vendor invoices');
+      const data = await response.json();
+      setVendorInvoices(data.data || []);
+    } catch (error: any) {
+      console.error('Error fetching vendor invoices:', error);
+      toast.error('Failed to load vendor invoices');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Map vendor invoices to payables format for compatibility with existing UI
+  const payables = vendorInvoices.map(invoice => {
+    const dueDate = new Date(invoice.dueDate);
+    const now = new Date();
+    const isPastDue = dueDate < now && invoice.status !== 'PAID';
+    const isDueToday = dueDate.toDateString() === now.toDateString();
+
+    let status = 'Outstanding';
+    if (invoice.status === 'PAID') {
+      status = 'Paid';
+    } else if (invoice.paidAmount > 0 && invoice.balanceDue > 0) {
+      status = 'Partial';
+    } else if (isPastDue) {
+      status = 'Overdue';
+    } else if (isDueToday) {
+      status = 'Due Today';
+    }
+
+    // Calculate days past due
+    const daysPastDue = isPastDue ? Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+    // Determine priority
+    let priority = 'Medium';
+    if (status === 'Overdue') priority = 'Critical';
+    else if (status === 'Due Today') priority = 'High';
+    else if (Number(invoice.balanceDue) < 1000) priority = 'Low';
+
+    return {
+      id: invoice.id,
+      vendorName: invoice.supplier.name,
+      vendorEmail: invoice.supplier.email || '',
+      vendorPhone: invoice.supplier.phone || '',
+      billDate: invoice.invoiceDate.split('T')[0],
+      dueDate: invoice.dueDate.split('T')[0],
+      totalAmount: Number(invoice.totalAmount),
+      paidAmount: Number(invoice.paidAmount),
+      remainingAmount: Number(invoice.balanceDue),
+      vatAmount: Number(invoice.taxAmount),
+      currency: invoice.currency,
+      status,
+      priority,
+      daysPastDue,
+      paymentTerms: invoice.paymentTerms,
+      description: invoice.notes || `Invoice ${invoice.invoiceNumber}`,
+      category: 'General',
+      purchaseOrderNo: invoice.purchaseOrder?.orderNumber || 'N/A',
+      approvedBy: 'System',
+      nextPaymentDate: invoice.dueDate.split('T')[0]
+    };
+  });
+
+  // Keep the mock data as fallback
+  const mockPayables = [
     {
       id: 'BILL-001',
       vendorName: 'Al-Taiba Suppliers',
@@ -336,6 +442,16 @@ export default function AccountsPayablePage() {
   const selectedAmount = payables
     .filter(bill => selectedBills.includes(bill.id))
     .reduce((sum, bill) => sum + bill.remainingAmount, 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-lg">Loading vendor invoices...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">

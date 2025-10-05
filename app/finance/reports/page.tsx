@@ -6,25 +6,96 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Download, FileText, BarChart3, PieChart, TrendingUp, Calendar } from 'lucide-react';
+import { ArrowLeft, Download, FileText, BarChart3, PieChart, TrendingUp, Calendar, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface ReportData {
+  profitLoss?: {
+    totalRevenue: number;
+    totalExpenses: number;
+    netProfit: number;
+    profitMargin: number;
+    vatCollected: number;
+    vatPaid: number;
+  };
+  balanceSheet?: {
+    totalAssets: number;
+    totalLiabilities: number;
+    equity: number;
+  };
+  cashFlow?: {
+    operatingActivities: number;
+    investingActivities: number;
+    financingActivities: number;
+    netCashFlow: number;
+  };
+}
 
 export default function FinancialReportsPage() {
   const router = useRouter();
   const [reportType, setReportType] = useState('profit-loss');
   const [period, setPeriod] = useState('monthly');
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [loading, setLoading] = useState(false);
+  const [reportData, setReportData] = useState<ReportData | null>(null);
 
-  const handleGenerateReport = () => {
-    toast.success('Report generated successfully');
+  const handleGenerateReport = async () => {
+    try {
+      setLoading(true);
+      const [year, monthNum] = month.split('-');
+
+      let apiUrl = '';
+
+      switch (reportType) {
+        case 'profit-loss':
+          apiUrl = `/api/reports/profit-loss?year=${year}&month=${monthNum}`;
+          break;
+        case 'balance-sheet':
+          apiUrl = `/api/reports/balance-sheet?year=${year}&month=${monthNum}`;
+          break;
+        case 'cash-flow':
+          apiUrl = `/api/reports/cash-flow?year=${year}&month=${monthNum}`;
+          break;
+        default:
+          toast.info('This report type is coming soon');
+          setLoading(false);
+          return;
+      }
+
+      const response = await fetch(apiUrl);
+
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+
+      const data = await response.json();
+
+      // Store report data based on type
+      const newReportData: ReportData = {};
+      if (reportType === 'profit-loss') {
+        newReportData.profitLoss = data.data;
+      } else if (reportType === 'balance-sheet') {
+        newReportData.balanceSheet = data.data;
+      } else if (reportType === 'cash-flow') {
+        newReportData.cashFlow = data.data;
+      }
+
+      setReportData(newReportData);
+      toast.success('Report generated successfully');
+    } catch (error: any) {
+      console.error('Error generating report:', error);
+      toast.error(error.message || 'Failed to generate report');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDownloadPDF = () => {
-    toast.success('Downloading report as PDF...');
+    toast.info('PDF export coming soon');
   };
 
   const handleDownloadExcel = () => {
-    toast.success('Downloading report as Excel...');
+    toast.info('Excel export coming soon');
   };
 
   const reportTypes = [
@@ -133,9 +204,22 @@ export default function FinancialReportsPage() {
                 />
               </div>
 
-              <Button className="w-full bg-amber-600 hover:bg-amber-700" onClick={handleGenerateReport}>
-                <FileText className="h-4 w-4 mr-2" />
-                Generate Report
+              <Button
+                className="w-full bg-amber-600 hover:bg-amber-700"
+                onClick={handleGenerateReport}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Generate Report
+                  </>
+                )}
               </Button>
 
               <div className="pt-4 border-t">
@@ -201,23 +285,148 @@ export default function FinancialReportsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
-                <FileText className="h-16 w-16 text-amber-600 mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Report Preview</h3>
-                <p className="text-muted-foreground mb-4">
-                  Click "Generate Report" to view the {reportTypes.find((t) => t.value === reportType)?.label}
-                </p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Change Period
-                  </Button>
-                  <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={handleGenerateReport}>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Generate
-                  </Button>
+              {!reportData ? (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
+                  <FileText className="h-16 w-16 text-amber-600 mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Report Preview</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Click "Generate Report" to view the {reportTypes.find((t) => t.value === reportType)?.label}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Change Period
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-amber-600 hover:bg-amber-700"
+                      onClick={handleGenerateReport}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Generate
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-6">
+                  {reportData.profitLoss && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Profit & Loss Statement</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Total Revenue</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            AED {reportData.profitLoss.totalRevenue.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Total Expenses</p>
+                          <p className="text-2xl font-bold text-red-600">
+                            AED {reportData.profitLoss.totalExpenses.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Net Profit</p>
+                          <p className="text-2xl font-bold text-blue-600">
+                            AED {reportData.profitLoss.netProfit.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Profit Margin</p>
+                          <p className="text-2xl font-bold text-amber-600">
+                            {reportData.profitLoss.profitMargin.toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+                      <div className="border-t pt-4">
+                        <h4 className="font-semibold mb-2">VAT Summary</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground">VAT Collected</p>
+                            <p className="text-lg font-semibold">
+                              AED {reportData.profitLoss.vatCollected.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">VAT Paid</p>
+                            <p className="text-lg font-semibold">
+                              AED {reportData.profitLoss.vatPaid.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {reportData.balanceSheet && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Balance Sheet</h3>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Total Assets</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            AED {reportData.balanceSheet.totalAssets.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Total Liabilities</p>
+                          <p className="text-2xl font-bold text-red-600">
+                            AED {reportData.balanceSheet.totalLiabilities.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Equity</p>
+                          <p className="text-2xl font-bold text-blue-600">
+                            AED {reportData.balanceSheet.equity.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {reportData.cashFlow && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Cash Flow Statement</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Operating Activities</p>
+                          <p className="text-2xl font-bold">
+                            AED {reportData.cashFlow.operatingActivities.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Investing Activities</p>
+                          <p className="text-2xl font-bold">
+                            AED {reportData.cashFlow.investingActivities.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">Financing Activities</p>
+                          <p className="text-2xl font-bold">
+                            AED {reportData.cashFlow.financingActivities.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div className="border rounded-lg p-4 bg-amber-50">
+                          <p className="text-sm text-muted-foreground">Net Cash Flow</p>
+                          <p className="text-2xl font-bold text-amber-600">
+                            AED {reportData.cashFlow.netCashFlow.toLocaleString('en-AE', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

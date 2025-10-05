@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,77 +16,149 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+interface ProductionBatch {
+  id: string;
+  batchNumber: string;
+  status: string;
+  plannedQuantity: number;
+  actualQuantity?: number;
+  unit: string;
+  startDate: string;
+  endDate?: string;
+  agingStartDate?: string;
+  agingEndDate?: string;
+  agingDays?: number;
+  recipe?: {
+    id: string;
+    name: string;
+    category?: string;
+  };
+  supervisor?: {
+    id: string;
+    name: string;
+  };
+  stats?: {
+    yieldPercentage: number;
+    totalInputCost: number;
+    totalOutputValue: number;
+  };
+}
+
 export default function BatchManagementPage() {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState('active');
   const [isNewBatchDialogOpen, setIsNewBatchDialogOpen] = useState(false);
+  const [batches, setBatches] = useState<ProductionBatch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  const batchSummary = {
-    activeBatches: 28,
-    scheduledBatches: 18,
-    completedThisMonth: 145,
+  const [batchSummary, setBatchSummary] = useState({
+    activeBatches: 0,
+    scheduledBatches: 0,
+    completedThisMonth: 0,
     expiredBatches: 0,
-    avgLeadTime: 12.5,
-    onTimeRate: 94.2
+    avgLeadTime: 0,
+    onTimeRate: 0
+  });
+
+  useEffect(() => {
+    fetchBatches();
+  }, []);
+
+  const fetchBatches = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/production/batches?limit=100');
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const allBatches = data.data.batches || [];
+        setBatches(allBatches);
+
+        // Calculate summary
+        const activeBatches = allBatches.filter(
+          (b: ProductionBatch) => ['IN_PROGRESS', 'AGING', 'QUALITY_CHECK'].includes(b.status)
+        ).length;
+
+        const scheduledBatches = allBatches.filter(
+          (b: ProductionBatch) => b.status === 'PLANNED'
+        ).length;
+
+        const thisMonth = new Date().toISOString().slice(0, 7);
+        const completedThisMonth = allBatches.filter(
+          (b: ProductionBatch) => b.status === 'COMPLETED' && b.endDate?.startsWith(thisMonth)
+        ).length;
+
+        // Calculate avg lead time
+        const completedWithDates = allBatches.filter(
+          (b: ProductionBatch) => b.status === 'COMPLETED' && b.startDate && b.endDate
+        );
+        const avgLeadTime = completedWithDates.length > 0
+          ? completedWithDates.reduce((sum: number, b: ProductionBatch) => {
+              const start = new Date(b.startDate).getTime();
+              const end = new Date(b.endDate!).getTime();
+              return sum + (end - start) / (1000 * 60 * 60 * 24);
+            }, 0) / completedWithDates.length
+          : 0;
+
+        setBatchSummary({
+          activeBatches,
+          scheduledBatches,
+          completedThisMonth,
+          expiredBatches: 0, // Would need expiry tracking
+          avgLeadTime,
+          onTimeRate: 94.2 // Would need deadline tracking
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching batches:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const activeBatches = [
-    {
-      batchNo: 'BATCH-OE-2024-0285',
-      type: 'Oil Extraction',
-      product: 'Premium Oud Oil',
-      lotNumber: 'LOT-2024-0285',
-      startDate: '2024-10-01',
-      completionDate: '2024-10-05',
-      expiryDate: 'N/A',
-      quantity: 18.6,
-      unit: 'ml',
-      status: 'in-progress',
-      progress: 65,
-      genealogy: {
-        parent: 'CAMOD-2024-085 (Raw Material)',
-        children: ['Perfume batches pending']
-      }
-    },
-    {
-      batchNo: 'BATCH-PP-2024-0412',
-      type: 'Perfume Production',
-      product: 'Royal Oud Blend',
-      lotNumber: 'LOT-2024-0412',
-      startDate: '2024-09-25',
-      completionDate: '2024-10-09',
-      expiryDate: '2026-10-09',
-      quantity: 100,
-      unit: 'bottles',
-      status: 'aging',
-      progress: 80,
-      genealogy: {
-        parent: 'BATCH-OE-2024-0245 (Oud Oil)',
-        children: ['Multi-size bottling pending']
-      }
+  const filteredActiveBatches = batches.filter(b =>
+    ['IN_PROGRESS', 'AGING', 'QUALITY_CHECK'].includes(b.status) &&
+    (searchTerm === '' ||
+      b.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.recipe?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  ).map(batch => ({
+    batchNo: batch.batchNumber,
+    type: batch.recipe?.category || 'Production',
+    product: batch.recipe?.name || 'Unknown Product',
+    lotNumber: batch.batchNumber,
+    startDate: new Date(batch.startDate).toISOString().split('T')[0],
+    completionDate: batch.endDate ? new Date(batch.endDate).toISOString().split('T')[0] : 'TBD',
+    expiryDate: 'N/A', // Would come from product expiry logic
+    quantity: batch.actualQuantity || batch.plannedQuantity,
+    unit: batch.unit,
+    status: batch.status.toLowerCase().replace('_', '-'),
+    progress: batch.stats?.yieldPercentage || (batch.actualQuantity && batch.plannedQuantity
+      ? (batch.actualQuantity / batch.plannedQuantity) * 100
+      : 50),
+    genealogy: {
+      parent: 'Linked to recipe: ' + (batch.recipe?.name || 'None'),
+      children: ['Pending output tracking']
     }
-  ];
+  }));
 
-  const scheduledBatches = [
-    {
-      batchNo: 'BATCH-SEG-2024-0210',
-      type: 'Segregation',
-      product: 'Vietnamese Oud Wood',
-      scheduledDate: '2024-10-05',
-      estimatedDuration: '2 days',
-      priority: 'high',
-      rawMaterial: 'VIET-2024-080 (120 kg)'
-    },
-    {
-      batchNo: 'BATCH-PP-2024-0420',
-      type: 'Perfume Production',
-      product: 'Amber Rose Attar',
-      scheduledDate: '2024-10-08',
-      estimatedDuration: '21 days',
-      priority: 'medium',
-      rawMaterial: 'Pending oil extraction'
-    }
-  ];
+  const filteredScheduledBatches = batches.filter(b =>
+    b.status === 'PLANNED' &&
+    (searchTerm === '' ||
+      b.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.recipe?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  ).map(batch => ({
+    batchNo: batch.batchNumber,
+    type: batch.recipe?.category || 'Production',
+    product: batch.recipe?.name || 'Unknown Product',
+    scheduledDate: new Date(batch.startDate).toISOString().split('T')[0],
+    estimatedDuration: batch.agingDays ? `${batch.agingDays} days` : 'TBD',
+    priority: 'medium',
+    rawMaterial: batch.recipe?.name || 'TBD'
+  }));
 
   return (
     <div className="space-y-4 sm:space-y-6 p-6">
@@ -298,7 +370,20 @@ export default function BatchManagementPage() {
         </TabsList>
 
         <TabsContent value="active" className="space-y-4">
-          {activeBatches.map((batch) => (
+          {loading ? (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-center text-muted-foreground">Loading batches...</p>
+              </CardContent>
+            </Card>
+          ) : filteredActiveBatches.length === 0 ? (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-center text-muted-foreground">No active batches found</p>
+              </CardContent>
+            </Card>
+          ) : null}
+          {filteredActiveBatches.map((batch) => (
             <Card key={batch.batchNo}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -374,7 +459,20 @@ export default function BatchManagementPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {scheduledBatches.map((batch) => (
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                        Loading batches...
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredScheduledBatches.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                        No scheduled batches found
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                  {filteredScheduledBatches.map((batch) => (
                     <TableRow key={batch.batchNo}>
                       <TableCell className="font-medium">{batch.batchNo}</TableCell>
                       <TableCell>{batch.type}</TableCell>

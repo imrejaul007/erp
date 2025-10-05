@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Beaker, FileText, Copy, Edit, Trash2, Clock, Users, AlertCircle, CheckCircle, Star, Archive, Eye,
   ArrowLeft} from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,43 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 
-// Mock data for recipes
-const recipes = [
+interface RecipeIngredient {
+  id?: string;
+  materialId: string;
+  quantity: number;
+  unit: string;
+  percentage?: number;
+  notes?: string;
+  material?: {
+    id: string;
+    name: string;
+    sku?: string;
+    unitPrice?: number;
+    costPerUnit?: number;
+  };
+}
+
+interface Recipe {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  yieldQuantity: number;
+  yieldUnit: string;
+  version?: string;
+  isActive?: boolean;
+  instructions?: string;
+  notes?: string;
+  costPerUnit?: number;
+  totalCost?: number;
+  ingredients?: RecipeIngredient[];
+  _count?: {
+    productionBatches?: number;
+  };
+}
+
+// Mock data for recipes (fallback)
+const mockRecipes = [
   {
     id: 'RCP-001',
     name: 'Royal Oud Premium',
@@ -183,15 +218,40 @@ export default function RecipesPage() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isNewRecipeDialogOpen, setIsNewRecipeDialogOpen] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<typeof recipes[0] | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isViewRecipeDialogOpen, setIsViewRecipeDialogOpen] = useState(false);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecipes();
+  }, []);
+
+  const fetchRecipes = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/production/recipes?limit=100');
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setRecipes(data.data.recipes || []);
+      }
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+      // Fall back to mock data if API fails
+      setRecipes(mockRecipes as Recipe[]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredRecipes = recipes.filter(recipe => {
     const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          recipe.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         recipe.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'all' || recipe.category.toLowerCase() === filterCategory.toLowerCase();
-    const matchesStatus = filterStatus === 'all' || recipe.status.toLowerCase() === filterStatus.toLowerCase();
+                         (recipe.category || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === 'all' || (recipe.category || '').toLowerCase() === filterCategory.toLowerCase();
+    const statusValue = recipe.isActive ? 'active' : 'inactive';
+    const matchesStatus = filterStatus === 'all' || statusValue === filterStatus.toLowerCase();
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
@@ -405,7 +465,9 @@ export default function RecipesPage() {
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{recipes.filter(r => r.status === 'Active').length}</div>
+            <div className="text-xl sm:text-2xl font-bold">
+              {loading ? '...' : recipes.filter(r => r.isActive).length}
+            </div>
             <p className="text-xs text-muted-foreground">
               Ready for production
             </p>
@@ -414,41 +476,47 @@ export default function RecipesPage() {
 
         <Card className="border-l-4 border-l-yellow-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Under Review</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Recipes</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{recipes.filter(r => r.status === 'Under Review').length}</div>
+            <div className="text-xl sm:text-2xl font-bold">
+              {loading ? '...' : recipes.length}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Pending approval
+              All formulations
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expert Level</CardTitle>
+            <CardTitle className="text-sm font-medium">With Batches</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{recipes.filter(r => r.complexity === 'Expert').length}</div>
+            <div className="text-xl sm:text-2xl font-bold">
+              {loading ? '...' : recipes.filter(r => (r._count?.productionBatches || 0) > 0).length}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Master crafted recipes
+              In production use
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-oud-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">Avg. Cost</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
-              {(recipes.reduce((acc, r) => acc + r.rating, 0) / recipes.length).toFixed(1)}
+              {loading ? '...' : recipes.length > 0
+                ? `AED ${(recipes.reduce((acc, r) => acc + (r.costPerUnit || 0), 0) / recipes.length).toFixed(0)}`
+                : 'N/A'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Recipe quality score
+              Per unit cost
             </p>
           </CardContent>
         </Card>
@@ -528,6 +596,19 @@ export default function RecipesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={9} className="text-center text-muted-foreground">
+                          Loading recipes...
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredRecipes.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={9} className="text-center text-muted-foreground">
+                          No recipes found
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
                     {filteredRecipes.map((recipe) => (
                       <TableRow key={recipe.id}>
                         <TableCell>
@@ -536,19 +617,18 @@ export default function RecipesPage() {
                             <div className="text-sm text-muted-foreground">{recipe.id}</div>
                           </div>
                         </TableCell>
-                        <TableCell>{recipe.category}</TableCell>
-                        <TableCell>v{recipe.version}</TableCell>
-                        <TableCell>{getStatusBadge(recipe.status)}</TableCell>
-                        <TableCell>{getComplexityBadge(recipe.complexity)}</TableCell>
-                        <TableCell>{recipe.yield} units</TableCell>
+                        <TableCell>{recipe.category || 'N/A'}</TableCell>
+                        <TableCell>v{recipe.version || '1.0'}</TableCell>
+                        <TableCell>{getStatusBadge(recipe.isActive ? 'Active' : 'Inactive')}</TableCell>
+                        <TableCell>-</TableCell>
+                        <TableCell>{recipe.yieldQuantity} {recipe.yieldUnit}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span>{recipe.rating}</span>
+                            <span>AED {recipe.costPerUnit?.toFixed(2) || '0.00'}</span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{recipe.usageCount} times</Badge>
+                          <Badge variant="outline">{recipe._count?.productionBatches || 0} batches</Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

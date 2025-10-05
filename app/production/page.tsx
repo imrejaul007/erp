@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,19 +13,99 @@ import {
   CheckCircle2, Activity, Clock, Boxes
 } from 'lucide-react';
 
+interface ProductionBatch {
+  id: string;
+  batchNumber: string;
+  status: string;
+  plannedQuantity: number;
+  actualQuantity?: number;
+  unit: string;
+  startDate: string;
+  endDate?: string;
+  recipe?: {
+    name: string;
+    category?: string;
+  };
+  stats?: {
+    yieldPercentage: number;
+  };
+}
+
+interface ProductionSummary {
+  activeBatches: number;
+  completedToday: number;
+  rawMaterialStock: number;
+  oilExtracted: number;
+  perfectsBlended: number;
+  yieldRate: number;
+  qcPassRate: number;
+  productionCost: number;
+}
+
 export default function ProductionPage() {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [batches, setBatches] = useState<ProductionBatch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [productionSummary, setProductionSummary] = useState<ProductionSummary>({
+    activeBatches: 0,
+    completedToday: 0,
+    rawMaterialStock: 0,
+    oilExtracted: 0,
+    perfectsBlended: 0,
+    yieldRate: 0,
+    qcPassRate: 0,
+    productionCost: 0
+  });
 
-  const productionSummary = {
-    activeBatches: 28,
-    completedToday: 12,
-    rawMaterialStock: 2450, // kg
-    oilExtracted: 145, // ml this month
-    perfectsBlended: 850, // units
-    yieldRate: 94.5,
-    qcPassRate: 96.8,
-    productionCost: 125000
+  useEffect(() => {
+    fetchProductionData();
+  }, []);
+
+  const fetchProductionData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/production/batches?limit=100');
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const allBatches = data.data.batches || [];
+        setBatches(allBatches);
+
+        // Calculate summary statistics
+        const activeBatches = allBatches.filter(
+          (b: ProductionBatch) => ['PLANNED', 'IN_PROGRESS', 'AGING'].includes(b.status)
+        ).length;
+
+        const today = new Date().toISOString().split('T')[0];
+        const completedToday = allBatches.filter(
+          (b: ProductionBatch) => b.status === 'COMPLETED' && b.endDate?.startsWith(today)
+        ).length;
+
+        // Calculate average yield rate
+        const batchesWithYield = allBatches.filter(
+          (b: ProductionBatch) => b.stats?.yieldPercentage
+        );
+        const avgYield = batchesWithYield.length > 0
+          ? batchesWithYield.reduce((sum: number, b: ProductionBatch) => sum + (b.stats?.yieldPercentage || 0), 0) / batchesWithYield.length
+          : 0;
+
+        setProductionSummary({
+          activeBatches,
+          completedToday,
+          rawMaterialStock: 0, // This would come from inventory API
+          oilExtracted: 0, // Calculate from batches if needed
+          perfectsBlended: allBatches.filter((b: ProductionBatch) => b.status === 'COMPLETED').length,
+          yieldRate: avgYield,
+          qcPassRate: 0, // Would come from QC API
+          productionCost: 0 // Would come from cost tracking
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching production data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const productionModules = [
@@ -239,89 +319,32 @@ export default function ProductionPage() {
     }
   ];
 
-  const activeBatches = [
-    {
-      batchNo: 'OE-2024-0285',
-      type: 'Oil Extraction',
-      product: 'Premium Oud Oil',
-      stage: 'Distillation',
-      progress: 65,
-      startDate: '2024-10-01',
-      estimatedCompletion: '2024-10-05',
+  const activeBatches = batches
+    .filter(b => ['PLANNED', 'IN_PROGRESS', 'AGING', 'QUALITY_CHECK'].includes(b.status))
+    .slice(0, 5)
+    .map(batch => ({
+      batchNo: batch.batchNumber,
+      type: batch.recipe?.category || 'Production',
+      product: batch.recipe?.name || 'Unknown Product',
+      stage: batch.status.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+      progress: batch.stats?.yieldPercentage || (batch.actualQuantity && batch.plannedQuantity
+        ? (batch.actualQuantity / batch.plannedQuantity) * 100
+        : batch.status === 'PLANNED' ? 0 : batch.status === 'IN_PROGRESS' ? 50 : 75),
+      startDate: new Date(batch.startDate).toISOString().split('T')[0],
+      estimatedCompletion: batch.endDate ? new Date(batch.endDate).toISOString().split('T')[0] : 'TBD',
       status: 'on-track'
-    },
-    {
-      batchNo: 'PP-2024-0412',
-      type: 'Perfume Production',
-      product: 'Royal Oud Blend',
-      stage: 'Aging',
-      progress: 80,
-      startDate: '2024-09-25',
-      estimatedCompletion: '2024-10-03',
-      status: 'on-track'
-    },
-    {
-      batchNo: 'SG-2024-0198',
-      type: 'Segregation',
-      product: 'Cambodian Oud Batch',
-      stage: 'Grading',
-      progress: 45,
-      startDate: '2024-10-02',
-      estimatedCompletion: '2024-10-02',
-      status: 'on-track'
-    },
-    {
-      batchNo: 'PP-2024-0405',
-      type: 'Perfume Production',
-      product: 'Amber Rose Attar',
-      stage: 'Blending',
-      progress: 30,
-      startDate: '2024-10-02',
-      estimatedCompletion: '2024-10-04',
-      status: 'delayed'
-    },
-    {
-      batchNo: 'OE-2024-0280',
-      type: 'Oil Extraction',
-      product: 'Hindi Oud Oil',
-      stage: 'Quality Check',
-      progress: 95,
-      startDate: '2024-09-28',
-      estimatedCompletion: '2024-10-02',
-      status: 'on-track'
-    }
-  ];
+    }));
 
-  const todayProduction = [
-    {
-      product: 'Royal Oud Premium 50ml',
-      batches: 3,
-      quantity: 145,
-      value: 72500,
-      status: 'completed'
-    },
-    {
-      product: 'Oud Oil Extract 12ml',
-      batches: 2,
-      quantity: 48,
-      value: 28800,
-      status: 'completed'
-    },
-    {
-      product: 'Amber Rose Attar 100ml',
-      batches: 2,
-      quantity: 85,
-      value: 21250,
-      status: 'in-progress'
-    },
-    {
-      product: 'Premium Oud Chips 25g',
+  const today = new Date().toISOString().split('T')[0];
+  const todayProduction = batches
+    .filter(b => b.startDate.startsWith(today) || b.endDate?.startsWith(today))
+    .map(batch => ({
+      product: batch.recipe?.name || 'Unknown Product',
       batches: 1,
-      quantity: 250,
-      value: 12500,
-      status: 'completed'
-    }
-  ];
+      quantity: batch.actualQuantity || batch.plannedQuantity,
+      value: batch.stats?.totalOutputValue || 0,
+      status: batch.status === 'COMPLETED' ? 'completed' : 'in-progress'
+    }));
 
   const benefits = [
     {
@@ -372,11 +395,13 @@ export default function ProductionPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Active Batches</CardDescription>
-            <CardTitle className="text-3xl">{productionSummary.activeBatches}</CardTitle>
+            <CardTitle className="text-3xl">
+              {loading ? '...' : productionSummary.activeBatches}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-green-600">
-              {productionSummary.completedToday} completed today
+              {loading ? 'Loading...' : `${productionSummary.completedToday} completed today`}
             </p>
           </CardContent>
         </Card>
