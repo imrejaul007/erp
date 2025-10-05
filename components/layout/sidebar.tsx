@@ -39,6 +39,13 @@ import {
   Wine,
   MessageSquare,
   Trophy,
+  TestTube,
+  Microscope,
+  Store as StoreIcon,
+  Building,
+  TrendingUp as Chart,
+  History,
+  Download,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -65,8 +72,10 @@ const navigationItems: NavItem[] = [
       { title: 'Walk-in Sales', href: '/pos/walk-in', icon: Users, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Sales Overview', href: '/sales', icon: TrendingUp, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Retail Sales', href: '/sales/retail', icon: Store, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
-      { title: 'Wholesale', href: '/sales/wholesale', icon: Building2, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Wholesale Orders', href: '/wholesale', icon: Building, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Franchises', href: '/franchises', icon: StoreIcon, roles: ['OWNER', 'MANAGER'] },
       { title: 'Corporate Sales', href: '/sales/corporate', icon: Building2, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Sales Targets', href: '/sales-targets', icon: Chart, roles: ['OWNER', 'MANAGER'] },
       { title: 'Layaway Payments', href: '/sales/layaway', icon: CreditCard, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'Subscriptions', href: '/sales/subscriptions', icon: PackageSearch, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
       { title: 'POS Offline Mode', href: '/sales/pos-offline', icon: PackageSearch, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
@@ -98,9 +107,13 @@ const navigationItems: NavItem[] = [
   },
   {
     title: 'Sampling & Trials',
-    href: '/sampling',
     icon: Droplet,
     roles: ['OWNER', 'MANAGER', 'SALES_STAFF'],
+    children: [
+      { title: 'Overview', href: '/sampling', icon: Droplet, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Testers', href: '/testers', icon: TestTube, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+      { title: 'Demos', href: '/demos', icon: Microscope, roles: ['OWNER', 'MANAGER', 'SALES_STAFF'] },
+    ],
   },
   {
     title: 'Inventory',
@@ -251,6 +264,7 @@ const navigationItems: NavItem[] = [
       { title: 'Inventory Reports', href: '/reports/inventory', icon: Package, roles: ['OWNER', 'MANAGER'] },
       { title: 'Financial Reports', href: '/reports/financial', icon: DollarSign, roles: ['OWNER', 'MANAGER'] },
       { title: 'Customer Reports', href: '/reports/customer', icon: Users, roles: ['OWNER', 'MANAGER'] },
+      { title: 'AI Forecasting', href: '/forecasting', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
     ],
   },
   {
@@ -272,6 +286,8 @@ const navigationItems: NavItem[] = [
       { title: 'Language', href: '/settings/language', icon: Globe, roles: ['OWNER', 'MANAGER'] },
       { title: 'Loyalty Settings', href: '/settings/loyalty', icon: TrendingUp, roles: ['OWNER', 'MANAGER'] },
       { title: 'Theme', href: '/settings/theme', icon: Settings, roles: ['OWNER', 'MANAGER'] },
+      { title: 'Audit Logs', href: '/audit-logs', icon: History, roles: ['OWNER'] },
+      { title: 'Data Exports', href: '/data-exports', icon: Download, roles: ['OWNER', 'MANAGER'] },
       { title: 'System', href: '/settings/system', icon: Settings, roles: ['OWNER'] },
     ],
   },
