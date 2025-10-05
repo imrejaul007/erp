@@ -72,38 +72,23 @@ export default function DashboardPage() {
   const [selectedDaySales, setSelectedDaySales] = useState<any>(null);
   const [isDaySalesDetailOpen, setIsDaySalesDetailOpen] = useState(false);
 
-  // Recent sales state
+  // State for dashboard data
   const [recentSales, setRecentSales] = React.useState<any[]>([]);
   const [salesLoading, setSalesLoading] = React.useState(true);
+  const [kpiData, setKpiData] = React.useState<any>({
+    todaysSales: { amount: 0, orders: 0, change: 0 },
+    inventoryValue: { amount: 0, change: 0 },
+    newCustomers: { count: 0, change: 0 },
+    dailyProfit: { amount: 0, margin: 0, change: 0 },
+    alerts: { lowStock: 0, expiring: 0, pendingOrders: 0 }
+  });
+  const [dashboardLoading, setDashboardLoading] = React.useState(true);
+  const [productionBatches, setProductionBatches] = React.useState<any[]>([]);
+  const [topCustomers, setTopCustomers] = React.useState<any[]>([]);
+  const [recentAlerts, setRecentAlerts] = React.useState<any[]>([]);
+  const [stores, setStores] = React.useState<any[]>([]);
 
-  // Sample KPI data
-  const kpiData = {
-    todaysSales: {
-      amount: 15420,
-      orders: 28,
-      change: +12.5
-    },
-    inventoryValue: {
-      amount: 2450000,
-      change: +3.2
-    },
-    newCustomers: {
-      count: 7,
-      change: +40.0
-    },
-    dailyProfit: {
-      amount: 4830,
-      margin: 31.3,
-      change: +8.7
-    },
-    alerts: {
-      lowStock: 12,
-      expiring: 3,
-      pendingOrders: 5
-    }
-  };
-
-  // Sales chart data (simplified)
+  // Sales chart data (simplified - could be fetched from analytics API)
   const salesChartData = [
     { period: 'Mon', sales: 12500, target: 15000 },
     { period: 'Tue', sales: 18200, target: 15000 },
@@ -114,38 +99,65 @@ export default function DashboardPage() {
     { period: 'Sun', sales: 16900, target: 15000 }
   ];
 
-  // Store performance data
-  const storePerformance = [
-    { name: 'Dubai Mall', sales: 45200, target: 40000, status: 'excellent' },
-    { name: 'Mall of Emirates', sales: 32800, target: 35000, status: 'good' },
-    { name: 'Ibn Battuta', sales: 28500, target: 30000, status: 'average' },
-    { name: 'Abu Dhabi Mall', sales: 38900, target: 35000, status: 'excellent' }
-  ];
+  // Store performance data (mock - could be enhanced with real API)
+  const storePerformance = stores.slice(0, 4).map((store: any) => ({
+    name: store.name || 'Unknown Store',
+    sales: Math.floor(Math.random() * 50000) + 20000,
+    target: 40000,
+    status: 'good'
+  }));
 
-  // Production batches
-  const productionBatches = [
-    { id: 'BATCH-001', product: 'Royal Cambodian Oud', progress: 85, eta: '2 days' },
-    { id: 'BATCH-002', product: 'Taif Rose Attar', progress: 65, eta: '5 days' },
-    { id: 'BATCH-003', product: 'Hindi Black Oud', progress: 30, eta: '12 days' }
-  ];
-
-  // Top customers
-  const topCustomers = [
-    { name: 'Ahmed Al-Rashid', type: 'VIP', spent: 15600, points: 2340 },
-    { name: 'Fatima Al-Zahra', type: 'Premium', spent: 12800, points: 1920 },
-    { name: 'Omar Hassan', type: 'VIP', spent: 11200, points: 1680 },
-    { name: 'Luxury Hotel Group', type: 'Corporate', spent: 28500, points: 4275 }
-  ];
-
-  // Recent alerts
-  const recentAlerts = [
-    { type: 'warning', message: 'Royal Oud stock below 5 units', time: '2h ago' },
-    { type: 'info', message: 'New import shipment arrived', time: '4h ago' },
-    { type: 'urgent', message: 'VAT filing due in 3 days', time: '1d ago' }
-  ];
-
-  // Fetch recent sales on mount
+  // Fetch dashboard data on mount
   React.useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch analytics data
+        const analyticsResponse = await fetch(`/api/analytics/dashboard?dateRange=${selectedPeriod}`);
+        if (analyticsResponse.ok) {
+          const analyticsData = await analyticsResponse.json();
+          const { kpis, financialMetrics, customerMetrics, inventoryValue } = analyticsData.data || {};
+
+          // Map API data to dashboard KPI format
+          if (kpis && kpis.length > 0) {
+            const revenueKpi = kpis.find((k: any) => k.id === 'revenue');
+            const ordersKpi = kpis.find((k: any) => k.id === 'orders');
+            const customersKpi = kpis.find((k: any) => k.id === 'customers');
+            const profitKpi = kpis.find((k: any) => k.id === 'profit');
+
+            setKpiData({
+              todaysSales: {
+                amount: revenueKpi?.value || 0,
+                orders: ordersKpi?.value || 0,
+                change: parseFloat(revenueKpi?.change?.replace('%', '').replace('+', '') || '0')
+              },
+              inventoryValue: {
+                amount: inventoryValue || 0,
+                change: 0
+              },
+              newCustomers: {
+                count: customerMetrics?.newCustomers || 0,
+                change: parseFloat(customersKpi?.change?.replace('%', '').replace('+', '') || '0')
+              },
+              dailyProfit: {
+                amount: profitKpi?.value || 0,
+                margin: financialMetrics?.profitMargin || 0,
+                change: parseFloat(profitKpi?.change?.replace('%', '').replace('+', '') || '0')
+              },
+              alerts: {
+                lowStock: 0, // Would need separate API
+                expiring: 0,
+                pendingOrders: 0
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setDashboardLoading(false);
+      }
+    };
+
     const fetchRecentSales = async () => {
       try {
         const response = await fetch('/api/sales/pos/transaction?limit=10');
@@ -159,8 +171,81 @@ export default function DashboardPage() {
         setSalesLoading(false);
       }
     };
+
+    const fetchProductionBatches = async () => {
+      try {
+        const response = await fetch('/api/production-batches?limit=3&status=IN_PROGRESS');
+        if (response.ok) {
+          const data = await response.json();
+          const batches = (data.data || []).map((batch: any) => ({
+            id: batch.batchNumber || batch.id,
+            product: batch.product?.name || 'Unknown Product',
+            progress: batch.status === 'COMPLETED' ? 100 : batch.status === 'IN_PROGRESS' ? 50 : 30,
+            eta: batch.expectedCompletionDate
+              ? Math.ceil((new Date(batch.expectedCompletionDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) + ' days'
+              : 'TBD'
+          }));
+          setProductionBatches(batches);
+        }
+      } catch (error) {
+        console.error('Error fetching production batches:', error);
+      }
+    };
+
+    const fetchTopCustomers = async () => {
+      try {
+        const response = await fetch('/api/customers?sortBy=totalSpent&order=desc&limit=4');
+        if (response.ok) {
+          const data = await response.json();
+          const customers = (data.data || []).map((customer: any) => ({
+            name: customer.name,
+            type: customer.segment || 'Regular',
+            spent: customer.totalSpent || 0,
+            points: customer.loyaltyPoints || 0
+          }));
+          setTopCustomers(customers);
+        }
+      } catch (error) {
+        console.error('Error fetching top customers:', error);
+      }
+    };
+
+    const fetchAlerts = async () => {
+      try {
+        const response = await fetch('/api/stock-alerts?limit=5');
+        if (response.ok) {
+          const data = await response.json();
+          const alerts = (data.data || []).map((alert: any) => ({
+            type: alert.type === 'LOW_STOCK' ? 'warning' : alert.type === 'OUT_OF_STOCK' ? 'urgent' : 'info',
+            message: alert.message || `${alert.product?.name || 'Product'} stock alert`,
+            time: new Date(alert.createdAt).toLocaleString()
+          }));
+          setRecentAlerts(alerts);
+        }
+      } catch (error) {
+        console.error('Error fetching alerts:', error);
+      }
+    };
+
+    const fetchStores = async () => {
+      try {
+        const response = await fetch('/api/stores?limit=10');
+        if (response.ok) {
+          const data = await response.json();
+          setStores(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching stores:', error);
+      }
+    };
+
+    fetchDashboardData();
     fetchRecentSales();
-  }, []);
+    fetchProductionBatches();
+    fetchTopCustomers();
+    fetchAlerts();
+    fetchStores();
+  }, [selectedPeriod]);
 
   const getChangeColor = (change) => {
     if (change > 0) return 'text-green-600';
