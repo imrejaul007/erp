@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,106 +33,72 @@ import {
 interface StockAdjustment {
   id: string;
   adjustmentNumber: string;
-  materialId: string;
-  materialName: string;
-  materialNameArabic: string;
-  sku: string;
-  currentStock: number;
-  adjustmentQuantity: number;
-  newStock: number;
-  unit: string;
-  adjustmentType: 'INCREASE' | 'DECREASE' | 'SET_QUANTITY';
-  reason: 'PHYSICAL_COUNT' | 'DAMAGE' | 'EXPIRY' | 'THEFT' | 'SYSTEM_ERROR' | 'TRANSFER' | 'PRODUCTION_USE' | 'SAMPLE' | 'OTHER';
-  description: string;
-  adjustedBy: string;
-  adjustmentDate: string;
-  approvedBy?: string;
-  approvalDate?: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  batchNumber?: string;
-  storageLocation: string;
-  costImpact: number;
-  currency: string;
-  supportingDocuments: string[];
+  productId: string;
+  type: string;
+  quantityBefore: number;
+  quantityAfter: number;
+  quantityChange: number;
+  reason: string;
+  description?: string | null;
+  requiresApproval: boolean;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  costImpact?: number | null;
+  createdAt: string;
+  product: {
+    id: string;
+    name: string;
+    sku: string;
+    unit?: string;
+  };
+  createdBy: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+interface AdjustmentAnalytics {
+  totalAdjustments: number;
+  thisMonthAdjustments: number;
+  pendingApprovals: number;
+  highImpactAdjustments: number;
+  totalCostImpact: number;
+  thisMonthCostImpact: number;
+  trends: {
+    adjustments: number;
+    costImpact: number;
+  };
+  byType: Array<{
+    type: string;
+    count: number;
+    totalQuantityChange: number;
+    totalCostImpact: number;
+  }>;
+  byReason: Array<{
+    reason: string;
+    count: number;
+  }>;
 }
 
 export default function StockAdjustmentsPage() {
   const router = useRouter();
-  const [adjustments, setAdjustments] = useState<StockAdjustment[]>([
-    {
-      id: '1',
-      adjustmentNumber: 'ADJ-2024-001',
-      materialId: 'MAT-001',
-      materialName: 'Royal Oud Oil',
-      materialNameArabic: 'زيت العود الملكي',
-      sku: 'ROO-001',
-      currentStock: 125.5,
-      adjustmentQuantity: -5.0,
-      newStock: 120.5,
-      unit: 'ml',
-      adjustmentType: 'DECREASE',
-      reason: 'PHYSICAL_COUNT',
-      description: 'Physical count discrepancy - actual stock is 5ml less than system records',
-      adjustedBy: 'Ahmad Hassan',
-      adjustmentDate: '2024-09-30',
-      approvedBy: 'Fatima Al-Zahra',
-      approvalDate: '2024-09-30',
-      status: 'APPROVED',
-      batchNumber: 'ROO-2024-Q3-001',
-      storageLocation: 'Cold Storage A-1',
-      costImpact: -2250,
-      currency: 'AED',
-      supportingDocuments: ['Physical Count Report.pdf']
+  const [adjustments, setAdjustments] = useState<StockAdjustment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState<AdjustmentAnalytics>({
+    totalAdjustments: 0,
+    thisMonthAdjustments: 0,
+    pendingApprovals: 0,
+    highImpactAdjustments: 0,
+    totalCostImpact: 0,
+    thisMonthCostImpact: 0,
+    trends: {
+      adjustments: 0,
+      costImpact: 0
     },
-    {
-      id: '2',
-      adjustmentNumber: 'ADJ-2024-002',
-      materialId: 'MAT-002',
-      materialName: 'Rose Petals Bulgarian',
-      materialNameArabic: 'بتلات الورد البلغارية',
-      sku: 'RPB-002',
-      currentStock: 2.5,
-      adjustmentQuantity: -1.2,
-      newStock: 1.3,
-      unit: 'kg',
-      adjustmentType: 'DECREASE',
-      reason: 'DAMAGE',
-      description: 'Damaged during handling - moisture contamination detected in 1.2kg batch',
-      adjustedBy: 'Omar Abdullah',
-      adjustmentDate: '2024-09-29',
-      status: 'PENDING',
-      batchNumber: 'RPB-2024-BUL-008',
-      storageLocation: 'Dry Storage B-3',
-      costImpact: -216,
-      currency: 'AED',
-      supportingDocuments: ['Damage Report.pdf', 'Quality Test Results.pdf']
-    },
-    {
-      id: '3',
-      adjustmentNumber: 'ADJ-2024-003',
-      materialId: 'MAT-003',
-      materialName: 'Saffron Threads',
-      materialNameArabic: 'خيوط الزعفران',
-      sku: 'SAF-003',
-      currentStock: 0,
-      adjustmentQuantity: 250,
-      newStock: 250,
-      unit: 'gram',
-      adjustmentType: 'INCREASE',
-      reason: 'TRANSFER',
-      description: 'Transfer from Dubai warehouse - incoming shipment',
-      adjustedBy: 'Layla Mohammed',
-      adjustmentDate: '2024-09-28',
-      approvedBy: 'Ahmad Hassan',
-      approvalDate: '2024-09-28',
-      status: 'APPROVED',
-      batchNumber: 'SAF-2024-K-009',
-      storageLocation: 'Climate Control C-2',
-      costImpact: 3000,
-      currency: 'AED',
-      supportingDocuments: ['Transfer Note.pdf', 'Receiving Report.pdf']
-    }
-  ]);
+    byType: [],
+    byReason: []
+  });
 
   const [selectedAdjustment, setSelectedAdjustment] = useState<StockAdjustment | null>(null);
   const [isNewAdjustmentOpen, setIsNewAdjustmentOpen] = useState(false);
@@ -141,13 +107,41 @@ export default function StockAdjustmentsPage() {
   const [reasonFilter, setReasonFilter] = useState('all');
 
   const [newAdjustment, setNewAdjustment] = useState({
-    materialId: '',
-    adjustmentType: 'DECREASE' as 'INCREASE' | 'DECREASE' | 'SET_QUANTITY',
-    adjustmentQuantity: 0,
-    reason: 'PHYSICAL_COUNT' as StockAdjustment['reason'],
+    productId: '',
+    type: 'DECREASE',
+    quantityChange: 0,
+    reason: '',
     description: '',
-    batchNumber: ''
+    costImpact: 0,
+    requiresApproval: false
   });
+
+  useEffect(() => {
+    fetchAdjustmentData();
+  }, []);
+
+  const fetchAdjustmentData = async () => {
+    try {
+      const [analyticsRes, adjustmentsRes] = await Promise.all([
+        fetch('/api/stock-adjustments/analytics'),
+        fetch('/api/stock-adjustments')
+      ]);
+
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json();
+        setAnalytics(analyticsData.analytics || analytics);
+      }
+
+      if (adjustmentsRes.ok) {
+        const adjustmentsData = await adjustmentsRes.json();
+        setAdjustments(adjustmentsData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching adjustment data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const reasons = [
     { value: 'PHYSICAL_COUNT', label: 'Physical Count Discrepancy' },
@@ -192,10 +186,27 @@ export default function StockAdjustmentsPage() {
     }
   };
 
-  const totalAdjustments = adjustments.length;
-  const pendingAdjustments = adjustments.filter(a => a.status === 'PENDING').length;
-  const totalCostImpact = adjustments.filter(a => a.status === 'APPROVED').reduce((sum, a) => sum + a.costImpact, 0);
-  const positiveAdjustments = adjustments.filter(a => a.adjustmentQuantity > 0).length;
+  const filteredAdjustments = adjustments.filter(adj => {
+    const matchesSearch = adj.adjustmentNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         adj.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         adj.product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'all' ||
+                         (statusFilter === 'PENDING' && adj.requiresApproval && !adj.approvedAt) ||
+                         (statusFilter === 'APPROVED' && adj.approvedAt);
+
+    const matchesReason = reasonFilter === 'all' || adj.reason === reasonFilter;
+
+    return matchesSearch && matchesStatus && matchesReason;
+  });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6 p-6">
@@ -324,8 +335,10 @@ export default function StockAdjustmentsPage() {
             <Package className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">{totalAdjustments}</div>
-            <p className="text-xs text-gray-500 mt-1">This month</p>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{analytics.thisMonthAdjustments}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {analytics.trends.adjustments > 0 ? '+' : ''}{analytics.trends.adjustments}% vs last month
+            </p>
           </CardContent>
         </Card>
 
@@ -335,7 +348,7 @@ export default function StockAdjustmentsPage() {
             <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">{pendingAdjustments}</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{analytics.pendingApprovals}</div>
             <p className="text-xs text-gray-500 mt-1">Awaiting review</p>
           </CardContent>
         </Card>
@@ -343,27 +356,27 @@ export default function StockAdjustmentsPage() {
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Cost Impact</CardTitle>
-            {totalCostImpact >= 0 ? 
-              <TrendingUp className="h-4 w-4 text-green-600" /> : 
+            {analytics.thisMonthCostImpact >= 0 ?
+              <TrendingUp className="h-4 w-4 text-green-600" /> :
               <TrendingDown className="h-4 w-4 text-red-600" />
             }
           </CardHeader>
           <CardContent>
-            <div className={`text-xl sm:text-2xl font-bold ${totalCostImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              AED {Math.abs(totalCostImpact)?.toLocaleString() || "0"}
+            <div className={`text-xl sm:text-2xl font-bold ${analytics.thisMonthCostImpact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              AED {Math.abs(analytics.thisMonthCostImpact).toLocaleString()}
             </div>
-            <p className="text-xs text-gray-500 mt-1">{totalCostImpact >= 0 ? 'Positive' : 'Negative'} impact</p>
+            <p className="text-xs text-gray-500 mt-1">This month</p>
           </CardContent>
         </Card>
 
         <Card className="border-amber-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Stock Increases</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">High Impact</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">{positiveAdjustments}</div>
-            <p className="text-xs text-gray-500 mt-1">Positive adjustments</p>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900">{analytics.highImpactAdjustments}</div>
+            <p className="text-xs text-gray-500 mt-1">Above AED 1,000</p>
           </CardContent>
         </Card>
       </div>
@@ -450,53 +463,51 @@ export default function StockAdjustmentsPage() {
                   <TableRow key={adjustment.id} className="hover:bg-amber-50/50">
                     <TableCell>
                       <div className="font-medium">{adjustment.adjustmentNumber}</div>
-                      <div className="text-xs text-gray-500">by {adjustment.adjustedBy}</div>
+                      <div className="text-xs text-gray-500">by {adjustment.createdBy.name}</div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{adjustment.materialName}</div>
-                        <div className="text-sm text-gray-500">{adjustment.materialNameArabic}</div>
-                        <div className="text-xs text-gray-400">SKU: {adjustment.sku}</div>
+                        <div className="font-medium">{adjustment.product.name}</div>
+                        <div className="text-xs text-gray-400">SKU: {adjustment.product.sku}</div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className={`font-medium ${getAdjustmentTypeColor(adjustment.adjustmentType)}`}>
-                          {adjustment.adjustmentType === 'INCREASE' ? '+' : adjustment.adjustmentType === 'DECREASE' ? '-' : '='}
-                          {Math.abs(adjustment.adjustmentQuantity)} {adjustment.unit}
+                        <div className={`font-medium ${getAdjustmentTypeColor(adjustment.type)}`}>
+                          {adjustment.quantityChange >= 0 ? '+' : ''}{adjustment.quantityChange} {adjustment.product.unit || 'units'}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {adjustment.currentStock} → {adjustment.newStock} {adjustment.unit}
+                          {adjustment.quantityBefore} → {adjustment.quantityAfter} {adjustment.product.unit || 'units'}
                         </div>
-                        {adjustment.batchNumber && (
-                          <div className="text-xs text-gray-400">Batch: {adjustment.batchNumber}</div>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        {reasons.find(r => r.value === adjustment.reason)?.label}
-                      </div>
+                      <div className="text-sm">{adjustment.reason}</div>
+                      {adjustment.description && (
+                        <div className="text-xs text-gray-400 mt-1 max-w-xs truncate">{adjustment.description}</div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className={`font-medium ${
-                        adjustment.costImpact >= 0 ? 'text-green-600' : 'text-red-600'
+                        (adjustment.costImpact || 0) >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {adjustment.costImpact >= 0 ? '+' : ''}{adjustment.costImpact?.toLocaleString() || "0"} {adjustment.currency}
+                        {(adjustment.costImpact || 0) >= 0 ? '+' : ''}AED {Math.abs(Number(adjustment.costImpact || 0)).toLocaleString()}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(adjustment.status)}>
-                        {adjustment.status}
+                      <Badge className={getStatusColor(
+                        adjustment.requiresApproval && !adjustment.approvedAt ? 'PENDING' : 'APPROVED'
+                      )}>
+                        {adjustment.requiresApproval && !adjustment.approvedAt ? 'PENDING' : 'APPROVED'}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {new Date(adjustment.adjustmentDate).toLocaleDateString()}
+                        {new Date(adjustment.createdAt).toLocaleDateString()}
                       </div>
-                      {adjustment.approvalDate && (
+                      {adjustment.approvedAt && (
                         <div className="text-xs text-gray-500">
-                          Approved: {new Date(adjustment.approvalDate).toLocaleDateString()}
+                          Approved: {new Date(adjustment.approvedAt).toLocaleDateString()}
                         </div>
                       )}
                     </TableCell>
@@ -509,7 +520,7 @@ export default function StockAdjustmentsPage() {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {adjustment.status === 'PENDING' && (
+                        {adjustment.requiresApproval && !adjustment.approvedAt && (
                           <>
                             <Button variant="ghost" size="sm">
                               <CheckCircle className="h-4 w-4 text-green-600" />
