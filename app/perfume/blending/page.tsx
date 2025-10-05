@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -77,8 +77,92 @@ const BlendingLaboratoryPage = () => {
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [formulaComponents, setFormulaComponents] = useState([]);
 
-  // Base ingredients library
-  const ingredientLibrary = [
+  // API integration states
+  const [ingredientLibrary, setIngredientLibrary] = useState<any[]>([]);
+  const [blendFormulas, setBlendFormulas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch products (ingredients) and recipes (formulas) from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsRes, recipesRes] = await Promise.all([
+          fetch('/api/products?limit=200'),
+          fetch('/api/recipes')
+        ]);
+
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          // Map products to ingredient structure
+          const ingredients = (productsData.products || []).map((p: any) => ({
+            id: p.sku || p.id,
+            name: p.name,
+            arabicName: p.nameArabic || p.name,
+            type: p.category || 'base',
+            category: p.category || 'General',
+            grade: 'A',
+            strength: 70,
+            longevity: 8,
+            sillage: 'Moderate',
+            price: Number(p.price || 0),
+            stock: Number(p.stock || 0),
+            unit: p.unit || 'ml',
+            notes: {
+              top: [],
+              middle: [],
+              base: []
+            },
+            blendingProperties: {
+              dominance: 'Medium',
+              compatibility: [],
+              maxPercentage: 50,
+              minPercentage: 5
+            },
+            origin: 'Traditional'
+          }));
+          setIngredientLibrary(ingredients);
+        }
+
+        if (recipesRes.ok) {
+          const recipesData = await recipesRes.json();
+          // Map recipes to blend formula structure
+          const formulas = (recipesData.recipes || []).map((r: any) => ({
+            id: r.sku || r.id,
+            name: r.name,
+            arabicName: r.nameArabic || r.name,
+            category: 'Blend',
+            description: r.description || '',
+            status: r.status?.toLowerCase() || 'draft',
+            created: r.createdAt || new Date().toISOString(),
+            lastModified: r.updatedAt || new Date().toISOString(),
+            baseQuantity: Number(r.baseQuantity || 100),
+            unit: r.baseUnit || 'ml',
+            ingredients: (r.ingredients || []).map((i: any) => ({
+              id: i.product?.sku || i.ingredientId,
+              name: i.product?.name || 'Unknown',
+              percentage: Number(i.percentage || 0),
+              quantity: Number(i.quantity || 0),
+              unit: i.unit || 'ml'
+            })),
+            totalCost: Number(r.totalCost || 0),
+            sellingPrice: Number(r.sellingPrice || 0),
+            profitMargin: Number(r.profitMargin || 0)
+          }));
+          setBlendFormulas(formulas);
+        }
+      } catch (error) {
+        console.error('Error fetching blending data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Base ingredients library (fallback mock data)
+  const mockIngredientLibrary = [
     {
       id: 'CAM001',
       name: 'Royal Cambodian Oud',
