@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,189 +43,160 @@ import {
   BarChart3,
   ArrowLeft} from 'lucide-react';
 
+interface StockTransfer {
+  id: string;
+  transferNumber: string;
+  productId: string;
+  fromLocation: string;
+  toLocation: string;
+  quantity: number;
+  status: string;
+  requestedAt: string;
+  shippedAt?: string | null;
+  receivedAt?: string | null;
+  cancelledAt?: string | null;
+  notes?: string | null;
+  shippingReference?: string | null;
+  product: {
+    id: string;
+    name: string;
+    sku: string;
+    unit?: string;
+  };
+  createdBy: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+interface TransferAnalytics {
+  totalTransfers: number;
+  pendingApproval: number;
+  inTransit: number;
+  completedThisMonth: number;
+  totalValue: number;
+  avgDeliveryTime: number;
+  successRate: number;
+  trends: {
+    requests: number;
+    approvals: number;
+    deliveries: number;
+    value: number;
+  };
+}
+
+interface Location {
+  id: string;
+  name: string;
+  code: string;
+  city: string;
+}
+
 const TransfersPage = () => {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
-
-  // UAE Store Locations
-  const locations = [
-    { id: 'LOC-001', name: 'Dubai Mall Flagship', code: 'DXB-DM', city: 'Dubai' },
-    { id: 'LOC-002', name: 'Mall of Emirates', code: 'DXB-MOE', city: 'Dubai' },
-    { id: 'LOC-003', name: 'Ibn Battuta Mall', code: 'DXB-IBN', city: 'Dubai' },
-    { id: 'LOC-004', name: 'City Centre Mirdif', code: 'DXB-CCM', city: 'Dubai' },
-    { id: 'LOC-005', name: 'Abu Dhabi Mall', code: 'AUH-ADM', city: 'Abu Dhabi' },
-    { id: 'LOC-006', name: 'Sharjah City Centre', code: 'SHJ-SCC', city: 'Sharjah' },
-    { id: 'LOC-007', name: 'Al Ghurair Centre', code: 'DXB-AGC', city: 'Dubai' },
-    { id: 'LOC-008', name: 'Yas Mall', code: 'AUH-YAS', city: 'Abu Dhabi' }
-  ];
-
-  // Sample transfer data
-  const transfers = [
-    {
-      id: 'TRF-001',
-      requestId: 'REQ-2024-001',
-      fromLocation: 'LOC-001',
-      toLocation: 'LOC-003',
-      requestedBy: 'Omar Hassan',
-      approvedBy: 'Ahmed Al-Rashid',
-      status: 'in_transit',
-      priority: 'high',
-      items: [
-        { sku: 'ROP-100ML', name: 'Royal Oud Premium', qty: 12, unitCost: 150, totalValue: 1800 },
-        { sku: 'JE-50ML', name: 'Jasmine Essence', qty: 8, unitCost: 80, totalValue: 640 }
-      ],
-      totalItems: 20,
-      totalValue: 2440,
-      requestDate: '2024-09-28T09:00:00',
-      approvalDate: '2024-09-28T14:30:00',
-      shipmentDate: '2024-09-29T10:00:00',
-      expectedDelivery: '2024-10-01T16:00:00',
-      actualDelivery: null,
-      trackingNumber: 'TRK-UAE-001',
-      notes: 'Urgent transfer for weekend sales event',
-      attachments: ['transfer_request.pdf', 'inventory_list.xlsx']
-    },
-    {
-      id: 'TRF-002',
-      requestId: 'REQ-2024-002',
-      fromLocation: 'LOC-005',
-      toLocation: 'LOC-002',
-      requestedBy: 'Fatima Al-Zahra',
-      approvedBy: 'Khalid Al-Mansoori',
-      status: 'delivered',
-      priority: 'medium',
-      items: [
-        { sku: 'SG-75ML', name: 'Saffron Gold', qty: 6, unitCost: 200, totalValue: 1200 },
-        { sku: 'RA-30ML', name: 'Rose Attar', qty: 15, unitCost: 120, totalValue: 1800 }
-      ],
-      totalItems: 21,
-      totalValue: 3000,
-      requestDate: '2024-09-26T11:30:00',
-      approvalDate: '2024-09-26T15:45:00',
-      shipmentDate: '2024-09-27T08:00:00',
-      expectedDelivery: '2024-09-28T12:00:00',
-      actualDelivery: '2024-09-28T11:45:00',
-      trackingNumber: 'TRK-UAE-002',
-      notes: 'Regular inventory replenishment',
-      attachments: ['delivery_receipt.pdf']
-    },
-    {
-      id: 'TRF-003',
-      requestId: 'REQ-2024-003',
-      fromLocation: 'LOC-002',
-      toLocation: 'LOC-006',
-      requestedBy: 'Mariam Al-Qasimi',
-      approvedBy: null,
-      status: 'pending_approval',
-      priority: 'low',
-      items: [
-        { sku: 'JE-50ML', name: 'Jasmine Essence', qty: 10, unitCost: 80, totalValue: 800 },
-        { sku: 'RA-30ML', name: 'Rose Attar', qty: 5, unitCost: 120, totalValue: 600 }
-      ],
-      totalItems: 15,
-      totalValue: 1400,
-      requestDate: '2024-09-30T14:20:00',
-      approvalDate: null,
-      shipmentDate: null,
-      expectedDelivery: null,
-      actualDelivery: null,
-      trackingNumber: null,
-      notes: 'Stock shortage - need replenishment',
-      attachments: ['stock_report.pdf']
-    },
-    {
-      id: 'TRF-004',
-      requestId: 'REQ-2024-004',
-      fromLocation: 'LOC-004',
-      toLocation: 'LOC-007',
-      requestedBy: 'Aisha Mohammed',
-      approvedBy: 'Regional Manager',
-      status: 'rejected',
-      priority: 'medium',
-      items: [
-        { sku: 'ROP-100ML', name: 'Royal Oud Premium', qty: 25, unitCost: 150, totalValue: 3750 }
-      ],
-      totalItems: 25,
-      totalValue: 3750,
-      requestDate: '2024-09-25T16:00:00',
-      approvalDate: '2024-09-26T09:30:00',
-      shipmentDate: null,
-      expectedDelivery: null,
-      actualDelivery: null,
-      trackingNumber: null,
-      notes: 'Rejected - insufficient inventory at source location',
-      attachments: ['rejection_notice.pdf']
-    }
-  ];
-
-  // Transfer analytics
-  const transferAnalytics = {
-    totalTransfers: transfers.length,
-    pendingApproval: transfers.filter(t => t.status === 'pending_approval').length,
-    inTransit: transfers.filter(t => t.status === 'in_transit').length,
-    completedThisMonth: transfers.filter(t => t.status === 'delivered').length,
-    totalValue: transfers.reduce((sum, t) => sum + t.totalValue, 0),
-    avgDeliveryTime: 1.5,
-    successRate: 85.7,
+  const [loading, setLoading] = useState(true);
+  const [transfers, setTransfers] = useState<StockTransfer[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [transferAnalytics, setTransferAnalytics] = useState<TransferAnalytics>({
+    totalTransfers: 0,
+    pendingApproval: 0,
+    inTransit: 0,
+    completedThisMonth: 0,
+    totalValue: 0,
+    avgDeliveryTime: 0,
+    successRate: 0,
     trends: {
-      requests: +12.5,
-      approvals: +8.3,
-      deliveries: +15.2,
-      value: +22.1
+      requests: 0,
+      approvals: 0,
+      deliveries: 0,
+      value: 0
+    }
+  });
+
+  useEffect(() => {
+    fetchTransferData();
+  }, []);
+
+  const fetchTransferData = async () => {
+    try {
+      const [analyticsRes, transfersRes, storesRes] = await Promise.all([
+        fetch('/api/stock-transfers/analytics'),
+        fetch('/api/stock-transfers'),
+        fetch('/api/stores?limit=100')
+      ]);
+
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json();
+        setTransferAnalytics(analyticsData.analytics || transferAnalytics);
+      }
+
+      if (transfersRes.ok) {
+        const transfersData = await transfersRes.json();
+        setTransfers(transfersData || []);
+      }
+
+      if (storesRes.ok) {
+        const storesData = await storesRes.json();
+        const storesArray = (storesData.stores || []).map((store: any) => ({
+          id: store.id,
+          name: store.name,
+          code: store.storeCode || store.id.substring(0, 8),
+          city: store.city || 'UAE'
+        }));
+        setLocations(storesArray);
+      }
+    } catch (error) {
+      console.error('Error fetching transfer data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending_approval': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-blue-100 text-blue-800';
-      case 'in_transit': return 'bg-purple-100 text-purple-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      case 'IN_TRANSIT': return 'bg-purple-100 text-purple-800';
+      case 'COMPLETED': return 'bg-green-100 text-green-800';
+      case 'CANCELLED': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'pending_approval': return <Clock className="h-4 w-4" />;
-      case 'approved': return <CheckCircle className="h-4 w-4" />;
-      case 'in_transit': return <Truck className="h-4 w-4" />;
-      case 'delivered': return <CheckCircle className="h-4 w-4" />;
-      case 'rejected': return <XCircle className="h-4 w-4" />;
-      case 'cancelled': return <X className="h-4 w-4" />;
+  const getStatusIcon = (status: string) => {
+    switch (status.toUpperCase()) {
+      case 'PENDING': return <Clock className="h-4 w-4" />;
+      case 'IN_TRANSIT': return <Truck className="h-4 w-4" />;
+      case 'COMPLETED': return <CheckCircle className="h-4 w-4" />;
+      case 'CANCELLED': return <X className="h-4 w-4" />;
       default: return <AlertCircle className="h-4 w-4" />;
     }
   };
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusLabel = (status: string) => {
+    return status.toLowerCase().replace('_', ' ');
   };
 
-  const getLocationName = (locationId) => {
-    return locations.find(loc => loc.id === locationId)?.name || 'Unknown Location';
+  const getLocationName = (locationId: string) => {
+    return locations.find(loc => loc.id === locationId)?.name || locationId;
   };
 
-  const getLocationCode = (locationId) => {
-    return locations.find(loc => loc.id === locationId)?.code || 'UNK';
+  const getLocationCode = (locationId: string) => {
+    return locations.find(loc => loc.id === locationId)?.code || locationId.substring(0, 8);
   };
 
   const filteredTransfers = transfers.filter(transfer => {
-    const matchesSearch = transfer.requestId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transfer.requestedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = transfer.transferNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transfer.createdBy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transfer.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          getLocationName(transfer.fromLocation).toLowerCase().includes(searchTerm.toLowerCase()) ||
                          getLocationName(transfer.toLocation).toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = statusFilter === 'all' || transfer.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || transfer.status.toUpperCase() === statusFilter.toUpperCase();
     const matchesLocation = locationFilter === 'all' ||
                            transfer.fromLocation === locationFilter ||
                            transfer.toLocation === locationFilter;
@@ -245,7 +216,7 @@ const TransfersPage = () => {
     return 'text-gray-600';
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-AE', {
       day: '2-digit',
@@ -255,17 +226,25 @@ const TransfersPage = () => {
     });
   };
 
-  const getTransferProgress = (transfer) => {
-    switch (transfer.status) {
-      case 'pending_approval': return 25;
-      case 'approved': return 50;
-      case 'in_transit': return 75;
-      case 'delivered': return 100;
-      case 'rejected':
-      case 'cancelled': return 0;
+  const getTransferProgress = (transfer: StockTransfer) => {
+    switch (transfer.status.toUpperCase()) {
+      case 'PENDING': return 25;
+      case 'IN_TRANSIT': return 75;
+      case 'COMPLETED': return 100;
+      case 'CANCELLED': return 0;
       default: return 0;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
@@ -381,11 +360,10 @@ const TransfersPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending_approval">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="in_transit">In Transit</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -435,15 +413,12 @@ const TransfersPage = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold">{transfer.requestId}</h3>
+                            <h3 className="font-semibold">{transfer.transferNumber}</h3>
                             <Badge className={getStatusColor(transfer.status)}>
                               <div className="flex items-center gap-1">
                                 {getStatusIcon(transfer.status)}
-                                {transfer.status.replace('_', ' ')}
+                                {getStatusLabel(transfer.status)}
                               </div>
-                            </Badge>
-                            <Badge className={getPriorityColor(transfer.priority)}>
-                              {transfer.priority} priority
                             </Badge>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
@@ -455,15 +430,15 @@ const TransfersPage = () => {
                             </div>
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              <span>{transfer.requestedBy}</span>
+                              <span>{transfer.createdBy.name}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              <span>{formatDate(transfer.requestDate)}</span>
+                              <span>{formatDate(transfer.requestedAt)}</span>
                             </div>
                           </div>
                           <div className="text-sm text-gray-600">
-                            {transfer.totalItems} items • AED {transfer.totalValue?.toLocaleString() || "0"}
+                            {transfer.quantity}x {transfer.product.name} ({transfer.product.sku})
                           </div>
                         </div>
                       </div>
@@ -497,12 +472,12 @@ const TransfersPage = () => {
                         <div className="font-medium">{getLocationName(transfer.toLocation)}</div>
                       </div>
                       <div>
-                        <span className="text-gray-500">Expected Delivery:</span>
-                        <div className="font-medium">{formatDate(transfer.expectedDelivery)}</div>
+                        <span className="text-gray-500">Shipped:</span>
+                        <div className="font-medium">{formatDate(transfer.shippedAt)}</div>
                       </div>
                       <div>
                         <span className="text-gray-500">Tracking:</span>
-                        <div className="font-medium">{transfer.trackingNumber || 'Not assigned'}</div>
+                        <div className="font-medium">{transfer.shippingReference || 'Not assigned'}</div>
                       </div>
                     </div>
 
@@ -529,7 +504,7 @@ const TransfersPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {transfers.filter(t => t.status === 'pending_approval').map((transfer) => (
+                {transfers.filter(t => t.status.toUpperCase() === 'PENDING').map((transfer) => (
                   <div key={transfer.id} className="border rounded-lg p-4 bg-yellow-50 border-yellow-200">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-start gap-4">
@@ -538,12 +513,9 @@ const TransfersPage = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold">{transfer.requestId}</h3>
+                            <h3 className="font-semibold">{transfer.transferNumber}</h3>
                             <Badge className="bg-yellow-100 text-yellow-800">
-                              Pending Approval
-                            </Badge>
-                            <Badge className={getPriorityColor(transfer.priority)}>
-                              {transfer.priority} priority
+                              Pending
                             </Badge>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
@@ -555,11 +527,11 @@ const TransfersPage = () => {
                             </div>
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              <span>{transfer.requestedBy}</span>
+                              <span>{transfer.createdBy.name}</span>
                             </div>
                           </div>
                           <div className="text-sm text-gray-600">
-                            Requested: {formatDate(transfer.requestDate)}
+                            Requested: {formatDate(transfer.requestedAt)}
                           </div>
                         </div>
                       </div>
@@ -577,24 +549,18 @@ const TransfersPage = () => {
 
                     {/* Items Summary */}
                     <div className="bg-white rounded-lg p-3 mb-3">
-                      <h4 className="font-medium mb-2">Transfer Items</h4>
+                      <h4 className="font-medium mb-2">Transfer Details</h4>
                       <div className="space-y-2">
-                        {transfer.items.map((item, index) => (
-                          <div key={index} className="flex justify-between items-center text-sm">
-                            <div>
-                              <span className="font-medium">{item.name}</span>
-                              <span className="text-gray-500 ml-2">({item.sku})</span>
-                            </div>
-                            <div className="text-right">
-                              <div>Qty: {item.qty}</div>
-                              <div className="text-gray-500">AED {item.totalValue}</div>
-                            </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <div>
+                            <span className="font-medium">{transfer.product.name}</span>
+                            <span className="text-gray-500 ml-2">({transfer.product.sku})</span>
                           </div>
-                        ))}
-                      </div>
-                      <div className="border-t mt-2 pt-2 flex justify-between font-medium">
-                        <span>Total: {transfer.totalItems} items</span>
-                        <span>AED {transfer.totalValue?.toLocaleString() || "0"}</span>
+                          <div className="text-right">
+                            <div>Qty: {transfer.quantity}</div>
+                            <div className="text-gray-500">{transfer.product.unit || 'units'}</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -621,7 +587,7 @@ const TransfersPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {transfers.filter(t => t.status === 'in_transit').map((transfer) => (
+                {transfers.filter(t => t.status.toUpperCase() === 'IN_TRANSIT').map((transfer) => (
                   <div key={transfer.id} className="border rounded-lg p-4 bg-purple-50 border-purple-200">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-start gap-4">
@@ -630,14 +596,16 @@ const TransfersPage = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold">{transfer.requestId}</h3>
+                            <h3 className="font-semibold">{transfer.transferNumber}</h3>
                             <Badge className="bg-purple-100 text-purple-800">
                               In Transit
                             </Badge>
-                            <Badge variant="outline">
-                              <Barcode className="h-3 w-3 mr-1" />
-                              {transfer.trackingNumber}
-                            </Badge>
+                            {transfer.shippingReference && (
+                              <Badge variant="outline">
+                                <Barcode className="h-3 w-3 mr-1" />
+                                {transfer.shippingReference}
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                             <div className="flex items-center gap-1">
@@ -650,11 +618,11 @@ const TransfersPage = () => {
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
                               <span className="text-gray-500">Shipped:</span>
-                              <div className="font-medium">{formatDate(transfer.shipmentDate)}</div>
+                              <div className="font-medium">{formatDate(transfer.shippedAt)}</div>
                             </div>
                             <div>
-                              <span className="text-gray-500">Expected:</span>
-                              <div className="font-medium">{formatDate(transfer.expectedDelivery)}</div>
+                              <span className="text-gray-500">Product:</span>
+                              <div className="font-medium">{transfer.product.name} x{transfer.quantity}</div>
                             </div>
                           </div>
                         </div>
@@ -682,7 +650,7 @@ const TransfersPage = () => {
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                           <div className="flex-1">
                             <div className="text-sm font-medium">Package shipped from {getLocationName(transfer.fromLocation)}</div>
-                            <div className="text-xs text-gray-500">{formatDate(transfer.shipmentDate)}</div>
+                            <div className="text-xs text-gray-500">{formatDate(transfer.shippedAt)}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -703,7 +671,7 @@ const TransfersPage = () => {
                           <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
                           <div className="flex-1">
                             <div className="text-sm font-medium text-gray-500">Delivery to {getLocationName(transfer.toLocation)}</div>
-                            <div className="text-xs text-gray-400">Expected: {formatDate(transfer.expectedDelivery)}</div>
+                            <div className="text-xs text-gray-400">Awaiting delivery confirmation</div>
                           </div>
                         </div>
                       </div>
