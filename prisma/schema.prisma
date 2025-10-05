@@ -105,6 +105,12 @@ model User {
   assignedTasks      WorkOrderTask[]      @relation("AssignedTasks")
   createdDashboards  Dashboard[]          @relation("CreatedDashboards")
   sharedDashboards   DashboardShare[]     @relation("SharedDashboards")
+  // Phase 1 Relations
+  createdSegregationBatches SegregationBatch[] @relation("SegregationCreatedBy")
+  testerStaff        TesterInventory[]    @relation("TesterStaff")
+  demoLogs           DemoLog[]            @relation("DemoStaff")
+  feedbackRecorded   CustomerFeedback[]   @relation("FeedbackRecordedBy")
+  createdPopupLocations PopupLocation[]   @relation("PopupCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -175,6 +181,9 @@ model Customer {
   shipments           Shipment[]
   returnOrders        ReturnOrder[]
   documents           Document[]
+  // Phase 1 Relations
+  demoSessions        DemoLog[]            @relation("DemoCustomer")
+  feedbacks           CustomerFeedback[]   @relation("FeedbackCustomer")
 
   @@index([tenantId])
   @@map("customers")
@@ -303,6 +312,13 @@ model Product {
   stockAlerts StockAlert[]
   warehouseStock WarehouseStock[]
   workOrders     WorkOrder[]
+  // Phase 1 Relations
+  segregationRawMaterials SegregationBatch[] @relation("SegregationRawMaterial")
+  segregationOutputProducts SegregationOutput[] @relation("SegregationOutputProduct")
+  testerInventory TesterInventory[] @relation("TesterProduct")
+  demoProducts    DemoLog[]        @relation("DemoProduct")
+  productFeedback CustomerFeedback[] @relation("FeedbackProduct")
+  eventProducts   EventInventory[] @relation("EventProduct")
 
   @@index([tenantId])
   @@map("products")
@@ -340,6 +356,9 @@ model Store {
   toTransfers     Transfer[]       @relation("ToStore")
   stockMovements  StockMovement[]
   samplingSessions SamplingSession[]
+  // Phase 1 Relations
+  testerInventory TesterInventory[] @relation("TesterStore")
+  demoLogs        DemoLog[]        @relation("DemoStore")
 
   @@index([tenantId])
   @@map("stores")
@@ -446,6 +465,10 @@ model Order {
   returnOrders        ReturnOrder[]
   documents           Document[]
   workOrders          WorkOrder[]
+  // Phase 1 Relations
+  demoConversions     DemoLog[]        @relation("DemoSale")
+  eventSales          PopupLocation?   @relation("EventSales", fields: [eventId], references: [id])
+  eventId             String?
 
   @@index([tenantId])
   @@map("orders")
@@ -1922,6 +1945,10 @@ model Tenant {
   dashboardWidgets  DashboardWidget[]
   dashboardShares   DashboardShare[]
   dataInsights      DataInsight[]
+  // Phase 1 Relations
+  testerInventory   TesterInventory[]
+  testerRefillsPhase1 TesterRefill[]
+  demoLogs          DemoLog[]
 
   @@map("tenants")
 }
@@ -4640,4 +4667,344 @@ enum InsightSeverity {
   MEDIUM
   LOW
   INFO
+}
+
+// ==================== PHASE 1: PERFUME & OUD INDUSTRY-SPECIFIC FEATURES ====================
+
+// 1.1 Segregation Management
+model SegregationBatch {
+  id              String   @id @default(cuid())
+  batchNumber     String   @unique
+  rawMaterial     Product  @relation("SegregationRawMaterial", fields: [rawMaterialId], references: [id])
+  rawMaterialId   String
+  rawQuantity     Float
+  rawCost         Float
+  segregationDate DateTime
+  laborCost       Float    @default(0)
+  overheadCost    Float    @default(0)
+  totalCost       Float
+  wastage         Float    @default(0) // percentage
+  wastageCost     Float    @default(0)
+  status          SegregationStatus @default(IN_PROGRESS)
+  notes           String?
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  outputs         SegregationOutput[]
+  createdBy       User     @relation("SegregationCreatedBy", fields: [createdById], references: [id])
+  createdById     String
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, segregationDate])
+  @@map("segregation_batches")
+}
+
+model SegregationOutput {
+  id              String   @id @default(cuid())
+  batch           SegregationBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batchId         String
+  gradeName       String   // Muri, Salla, Super, Custom
+  product         Product  @relation("SegregationOutputProduct", fields: [productId], references: [id])
+  productId       String
+  quantity        Float
+  yieldPercentage Float
+  unitCost        Float    // auto-calculated
+  sellingPrice    Float    @default(0)
+  profitMargin    Float    @default(0)
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([batchId])
+  @@index([productId])
+  @@map("segregation_outputs")
+}
+
+enum SegregationStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// 1.2 Tester/Demo Loss Tracking
+model TesterInventory {
+  id              String   @id @default(cuid())
+  product         Product  @relation("TesterProduct", fields: [productId], references: [id])
+  productId       String
+  store           Store?   @relation("TesterStore", fields: [storeId], references: [id])
+  storeId         String?
+  staff           User?    @relation("TesterStaff", fields: [staffId], references: [id])
+  staffId         String?
+  quantity        Float
+  unit            String   @default("ml")
+  lastRefill      DateTime
+  totalUsed       Float    @default(0)
+  notes           String?
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  refills         TesterRefill[]
+  demos           DemoLog[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, productId])
+  @@index([tenantId, storeId])
+  @@index([tenantId, staffId])
+  @@map("tester_inventory")
+}
+
+model TesterRefill {
+  id              String   @id @default(cuid())
+  tester          TesterInventory @relation(fields: [testerId], references: [id], onDelete: Cascade)
+  testerId        String
+  quantityAdded   Float
+  refillDate      DateTime @default(now())
+  refilledBy      User     @relation("TesterRefilledBy", fields: [refilledById], references: [id])
+  refilledById    String
+  notes           String?
+
+  @@index([testerId])
+  @@map("tester_refills")
+}
+
+model DemoLog {
+  id              String   @id @default(cuid())
+  tester          TesterInventory @relation(fields: [testerId], references: [id], onDelete: Cascade)
+  testerId        String
+  product         Product  @relation("DemoProduct", fields: [productId], references: [id])
+  productId       String
+  customer        Customer? @relation("DemoCustomer", fields: [customerId], references: [id])
+  customerId      String?
+  quantityUsed    Float
+  demoDate        DateTime @default(now())
+  convertedToSale Boolean  @default(false)
+  sale            Order?   @relation("DemoSale", fields: [saleId], references: [id])
+  saleId          String?
+  staff           User     @relation("DemoStaff", fields: [staffId], references: [id])
+  staffId         String
+  store           Store    @relation("DemoStore", fields: [storeId], references: [id])
+  storeId         String
+  notes           String?
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId, demoDate])
+  @@index([tenantId, productId])
+  @@index([tenantId, customerId])
+  @@index([tenantId, convertedToSale])
+  @@map("demo_logs")
+}
+
+// 1.3 Customer Feedback Integration
+model CustomerFeedback {
+  id              String   @id @default(cuid())
+  customer        Customer @relation("FeedbackCustomer", fields: [customerId], references: [id])
+  customerId      String
+  product         Product? @relation("FeedbackProduct", fields: [productId], references: [id])
+  productId       String?
+  feedbackType    FeedbackType
+  rating          Int?     // 1-5 stars
+  rejectionReason RejectionReason?
+  comments        String?
+  sentiment       Sentiment @default(NEUTRAL) // Auto-detected: POSITIVE, NEUTRAL, NEGATIVE
+  actionTaken     String?
+  followUpDate    DateTime?
+  feedbackDate    DateTime @default(now())
+  staff           User     @relation("FeedbackRecordedBy", fields: [staffId], references: [id])
+  staffId         String
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, feedbackDate])
+  @@index([tenantId, customerId])
+  @@index([tenantId, productId])
+  @@index([tenantId, feedbackType])
+  @@index([tenantId, sentiment])
+  @@map("customer_feedback")
+}
+
+enum FeedbackType {
+  PURCHASE_FEEDBACK
+  REJECTION
+  COMPLAINT
+  SUGGESTION
+  COMPLIMENT
+}
+
+enum RejectionReason {
+  TOO_EXPENSIVE
+  SCENT_NOT_PREFERRED
+  LOW_QUALITY
+  PACKAGING_ISSUE
+  AVAILABILITY_ISSUE
+  COMPETITOR_PREFERRED
+  OTHER
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+// ==================== PHASE 2: OPERATIONAL & BUSINESS FEATURES ====================
+
+// 2.1 Temporary/Pop-up Locations (Events)
+model PopupLocation {
+  id              String   @id @default(cuid())
+  name            String
+  nameArabic      String?
+  type            PopupType
+  location        String
+  locationArabic  String?
+  startDate       DateTime
+  endDate         DateTime
+  setupCost       Float    @default(0)
+  rentalCost      Float    @default(0)
+  otherCosts      Float    @default(0)
+  totalCost       Float    @default(0) // auto-calculated
+  revenue         Float    @default(0)
+  profit          Float    @default(0) // auto-calculated
+  roi             Float    @default(0) // auto-calculated
+  status          PopupStatus @default(PLANNED)
+  notes           String?
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  assignedStaff   EventStaff[]
+  inventory       EventInventory[]
+  sales           Order[]  @relation("EventSales")
+
+  createdBy       User     @relation("PopupCreatedBy", fields: [createdById], references: [id])
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, startDate])
+  @@index([tenantId, type])
+  @@map("popup_locations")
+}
+
+model EventStaff {
+  id              String   @id @default(cuid())
+  event           PopupLocation @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId         String
+  staff           User     @relation("EventStaffAssigned", fields: [staffId], references: [id])
+  staffId         String
+  role            String
+  dailyCost       Float    @default(0)
+
+  createdAt       DateTime @default(now())
+
+  @@index([eventId])
+  @@index([staffId])
+  @@map("event_staff")
+}
+
+model EventInventory {
+  id              String   @id @default(cuid())
+  event           PopupLocation @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId         String
+  product         Product  @relation("EventProduct", fields: [productId], references: [id])
+  productId       String
+  quantityAllocated Float
+  quantitySold    Float    @default(0)
+  quantityReturned Float   @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([productId])
+  @@map("event_inventory")
+}
+
+enum PopupType {
+  EXHIBITION
+  FAIR
+  MARKET
+  MALL_KIOSK
+  FESTIVAL
+  CORPORATE_EVENT
+}
+
+enum PopupStatus {
+  PLANNED
+  SETUP
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// 2.2 Multi-Country Support
+model CountryConfig {
+  id              String   @id @default(cuid())
+  countryCode     String   @unique // AE, SA, IN, etc.
+  countryName     String
+  countryNameArabic String?
+  currency        String
+  taxName         String   // VAT, GST, etc.
+  taxRate         Float
+  defaultUnit     String   @default("ml") // tola, ml, gm
+  invoiceFormat   String?  // JSON template
+  isActive        Boolean  @default(true)
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  exchangeRates   ExchangeRate[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, countryCode])
+  @@index([tenantId, isActive])
+  @@map("country_configs")
+}
+
+model ExchangeRate {
+  id              String   @id @default(cuid())
+  country         CountryConfig @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  countryId       String
+  fromCurrency    String
+  toCurrency      String
+  rate            Float
+  effectiveDate   DateTime @default(now())
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId, effectiveDate])
+  @@index([countryId])
+  @@map("exchange_rates")
 }
