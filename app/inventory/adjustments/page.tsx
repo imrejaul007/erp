@@ -157,17 +157,6 @@ export default function StockAdjustmentsPage() {
 
   const statuses = ['PENDING', 'APPROVED', 'REJECTED'];
 
-  const filteredAdjustments = adjustments.filter(adj => {
-    const matchesSearch = adj.materialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         adj.materialNameArabic.includes(searchTerm) ||
-                         adj.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         adj.adjustmentNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || adj.status === statusFilter;
-    const matchesReason = reasonFilter === 'all' || adj.reason === reasonFilter;
-
-    return matchesSearch && matchesStatus && matchesReason;
-  });
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'APPROVED': return 'bg-green-100 text-green-800';
