@@ -103,6 +103,8 @@ model User {
   uploadedDocuments  Document[]           @relation("DocumentUploadedBy")
   assignedWorkOrders WorkOrder[]          @relation("AssignedWorkOrders")
   assignedTasks      WorkOrderTask[]      @relation("AssignedTasks")
+  createdDashboards  Dashboard[]          @relation("CreatedDashboards")
+  sharedDashboards   DashboardShare[]     @relation("SharedDashboards")
 
   @@index([tenantId])
   @@map("users")
@@ -1914,6 +1916,12 @@ model Tenant {
   webhooks          Webhook[]
   webhookDeliveries WebhookDelivery[]
   apiKeys           ApiKey[]
+  kpis              KPI[]
+  kpiSnapshots      KPISnapshot[]
+  dashboards        Dashboard[]
+  dashboardWidgets  DashboardWidget[]
+  dashboardShares   DashboardShare[]
+  dataInsights      DataInsight[]
 
   @@map("tenants")
 }
@@ -4365,4 +4373,271 @@ enum DeliveryStatus {
   DELIVERED       // Successfully delivered
   FAILED          // Failed after all retries
   RETRYING        // Waiting for retry
+}
+
+// ============================================================================
+// ANALYTICS & BUSINESS INTELLIGENCE
+// ============================================================================
+
+model KPI {
+  id              String         @id @default(cuid())
+  name            String
+  description     String?        @db.Text
+  category        KPICategory
+  metric          String         // e.g., "revenue", "customer_count", "inventory_value"
+  formula         String?        @db.Text // JSON or formula string
+  unit            String?        // e.g., "AED", "%", "units"
+  target          Decimal?       @db.Decimal(15, 2)
+  actualValue     Decimal?       @db.Decimal(15, 2)
+  previousValue   Decimal?       @db.Decimal(15, 2)
+  
+  // Time period
+  periodType      PeriodType     @default(MONTHLY)
+  periodStart     DateTime
+  periodEnd       DateTime
+  
+  // Status & alerts
+  status          KPIStatus      @default(ON_TRACK)
+  alertThreshold  Decimal?       @db.Decimal(5, 2) // Percentage for alerts
+  isActive        Boolean        @default(true)
+  
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  
+  snapshots       KPISnapshot[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([tenantId, category])
+  @@index([tenantId, periodStart, periodEnd])
+  @@map("kpis")
+}
+
+model KPISnapshot {
+  id              String         @id @default(cuid())
+  kpiId           String
+  kpi             KPI            @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  
+  value           Decimal        @db.Decimal(15, 2)
+  target          Decimal?       @db.Decimal(15, 2)
+  variance        Decimal?       @db.Decimal(15, 2)
+  variancePercent Decimal?       @db.Decimal(5, 2)
+  
+  periodStart     DateTime
+  periodEnd       DateTime
+  snapshotDate    DateTime       @default(now())
+  
+  metadata        Json?          // Additional context data
+  
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  
+  createdAt       DateTime       @default(now())
+  
+  @@index([kpiId, snapshotDate])
+  @@index([tenantId, snapshotDate])
+  @@map("kpi_snapshots")
+}
+
+model Dashboard {
+  id              String         @id @default(cuid())
+  name            String
+  description     String?        @db.Text
+  type            DashboardType  @default(CUSTOM)
+  layout          Json           // Dashboard layout configuration
+  isDefault       Boolean        @default(false)
+  isPublic        Boolean        @default(false)
+  
+  // Ownership
+  createdById     String
+  createdBy       User           @relation("CreatedDashboards", fields: [createdById], references: [id])
+  
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  
+  widgets         DashboardWidget[]
+  shares          DashboardShare[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([tenantId, type])
+  @@index([createdById])
+  @@map("dashboards")
+}
+
+model DashboardWidget {
+  id              String         @id @default(cuid())
+  dashboardId     String
+  dashboard       Dashboard      @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  
+  title           String
+  type            WidgetType
+  dataSource      String         // API endpoint or data query
+  config          Json           // Widget-specific configuration
+  position        Json           // { x, y, w, h }
+  refreshInterval Int?           // Seconds (null = manual only)
+  
+  isVisible       Boolean        @default(true)
+  
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([dashboardId])
+  @@index([tenantId])
+  @@map("dashboard_widgets")
+}
+
+model DashboardShare {
+  id              String         @id @default(cuid())
+  dashboardId     String
+  dashboard       Dashboard      @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  
+  userId          String
+  user            User           @relation("SharedDashboards", fields: [userId], references: [id])
+  
+  permission      SharePermission @default(VIEW)
+  
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  
+  createdAt       DateTime       @default(now())
+  
+  @@unique([dashboardId, userId])
+  @@index([userId])
+  @@index([tenantId])
+  @@map("dashboard_shares")
+}
+
+model DataInsight {
+  id              String         @id @default(cuid())
+  title           String
+  description     String         @db.Text
+  category        InsightCategory
+  type            InsightType    @default(TREND)
+  severity        InsightSeverity @default(INFO)
+  
+  // Data
+  dataPoints      Json           // Relevant data points
+  recommendation  String?        @db.Text
+  impact          String?        // Potential impact description
+  
+  // Visibility
+  isRead          Boolean        @default(false)
+  isDismissed     Boolean        @default(false)
+  
+  // Auto-generation
+  isAutoGenerated Boolean        @default(false)
+  generatedAt     DateTime?
+  
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([tenantId, category])
+  @@index([tenantId, isRead, isDismissed])
+  @@map("data_insights")
+}
+
+// Enums for Analytics
+
+enum KPICategory {
+  SALES
+  REVENUE
+  PROFITABILITY
+  INVENTORY
+  PRODUCTION
+  CUSTOMER
+  VENDOR
+  FINANCIAL
+  OPERATIONAL
+  QUALITY
+  HR
+  CUSTOM
+}
+
+enum PeriodType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum KPIStatus {
+  EXCEEDING     // Above target
+  ON_TRACK      // Meeting target
+  AT_RISK       // Slightly below target
+  CRITICAL      // Significantly below target
+  NO_DATA       // No data available
+}
+
+enum DashboardType {
+  EXECUTIVE     // High-level overview
+  SALES         // Sales metrics
+  INVENTORY     // Inventory metrics
+  PRODUCTION    // Production metrics
+  FINANCIAL     // Financial metrics
+  CUSTOMER      // Customer analytics
+  OPERATIONAL   // Operational metrics
+  CUSTOM        // User-defined
+}
+
+enum WidgetType {
+  LINE_CHART
+  BAR_CHART
+  PIE_CHART
+  AREA_CHART
+  SCATTER_CHART
+  GAUGE
+  KPI_CARD
+  TABLE
+  HEATMAP
+  FUNNEL
+  PROGRESS
+  STAT
+  MAP
+  CUSTOM
+}
+
+enum SharePermission {
+  VIEW
+  EDIT
+  ADMIN
+}
+
+enum InsightCategory {
+  SALES
+  INVENTORY
+  PRODUCTION
+  FINANCIAL
+  CUSTOMER
+  VENDOR
+  QUALITY
+  OPERATIONAL
+  GENERAL
+}
+
+enum InsightType {
+  TREND          // Trending pattern
+  ANOMALY        // Unusual pattern
+  OPPORTUNITY    // Growth opportunity
+  RISK           // Potential risk
+  ALERT          // Immediate attention needed
+  RECOMMENDATION // Suggested action
+}
+
+enum InsightSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
 }
