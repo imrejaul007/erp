@@ -1911,6 +1911,9 @@ model Tenant {
   workOrderTasks    WorkOrderTask[]
   productionSchedules ProductionSchedule[]
   scheduleTemplates ScheduleTemplate[]
+  webhooks          Webhook[]
+  webhookDeliveries WebhookDelivery[]
+  apiKeys           ApiKey[]
 
   @@map("tenants")
 }
@@ -4192,4 +4195,174 @@ enum SchedulingAlgorithm {
   CAPACITY_BASED  // Based on available capacity
   CRITICAL_RATIO  // Critical ratio scheduling
   RESOURCE_LEVELING // Resource leveling
+}
+// ===================================
+// WEBHOOKS & INTEGRATIONS
+// ===================================
+
+model Webhook {
+  id              String         @id @default(cuid())
+  name            String
+  description     String?        @db.Text
+  url             String         @db.Text
+  
+  // Events to listen for
+  events          WebhookEvent[]
+  
+  // Authentication
+  secret          String?        // HMAC secret for signature
+  headers         Json?          // Custom headers
+  
+  // Configuration
+  isActive        Boolean        @default(true)
+  retryAttempts   Int            @default(3)
+  retryDelay      Int            @default(5000) // milliseconds
+  timeout         Int            @default(30000) // milliseconds
+  
+  // Filtering
+  filters         Json?          // Event filtering rules
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  deliveries      WebhookDelivery[]
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id              String         @id @default(cuid())
+  webhookId       String
+  
+  // Event details
+  event           WebhookEvent
+  payload         Json
+  
+  // Delivery status
+  status          DeliveryStatus @default(PENDING)
+  attempts        Int            @default(0)
+  
+  // Response
+  responseStatus  Int?
+  responseBody    String?        @db.Text
+  responseHeaders Json?
+  
+  // Timing
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  failedAt        DateTime?
+  nextRetryAt     DateTime?
+  
+  // Error tracking
+  error           String?        @db.Text
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  webhook         Webhook        @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([webhookId])
+  @@index([status])
+  @@index([event])
+  @@map("webhook_deliveries")
+}
+
+model ApiKey {
+  id              String         @id @default(cuid())
+  name            String
+  key             String         @unique
+  
+  // Permissions
+  scopes          Json           // API scopes/permissions
+  
+  // Usage
+  isActive        Boolean        @default(true)
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  
+  // Rate limiting
+  rateLimit       Int            @default(1000) // requests per hour
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("api_keys")
+}
+
+// Webhook Events Enum
+enum WebhookEvent {
+  // Order events
+  ORDER_CREATED
+  ORDER_UPDATED
+  ORDER_COMPLETED
+  ORDER_CANCELLED
+  
+  // Product events
+  PRODUCT_CREATED
+  PRODUCT_UPDATED
+  PRODUCT_LOW_STOCK
+  PRODUCT_OUT_OF_STOCK
+  
+  // Customer events
+  CUSTOMER_CREATED
+  CUSTOMER_UPDATED
+  
+  // Invoice events
+  INVOICE_CREATED
+  INVOICE_SENT
+  INVOICE_PAID
+  INVOICE_OVERDUE
+  
+  // Payment events
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  
+  // Production events
+  BATCH_STARTED
+  BATCH_COMPLETED
+  QUALITY_CHECK_FAILED
+  
+  // Work Order events
+  WORK_ORDER_CREATED
+  WORK_ORDER_COMPLETED
+  WORK_ORDER_FAILED
+  
+  // Shipment events
+  SHIPMENT_CREATED
+  SHIPMENT_DELIVERED
+  
+  // Return events
+  RETURN_REQUESTED
+  RETURN_APPROVED
+  RETURN_COMPLETED
+  
+  // Generic events
+  CUSTOM_EVENT
+}
+
+enum DeliveryStatus {
+  PENDING         // Waiting to be sent
+  SENDING         // Currently sending
+  DELIVERED       // Successfully delivered
+  FAILED          // Failed after all retries
+  RETRYING        // Waiting for retry
 }

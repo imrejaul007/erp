@@ -254,9 +254,9 @@
 
 ### 🔄 Optional Enhancements
 1. ✅ Advanced reporting dashboards (P&L, Balance Sheet, Cash Flow) - COMPLETED
-2. Production scheduling optimization
-3. Work order automation
-4. API webhooks for third-party integrations
+2. ✅ Production scheduling optimization - COMPLETED (8 scheduling algorithms)
+3. ✅ Work order automation - COMPLETED (Auto-generate from orders/batches)
+4. ✅ API webhooks for third-party integrations - COMPLETED (27 events, HMAC signatures)
 5. Advanced analytics and business intelligence
 
 ---
@@ -279,6 +279,7 @@
 - `/lib/email-service.ts` - Email delivery
 - `/lib/pdf-generator.ts` - PDF generation
 - `/lib/qr-code-generator.ts` - QR code generation
+- `/lib/webhook-trigger.ts` - Webhook delivery & retry system
 
 **Recently Added Schemas (Commit c4fa6f2):**
 - ExpenseCategory, Expense
@@ -286,19 +287,33 @@
 - SavedReport
 - CustomerPortalAccess, SupportTicket, TicketComment
 
-**Recently Added Schemas (Current Commit):**
+**Recently Added Schemas (Commit aa15ce1):**
+- WorkOrder, WorkOrderTask - Work order management
+- ProductionSchedule, ScheduleTemplate - Production scheduling
+- Webhook, WebhookDelivery, ApiKey - Third-party integrations
+
+**Recently Added Schemas (Previous Commits):**
 - Warehouse, WarehouseStock - Multi-warehouse management
 - Shipment - Shipping & logistics tracking
 - ReturnOrder - RMA management
 - Document - Document management with version control
 
-**Recently Added APIs (Commit 73a39ba):**
+**Recently Added APIs (Commit cad9c02):**
+- 5 Work Order & Scheduling endpoints (CRUD, auto-generate, optimize)
+- 8 scheduling algorithms (FIFO, LIFO, Priority, etc.)
+
+**Recently Added APIs (Current Commit):**
+- 3 Webhook Management endpoints (CRUD, test)
+- 3 Webhook Delivery endpoints (list, details, retry)
+- Webhook trigger system with HMAC signatures
+- 27 webhook event types
+- Automatic retry with exponential backoff
+
+**Previously Added APIs:**
 - 6 Expense Management endpoints
 - 2 Vendor Management endpoints
 - 3 Inventory Advanced modules
 - 1 Reporting endpoint
-
-**Recently Added APIs (Current Commit):**
 - 2 Warehouse Management endpoints
 - 2 Shipment & Logistics endpoints
 - 2 Returns & RMA endpoints
