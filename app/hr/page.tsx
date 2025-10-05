@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,110 +42,96 @@ import {
   Briefcase,
   ArrowLeft} from 'lucide-react';
 
+interface HRMetrics {
+  totalEmployees: number;
+  activeEmployees: number;
+  inactiveEmployees: number;
+  newHires: number;
+  avgSalary: number;
+  attendanceRate: number;
+  performanceScore: number;
+}
+
+interface Employee {
+  id: string;
+  employeeCode: string;
+  user: {
+    name: string;
+    email?: string;
+  };
+  position?: string;
+  department?: string;
+  hireDate: string;
+  isActive: boolean;
+  salary: {
+    totalSalary: number;
+  };
+  performance: {
+    score: number;
+  };
+  attendance: {
+    rate: number;
+  };
+}
+
+interface DepartmentStat {
+  department: string;
+  employeeCount: number;
+  avgSalary: number;
+  totalSalary: number;
+}
+
 const HRPage = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('thisMonth');
+  const [loading, setLoading] = useState(true);
+  const [hrMetrics, setHrMetrics] = useState<HRMetrics>({
+    totalEmployees: 0,
+    activeEmployees: 0,
+    inactiveEmployees: 0,
+    newHires: 0,
+    avgSalary: 0,
+    attendanceRate: 0,
+    performanceScore: 0
+  });
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [departmentStats, setDepartmentStats] = useState<DepartmentStat[]>([]);
 
-  // Sample HR metrics
-  const hrMetrics = {
-    totalEmployees: 45,
-    activeEmployees: 42,
-    newHires: 3,
-    avgSalary: 11200,
-    attendanceRate: 94.5,
-    performanceScore: 4.2,
-    trends: {
-      employees: +6.7,
-      attendance: +2.1,
-      performance: +8.3,
-      satisfaction: +5.4
+  useEffect(() => {
+    fetchHRData();
+  }, []);
+
+  const fetchHRData = async () => {
+    try {
+      const [analyticsRes, employeesRes] = await Promise.all([
+        fetch('/api/hr/analytics'),
+        fetch('/api/hr/employees?limit=10')
+      ]);
+
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json();
+        setHrMetrics({
+          totalEmployees: analyticsData.overview?.totalEmployees || 0,
+          activeEmployees: analyticsData.overview?.activeEmployees || 0,
+          inactiveEmployees: analyticsData.overview?.inactiveEmployees || 0,
+          newHires: analyticsData.overview?.newHires || 0,
+          avgSalary: analyticsData.salaryMetrics?.avgSalary || 0,
+          attendanceRate: analyticsData.attendanceMetrics?.attendanceRate || 0,
+          performanceScore: analyticsData.performanceMetrics?.avgScore || 0
+        });
+
+        setDepartmentStats(analyticsData.departmentStats || []);
+      }
+
+      if (employeesRes.ok) {
+        const employeesData = await employeesRes.json();
+        setEmployees(employeesData.employees || []);
+      }
+    } catch (error) {
+      console.error('Error fetching HR data:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const recentEmployees = [
-    {
-      id: 'EMP001',
-      name: 'Ahmed Al-Rashid',
-      position: 'Store Manager',
-      department: 'Sales',
-      location: 'Dubai Mall Store',
-      status: 'active',
-      joinDate: '2022-03-15',
-      salary: 15000,
-      performance: 4.8,
-      attendance: 96.5
-    },
-    {
-      id: 'EMP002',
-      name: 'Fatima Al-Zahra',
-      position: 'Sales Associate',
-      department: 'Sales',
-      location: 'Abu Dhabi Mall Store',
-      status: 'active',
-      joinDate: '2023-01-20',
-      salary: 8500,
-      performance: 4.6,
-      attendance: 94.2
-    },
-    {
-      id: 'EMP003',
-      name: 'Omar Hassan',
-      position: 'Assistant Manager',
-      department: 'Sales',
-      location: 'Sharjah City Centre',
-      status: 'active',
-      joinDate: '2022-08-10',
-      salary: 12000,
-      performance: 4.7,
-      attendance: 98.1
-    },
-    {
-      id: 'EMP004',
-      name: 'Sarah Johnson',
-      position: 'Marketing Specialist',
-      department: 'Marketing',
-      location: 'Head Office',
-      status: 'active',
-      joinDate: '2023-05-01',
-      salary: 11000,
-      performance: 4.9,
-      attendance: 95.8
-    }
-  ];
-
-  const departmentStats = [
-    {
-      name: 'Sales',
-      employees: 28,
-      avgSalary: 10500,
-      performance: 4.3,
-      openPositions: 2,
-      budget: 294000
-    },
-    {
-      name: 'Marketing',
-      employees: 6,
-      avgSalary: 12800,
-      performance: 4.6,
-      openPositions: 1,
-      budget: 76800
-    },
-    {
-      name: 'Operations',
-      employees: 8,
-      avgSalary: 9200,
-      performance: 4.1,
-      openPositions: 0,
-      budget: 73600
-    },
-    {
-      name: 'Finance',
-      employees: 3,
-      avgSalary: 14500,
-      performance: 4.5,
-      openPositions: 1,
-      budget: 43500
-    }
-  ];
 
   const upcomingEvents = [
     {
@@ -201,6 +187,16 @@ const HRPage = () => {
   };
 
   const router = useRouter();
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -336,7 +332,7 @@ const HRPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentEmployees.map((employee) => (
+              {employees.map((employee) => (
                 <TableRow key={employee.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -344,23 +340,22 @@ const HRPage = () => {
                         <Users className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
-                        <div className="font-medium">{employee.name}</div>
-                        <div className="text-sm text-gray-500">{employee.id}</div>
+                        <div className="font-medium">{employee.user?.name || 'N/A'}</div>
+                        <div className="text-sm text-gray-500">{employee.employeeCode}</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{employee.position}</div>
-                      <div className="text-sm text-gray-500">Since {employee.joinDate}</div>
+                      <div className="font-medium">{employee.position || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">Since {new Date(employee.hireDate).toLocaleDateString()}</div>
                     </div>
                   </TableCell>
-                  <TableCell>{employee.department}</TableCell>
+                  <TableCell>{employee.department || 'N/A'}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 text-gray-400" />
-                      <span className="text-sm">{employee.location}</span>
-                    </div>
+                    <Badge className={employee.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                      {employee.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -369,26 +364,26 @@ const HRPage = () => {
                           <Star
                             key={i}
                             className={`h-3 w-3 ${
-                              i < Math.floor(employee.performance)
+                              i < Math.floor(employee.performance?.score || 0)
                                 ? 'fill-yellow-400 text-yellow-400'
                                 : 'text-gray-300'
                             }`}
                           />
                         ))}
                       </div>
-                      <span className={`text-sm font-medium ${getPerformanceColor(employee.performance)}`}>
-                        {employee.performance}
+                      <span className={`text-sm font-medium ${getPerformanceColor(employee.performance?.score || 0)}`}>
+                        {employee.performance?.score?.toFixed(1) || '0.0'}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Progress value={employee.attendance} className="w-16 h-2" />
-                      <span className="text-sm">{employee.attendance}%</span>
+                      <Progress value={employee.attendance?.rate || 0} className="w-16 h-2" />
+                      <span className="text-sm">{employee.attendance?.rate?.toFixed(1) || '0'}%</span>
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">
-                    AED {employee.salary?.toLocaleString() || "0"}
+                    AED {employee.salary?.totalSalary?.toLocaleString() || "0"}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -417,15 +412,15 @@ const HRPage = () => {
         <CardContent>
           <div className="space-y-4">
             {departmentStats.map((dept) => (
-              <div key={dept.name} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={dept.department} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                     <Building className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <div className="font-medium">{dept.name}</div>
+                    <div className="font-medium">{dept.department || 'Unassigned'}</div>
                     <div className="text-sm text-gray-500">
-                      {dept.employees} employees • {dept.openPositions} open positions
+                      {dept.employeeCount} employees
                     </div>
                   </div>
                 </div>
@@ -435,15 +430,8 @@ const HRPage = () => {
                     <div className="text-xs text-gray-500">Avg Salary</div>
                   </div>
                   <div className="text-center">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{dept.performance}</span>
-                    </div>
-                    <div className="text-xs text-gray-500">Performance</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium">AED {(dept.budget / 1000).toFixed(0)}K</div>
-                    <div className="text-xs text-gray-500">Budget</div>
+                    <div className="font-medium">AED {(dept.totalSalary / 1000).toFixed(0)}K</div>
+                    <div className="text-xs text-gray-500">Total</div>
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm">
