@@ -18,74 +18,6 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { DatePicker } from '@/components/ui/date-picker';
 
-// Mock customer data
-const customers = [
-  {
-    id: 'CUST001',
-    name: 'Ahmed Al-Mansouri',
-    email: 'ahmed.mansouri@email.com',
-    phone: '+971 50 123 4567',
-    address: 'Dubai Marina, Dubai, UAE',
-    joinDate: '2023-01-15',
-    lastOrder: '2024-09-28',
-    totalOrders: 24,
-    totalSpent: 12450.00,
-    loyaltyPoints: 1245,
-    status: 'VIP',
-    preferredCategories: ['Oud', 'Amber'],
-    birthday: '1985-03-22',
-    avatar: null,
-  },
-  {
-    id: 'CUST002',
-    name: 'Fatima Hassan',
-    email: 'fatima.hassan@email.com',
-    phone: '+971 55 987 6543',
-    address: 'Jumeirah, Dubai, UAE',
-    joinDate: '2023-06-10',
-    lastOrder: '2024-09-25',
-    totalOrders: 18,
-    totalSpent: 8750.00,
-    loyaltyPoints: 875,
-    status: 'Premium',
-    preferredCategories: ['Rose', 'Floral'],
-    birthday: '1990-07-15',
-    avatar: null,
-  },
-  {
-    id: 'CUST003',
-    name: 'Mohammed Saeed',
-    email: 'mohammed.saeed@email.com',
-    phone: '+971 52 456 7890',
-    address: 'Al Ain, UAE',
-    joinDate: '2023-12-01',
-    lastOrder: '2024-09-20',
-    totalOrders: 8,
-    totalSpent: 3200.00,
-    loyaltyPoints: 320,
-    status: 'Regular',
-    preferredCategories: ['Sandalwood', 'Musk'],
-    birthday: '1988-11-03',
-    avatar: null,
-  },
-  {
-    id: 'CUST004',
-    name: 'Aisha Al-Zahra',
-    email: 'aisha.zahra@email.com',
-    phone: '+971 56 234 5678',
-    address: 'Abu Dhabi, UAE',
-    joinDate: '2024-02-14',
-    lastOrder: '2024-09-30',
-    totalOrders: 12,
-    totalSpent: 5460.00,
-    loyaltyPoints: 546,
-    status: 'Premium',
-    preferredCategories: ['Jasmine', 'Rose'],
-    birthday: '1992-12-25',
-    avatar: null,
-  },
-];
-
 // Mock purchase history
 const purchaseHistory = [
   {
@@ -135,19 +67,70 @@ const getCustomerInitials = (name: string): string => {
 
 export default function CustomersPage() {
   const router = useRouter();
+
+  // State management
+  const [customers, setCustomers] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [totalCustomers, setTotalCustomers] = React.useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedCustomer, setSelectedCustomer] = useState<typeof customers[0] | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [isNewCustomerDialogOpen, setIsNewCustomerDialogOpen] = useState(false);
   const [isCustomerDetailDialogOpen, setIsCustomerDetailDialogOpen] = useState(false);
 
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.phone.includes(searchTerm);
-    const matchesStatus = filterStatus === 'all' || customer.status.toLowerCase() === filterStatus.toLowerCase();
-    return matchesSearch && matchesStatus;
-  });
+  // Fetch customers from API
+  React.useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        let url = '/api/customers?limit=100';
+
+        if (searchTerm) {
+          url += `&search=${encodeURIComponent(searchTerm)}`;
+        }
+
+        if (filterStatus !== 'all') {
+          if (filterStatus === 'vip') {
+            url += '&isVIP=true';
+          } else if (filterStatus === 'premium' || filterStatus === 'regular') {
+            // These would need segment filtering if supported by API
+          }
+        }
+
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          const customersData = (data.data || []).map((customer: any) => ({
+            id: customer.id,
+            name: customer.name,
+            email: customer.email || 'N/A',
+            phone: customer.phone || 'N/A',
+            address: customer.address || 'N/A',
+            joinDate: customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A',
+            lastOrder: customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString() : 'N/A',
+            totalOrders: customer.totalOrders || 0,
+            totalSpent: customer.totalSpent || 0,
+            loyaltyPoints: customer.loyaltyPoints || 0,
+            status: customer.isVIP ? 'VIP' : customer.segment || 'Regular',
+            preferredCategories: [],
+            birthday: customer.dateOfBirth || null,
+            avatar: null,
+          }));
+
+          setCustomers(customersData);
+          setTotalCustomers(data.total || customersData.length);
+        }
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, [searchTerm, filterStatus]);
+
+  // Customers are already filtered by API, just use them directly
+  const filteredCustomers = customers;
 
   const openCustomerDetail = (customer: typeof customers[0]) => {
     setSelectedCustomer(customer);
