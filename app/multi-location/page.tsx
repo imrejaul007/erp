@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,116 +30,87 @@ import {
   Activity,
   ArrowLeft} from 'lucide-react';
 
+interface LocationData {
+  id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  storeType?: string;
+  isActive: boolean;
+  manager?: {
+    name: string;
+  };
+  _count?: {
+    products: number;
+  };
+}
+
 const MultiLocationPage = () => {
   const router = useRouter();
   const [selectedTimeRange, setSelectedTimeRange] = useState('thisMonth');
-
-  // Sample data for locations overview
-  const locationMetrics = {
-    totalLocations: 8,
-    activeStores: 7,
-    totalRevenue: 2450000,
-    avgPerformance: 87.5,
+  const [locations, setLocations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [locationMetrics, setLocationMetrics] = useState({
+    totalLocations: 0,
+    activeStores: 0,
+    totalRevenue: 0,
+    avgPerformance: 0,
     trends: {
-      revenue: +12.5,
-      performance: +8.2,
-      stores: +1,
-      efficiency: -2.1
+      revenue: 0,
+      performance: 0,
+      stores: 0,
+      efficiency: 0
+    }
+  });
+
+  useEffect(() => {
+    fetchLocations();
+  }, []);
+
+  const fetchLocations = async () => {
+    try {
+      const response = await fetch('/api/stores?limit=100');
+      if (response.ok) {
+        const data = await response.json();
+        const storesData = (data.stores || []).map((store: LocationData) => ({
+          id: store.id,
+          name: store.name,
+          address: store.address || `${store.city || 'N/A'}`,
+          type: store.storeType?.toLowerCase() || 'standard',
+          status: store.isActive ? 'active' : 'maintenance',
+          manager: store.manager?.name || 'Not Assigned',
+          revenue: 0, // Would come from orders API
+          target: 0,
+          performance: 0,
+          staff: 0, // Would come from staff API
+          inventory: store._count?.products || 0,
+          lastUpdate: 'Recently',
+          alerts: 0
+        }));
+
+        setLocations(storesData);
+
+        // Calculate metrics
+        const activeCount = storesData.filter((s: any) => s.status === 'active').length;
+        setLocationMetrics({
+          totalLocations: storesData.length,
+          activeStores: activeCount,
+          totalRevenue: 0, // Would be calculated from orders
+          avgPerformance: activeCount > 0 ? (activeCount / storesData.length * 100) : 0,
+          trends: {
+            revenue: 0,
+            performance: 0,
+            stores: 0,
+            efficiency: 0
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const locations = [
-    {
-      id: 'LOC-001',
-      name: 'Dubai Mall Flagship',
-      address: 'Dubai Mall, Downtown Dubai',
-      type: 'flagship',
-      status: 'active',
-      manager: 'Ahmed Al-Rashid',
-      revenue: 850000,
-      target: 800000,
-      performance: 106.3,
-      staff: 12,
-      inventory: 2450,
-      lastUpdate: '2 hours ago',
-      alerts: 0
-    },
-    {
-      id: 'LOC-002',
-      name: 'Mall of Emirates',
-      address: 'Mall of Emirates, Al Barsha',
-      type: 'premium',
-      status: 'active',
-      manager: 'Fatima Al-Zahra',
-      revenue: 620000,
-      target: 600000,
-      performance: 103.3,
-      staff: 8,
-      inventory: 1890,
-      lastUpdate: '1 hour ago',
-      alerts: 1
-    },
-    {
-      id: 'LOC-003',
-      name: 'Ibn Battuta Mall',
-      address: 'Ibn Battuta Mall, Jebel Ali',
-      type: 'standard',
-      status: 'active',
-      manager: 'Omar Hassan',
-      revenue: 380000,
-      target: 400000,
-      performance: 95.0,
-      staff: 6,
-      inventory: 1250,
-      lastUpdate: '3 hours ago',
-      alerts: 2
-    },
-    {
-      id: 'LOC-004',
-      name: 'City Centre Mirdif',
-      address: 'City Centre Mirdif, Mirdif',
-      type: 'standard',
-      status: 'active',
-      manager: 'Aisha Mohammed',
-      revenue: 290000,
-      target: 320000,
-      performance: 90.6,
-      staff: 5,
-      inventory: 980,
-      lastUpdate: '4 hours ago',
-      alerts: 0
-    },
-    {
-      id: 'LOC-005',
-      name: 'Abu Dhabi Mall',
-      address: 'Abu Dhabi Mall, Abu Dhabi',
-      type: 'premium',
-      status: 'active',
-      manager: 'Khalid Al-Mansoori',
-      revenue: 520000,
-      target: 500000,
-      performance: 104.0,
-      staff: 7,
-      inventory: 1650,
-      lastUpdate: '1 hour ago',
-      alerts: 1
-    },
-    {
-      id: 'LOC-006',
-      name: 'Sharjah City Centre',
-      address: 'Sharjah City Centre, Sharjah',
-      type: 'standard',
-      status: 'maintenance',
-      manager: 'Mariam Al-Qasimi',
-      revenue: 0,
-      target: 280000,
-      performance: 0,
-      staff: 4,
-      inventory: 750,
-      lastUpdate: '2 days ago',
-      alerts: 3
-    }
-  ];
 
   const quickStats = [
     {
@@ -207,6 +178,16 @@ const MultiLocationPage = () => {
     if (trend < 0) return 'text-red-600';
     return 'text-gray-600';
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-4 sm:space-y-6">
