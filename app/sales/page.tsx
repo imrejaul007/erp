@@ -17,96 +17,25 @@ import { Separator } from '@/components/ui/separator';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Combobox, ComboboxOption } from '@/components/ui/combobox';
 
-// Mock data for products
-const products = [
-  {
-    id: 'PRD001',
-    name: 'Royal Oud Premium',
-    category: 'Oud',
-    price: 450.00,
-    stock: 25,
-    image: '/api/placeholder/100/100',
-  },
-  {
-    id: 'PRD002',
-    name: 'Amber Essence Deluxe',
-    category: 'Amber',
-    price: 320.00,
-    stock: 18,
-    image: '/api/placeholder/100/100',
-  },
-  {
-    id: 'PRD003',
-    name: 'Rose Garden Collection',
-    category: 'Rose',
-    price: 280.00,
-    stock: 32,
-    image: '/api/placeholder/100/100',
-  },
-  {
-    id: 'PRD004',
-    name: 'Sandalwood Serenity',
-    category: 'Sandalwood',
-    price: 380.00,
-    stock: 15,
-    image: '/api/placeholder/100/100',
-  },
-  {
-    id: 'PRD005',
-    name: 'Musk Al-Haramain',
-    category: 'Musk',
-    price: 220.00,
-    stock: 40,
-    image: '/api/placeholder/100/100',
-  },
-  {
-    id: 'PRD006',
-    name: 'Jasmine Night',
-    category: 'Floral',
-    price: 195.00,
-    stock: 28,
-    image: '/api/placeholder/100/100',
-  },
-];
+// Types
+interface Product {
+  id: string;
+  name: string;
+  category: { name: string } | null;
+  unitPrice: number;
+  stockQuantity: number;
+}
 
-// Mock data for recent orders
-const recentOrders = [
-  {
-    id: 'ORD-2024-001',
-    customer: 'Ahmed Al-Mansouri',
-    items: 3,
-    total: 1250.00,
-    status: 'Completed',
-    date: '2024-09-30',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    id: 'ORD-2024-002',
-    customer: 'Fatima Hassan',
-    items: 1,
-    total: 450.00,
-    status: 'Processing',
-    date: '2024-09-30',
-    paymentMethod: 'Cash',
-  },
-  {
-    id: 'ORD-2024-003',
-    customer: 'Mohammed Saeed',
-    items: 2,
-    total: 760.00,
-    status: 'Shipped',
-    date: '2024-09-29',
-    paymentMethod: 'Bank Transfer',
-  },
-];
-
-const customers: ComboboxOption[] = [
-  { label: 'Ahmed Al-Mansouri', value: 'customer1' },
-  { label: 'Fatima Hassan', value: 'customer2' },
-  { label: 'Mohammed Saeed', value: 'customer3' },
-  { label: 'Aisha Al-Zahra', value: 'customer4' },
-  { label: 'Omar Al-Rashid', value: 'customer5' },
-];
+interface Order {
+  id: string;
+  orderNumber: string;
+  customer: { name: string };
+  items: { quantity: number }[];
+  grandTotal: number;
+  status: string;
+  createdAt: string;
+  paymentMethod?: string;
+}
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-AE', {
@@ -133,20 +62,82 @@ export default function SalesPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [cart, setCart] = useState<Array<{ product: typeof products[0], quantity: number }>>([]);
+  const [cart, setCart] = useState<Array<{ product: Product, quantity: number }>>([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [isNewOrderDialogOpen, setIsNewOrderDialogOpen] = useState(false);
   const [isPOSMode, setIsPOSMode] = useState(false);
 
+  // State for fetched data
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [orders, setOrders] = React.useState<Order[]>([]);
+  const [customers, setCustomers] = React.useState<ComboboxOption[]>([]);
+  const [salesStats, setSalesStats] = React.useState({
+    todaysSales: 0,
+    ordersToday: 0,
+    totalCustomers: 0,
+    productsSold: 0,
+  });
+  const [loading, setLoading] = React.useState(true);
+
+  // Fetch data on mount
+  React.useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch products
+        const productsRes = await fetch('/api/products?limit=100&isActive=true');
+        const productsData = await productsRes.json();
+        setProducts(productsData.products || []);
+
+        // Fetch orders
+        const ordersRes = await fetch('/api/orders?limit=50');
+        const ordersData = await ordersRes.json();
+        setOrders(ordersData.data || []);
+
+        // Fetch customers
+        const customersRes = await fetch('/api/customers?limit=100');
+        const customersData = await customersRes.json();
+        const customersOptions = (customersData.data || []).map((c: any) => ({
+          label: c.name,
+          value: c.id,
+        }));
+        setCustomers(customersOptions);
+
+        // Fetch sales stats from analytics
+        const analyticsRes = await fetch('/api/analytics/dashboard?dateRange=today');
+        const analyticsData = await analyticsRes.json();
+        if (analyticsData.data) {
+          const { kpis, customerMetrics } = analyticsData.data;
+          const revenueKpi = kpis.find((k: any) => k.label === 'Revenue');
+          const ordersKpi = kpis.find((k: any) => k.label === 'Orders');
+
+          setSalesStats({
+            todaysSales: revenueKpi?.value || 0,
+            ordersToday: ordersKpi?.value || 0,
+            totalCustomers: customerMetrics?.totalCustomers || 0,
+            productsSold: 0, // Can be calculated from order items
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching sales data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category.toLowerCase() === selectedCategory.toLowerCase();
+    const categoryName = product.category?.name?.toLowerCase() || '';
+    const matchesCategory = selectedCategory === 'all' || categoryName === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['all', ...Array.from(new Set(products.map(p => p.category.toLowerCase())))];
+  const categories = ['all', ...Array.from(new Set(products.map(p => p.category?.name?.toLowerCase() || '').filter(Boolean)))];
 
-  const addToCart = (product: typeof products[0]) => {
+  const addToCart = (product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
       if (existingItem) {
@@ -179,19 +170,49 @@ export default function SalesPage() {
   };
 
   const calculateSubtotal = () => {
-    return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    return cart.reduce((total, item) => total + (item.product.unitPrice * item.quantity), 0);
   };
 
   const subtotal = calculateSubtotal();
   const vatAmount = calculateVAT(subtotal);
   const total = subtotal + vatAmount;
 
-  const processOrder = () => {
-    // Here you would process the order
-    console.log('Processing order:', { cart, customer: selectedCustomer, total });
-    setCart([]);
-    setSelectedCustomer('');
-    setIsNewOrderDialogOpen(false);
+  const processOrder = async () => {
+    if (!selectedCustomer || cart.length === 0) return;
+
+    try {
+      const orderData = {
+        customerId: selectedCustomer,
+        items: cart.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+          price: item.product.unitPrice,
+        })),
+        paymentMethod: 'CASH',
+      };
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+
+      if (response.ok) {
+        // Refresh orders list
+        const ordersRes = await fetch('/api/orders?limit=50');
+        const ordersData = await ordersRes.json();
+        setOrders(ordersData.data || []);
+
+        // Clear cart
+        setCart([]);
+        setSelectedCustomer('');
+        setIsNewOrderDialogOpen(false);
+      } else {
+        console.error('Failed to create order');
+      }
+    } catch (error) {
+      console.error('Error processing order:', error);
+    }
   };
 
   return (
@@ -239,9 +260,9 @@ export default function SalesPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(2460.00)}</div>
+            <div className="text-xl sm:text-2xl font-bold">{formatCurrency(salesStats.todaysSales)}</div>
             <p className="text-xs text-muted-foreground">
-              +12% from yesterday
+              {loading ? 'Loading...' : 'Real-time data'}
             </p>
           </CardContent>
         </Card>
@@ -252,9 +273,9 @@ export default function SalesPage() {
             <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">12</div>
+            <div className="text-xl sm:text-2xl font-bold">{salesStats.ordersToday}</div>
             <p className="text-xs text-muted-foreground">
-              3 pending processing
+              {orders.filter(o => o.status === 'PENDING').length} pending
             </p>
           </CardContent>
         </Card>
@@ -265,22 +286,22 @@ export default function SalesPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">245</div>
+            <div className="text-xl sm:text-2xl font-bold">{salesStats.totalCustomers}</div>
             <p className="text-xs text-muted-foreground">
-              8 new this week
+              {customers.length} active
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-oud-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Products Sold</CardTitle>
+            <CardTitle className="text-sm font-medium">Products</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">34</div>
+            <div className="text-xl sm:text-2xl font-bold">{products.length}</div>
             <p className="text-xs text-muted-foreground">
-              Across 6 categories
+              {categories.length - 1} categories
             </p>
           </CardContent>
         </Card>
@@ -334,10 +355,10 @@ export default function SalesPage() {
                           <Package className="h-8 w-8 text-oud-600" />
                         </div>
                         <h3 className="font-medium text-sm mb-1">{product.name}</h3>
-                        <p className="text-xs text-muted-foreground mb-2">{product.category}</p>
+                        <p className="text-xs text-muted-foreground mb-2">{product.category?.name || 'N/A'}</p>
                         <div className="flex justify-between items-center">
-                          <span className="font-bold text-oud-600">{formatCurrency(product.price)}</span>
-                          <span className="text-xs text-muted-foreground">Stock: {product.stock}</span>
+                          <span className="font-bold text-oud-600">{formatCurrency(product.unitPrice)}</span>
+                          <span className="text-xs text-muted-foreground">Stock: {product.stockQuantity}</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -381,7 +402,7 @@ export default function SalesPage() {
                         <div className="flex-1">
                           <p className="font-medium text-sm">{item.product.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {formatCurrency(item.product.price)} each
+                            {formatCurrency(item.product.unitPrice)} each
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -471,19 +492,27 @@ export default function SalesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {recentOrders.map((order) => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.id}</TableCell>
-                          <TableCell>{order.customer}</TableCell>
-                          <TableCell>{order.items}</TableCell>
-                          <TableCell className="font-medium text-oud-600">
-                            {formatCurrency(order.total)}
+                      {orders.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center text-muted-foreground">
+                            {loading ? 'Loading orders...' : 'No orders found'}
                           </TableCell>
-                          <TableCell>{getStatusBadge(order.status)}</TableCell>
-                          <TableCell>{order.paymentMethod}</TableCell>
-                          <TableCell>{order.date}</TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        orders.map((order) => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">{order.orderNumber}</TableCell>
+                            <TableCell>{order.customer.name}</TableCell>
+                            <TableCell>{order.items.length}</TableCell>
+                            <TableCell className="font-medium text-oud-600">
+                              {formatCurrency(order.grandTotal)}
+                            </TableCell>
+                            <TableCell>{getStatusBadge(order.status)}</TableCell>
+                            <TableCell>{order.paymentMethod || 'N/A'}</TableCell>
+                            <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -500,34 +529,40 @@ export default function SalesPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {products.map((product) => (
-                    <Card key={product.id}>
-                      <CardContent className="p-4">
-                        <div className="w-full h-32 bg-gradient-to-br from-oud-100 to-amber-100 rounded-md mb-4 flex items-center justify-center">
-                          <Package className="h-12 w-12 text-oud-600" />
-                        </div>
-                        <h3 className="font-semibold mb-1">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">{product.category}</p>
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-lg font-bold text-oud-600">
-                            {formatCurrency(product.price)}
-                          </span>
-                          <Badge variant={product.stock > 10 ? 'secondary' : 'destructive'}>
-                            Stock: {product.stock}
-                          </Badge>
-                        </div>
-                        <Button
-                          className="w-full"
-                          variant="outline"
-                          onClick={() => addToCart(product)}
-                        >
-                          Add to Cart
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                {loading ? (
+                  <div className="text-center py-8 text-muted-foreground">Loading products...</div>
+                ) : products.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">No products found</div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {products.map((product) => (
+                      <Card key={product.id}>
+                        <CardContent className="p-4">
+                          <div className="w-full h-32 bg-gradient-to-br from-oud-100 to-amber-100 rounded-md mb-4 flex items-center justify-center">
+                            <Package className="h-12 w-12 text-oud-600" />
+                          </div>
+                          <h3 className="font-semibold mb-1">{product.name}</h3>
+                          <p className="text-sm text-muted-foreground mb-2">{product.category?.name || 'N/A'}</p>
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-lg font-bold text-oud-600">
+                              {formatCurrency(product.unitPrice)}
+                            </span>
+                            <Badge variant={product.stockQuantity > 10 ? 'secondary' : 'destructive'}>
+                              Stock: {product.stockQuantity}
+                            </Badge>
+                          </div>
+                          <Button
+                            className="w-full"
+                            variant="outline"
+                            onClick={() => addToCart(product)}
+                          >
+                            Add to Cart
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -560,27 +595,33 @@ export default function SalesPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {products.slice(0, 5).map((product, index) => (
-                      <div key={product.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-oud-100 rounded-full flex items-center justify-center text-sm font-medium text-oud-600">
-                            {index + 1}
+                  {loading ? (
+                    <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                  ) : products.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">No products found</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {products.slice(0, 5).map((product, index) => (
+                        <div key={product.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-oud-100 rounded-full flex items-center justify-center text-sm font-medium text-oud-600">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-sm text-muted-foreground">{product.category?.name || 'N/A'}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            <p className="text-sm text-muted-foreground">{product.category}</p>
+                          <div className="text-right">
+                            <p className="font-medium">{formatCurrency(product.unitPrice)}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Stock: {product.stockQuantity}
+                            </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">{Math.floor(Math.random() * 20) + 5} sold</p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatCurrency(product.price * (Math.floor(Math.random() * 20) + 5))}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
