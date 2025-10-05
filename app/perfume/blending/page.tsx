@@ -321,8 +321,8 @@ const BlendingLaboratoryPage = () => {
     }
   ];
 
-  // Existing formulas
-  const blendFormulas = [
+  // Existing formulas (fallback mock data)
+  const mockBlendFormulas = [
     {
       id: 'BLEND001',
       name: 'Sultan\'s Signature',
