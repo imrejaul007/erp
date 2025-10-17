@@ -212,8 +212,10 @@ model customers {
   language                 String                     @default("en")
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime
+  tenantId                 String
   customer_loyalty         customer_loyalty[]
   customer_segment_members customer_segment_members[]
+  tenants                  tenants                    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_customers_tenant")
   sales                    sales[]
 }
 
@@ -446,8 +448,10 @@ model products {
   isActive                  Boolean                     @default(true)
   createdAt                 DateTime                    @default(now())
   updatedAt                 DateTime
+  tenantId                  String
   procurement_request_items procurement_request_items[]
   production_batches        production_batches[]
+  tenants                   tenants                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_products_tenant")
   purchase_order_items      purchase_order_items[]
   recipes                   recipes[]
   reorder_points            reorder_points[]
@@ -895,12 +899,14 @@ model stores {
   isWarehouse                             Boolean                @default(false)
   createdAt                               DateTime               @default(now())
   updatedAt                               DateTime
+  tenantId                                String
   procurement_requests                    procurement_requests[]
   purchase_orders                         purchase_orders[]
   reorder_points                          reorder_points[]
   sales                                   sales[]
   stock_movements                         stock_movements[]
   store_inventory                         store_inventory[]
+  tenants                                 tenants                @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_stores_tenant")
   transfers_transfers_fromStoreIdTostores transfers[]            @relation("transfers_fromStoreIdTostores")
   transfers_transfers_toStoreIdTostores   transfers[]            @relation("transfers_toStoreIdTostores")
   user_stores                             user_stores[]
@@ -1036,6 +1042,7 @@ model suppliers {
   notes                     String?
   createdAt                 DateTime                    @default(now())
   updatedAt                 DateTime
+  tenantId                  String
   procurement_request_items procurement_request_items[]
   purchase_orders           purchase_orders[]
   raw_materials             raw_materials[]
@@ -1043,6 +1050,7 @@ model suppliers {
   supplier_evaluations      supplier_evaluations[]
   supplier_invoices         supplier_invoices[]
   supplier_products         supplier_products[]
+  tenants                   tenants                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_suppliers_tenant")
 }
 
 model transactions {
@@ -1138,6 +1146,7 @@ model users {
   lastLoginAt                                                    DateTime?
   createdAt                                                      DateTime               @default(now())
   updatedAt                                                      DateTime
+  tenantId                                                       String
   goods_receipts                                                 goods_receipts[]
   processing_stages                                              processing_stages[]
   procurement_requests_procurement_requests_approvedByIdTousers  procurement_requests[] @relation("procurement_requests_approvedByIdTousers")
@@ -1177,6 +1186,23 @@ model vat_records {
 
   @@index([period])
   @@index([type])
+}
+
+model tenants {
+  id        String      @id
+  name      String
+  slug      String      @unique
+  domain    String?
+  isActive  Boolean     @default(true)
+  status    String      @default("ACTIVE")
+  plan      String      @default("FREE")
+  settings  Json?
+  createdAt DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt DateTime    @default(now()) @db.Timestamp(6)
+  customers customers[]
+  products  products[]
+  stores    stores[]
+  suppliers suppliers[]
 }
 
 enum AccountType {

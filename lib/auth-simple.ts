@@ -26,12 +26,19 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // Accept both 'identifier' and 'email' for backwards compatibility
+          const loginIdentifier = credentials.identifier || credentials.email;
+
+          if (!loginIdentifier) {
+            return null;
+          }
+
           // Find user by email or phone
-          const user = await prisma.user.findFirst({
+          const user = await prisma.users.findFirst({
             where: {
               OR: [
-                { email: credentials.identifier },
-                { phone: credentials.identifier },
+                { email: loginIdentifier },
+                { phone: loginIdentifier },
               ]
             }
           });
@@ -70,11 +77,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, account }) {
       if (account && user) {
-        const dbUser = await prisma.user.findUnique({
+        const dbUser = await prisma.users.findUnique({
           where: { id: user.id },
-          include: {
-            stores: true,
-          },
         });
 
         if (dbUser) {
@@ -83,9 +87,9 @@ export const authOptions: NextAuthOptions = {
           token.tenantId = dbUser.tenantId;
 
           // Update last login
-          await prisma.user.update({
+          await prisma.users.update({
             where: { id: dbUser.id },
-            data: { lastLogin: new Date() },
+            data: { lastLoginAt: new Date() },
           });
         }
       }
@@ -109,7 +113,7 @@ export const authOptions: NextAuthOptions = {
     },
     async signIn({ user, account, profile, credentials }) {
       if (user?.email) {
-        const dbUser = await prisma.user.findUnique({
+        const dbUser = await prisma.users.findUnique({
           where: { email: user.email },
         });
 
