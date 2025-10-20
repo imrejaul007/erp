@@ -12,12 +12,30 @@ export async function POST(req: NextRequest) {
   try {
     console.log('🌱 Starting database seed...');
 
+    let tenant;
+    let adminUser;
+    let categoriesCount = 0;
+    let brandsCount = 0;
+    let storesCount = 0;
+
     // Check if already seeded
     const existingTenant = await prisma.tenant.findFirst();
     if (existingTenant) {
+      tenant = existingTenant;
+
+      // Count existing data
+      categoriesCount = await prisma.category.count({ where: { tenantId: tenant.id } });
+      brandsCount = await prisma.brand.count({ where: { tenantId: tenant.id } });
+      storesCount = await prisma.store.count({ where: { tenantId: tenant.id } });
+
       return NextResponse.json({
         message: 'Database already seeded!',
-        tenant: existingTenant.name,
+        data: {
+          tenant: { id: tenant.id, name: tenant.name },
+          categoriesCount,
+          brandsCount,
+          storesCount,
+        }
       }, { status: 200 });
     }
 
@@ -61,119 +79,110 @@ export async function POST(req: NextRequest) {
 
     console.log('✅ Admin user created:', adminUser.id);
 
-    // 3. Create Categories
+    // 3. Create Categories (one by one to avoid count issue)
     console.log('Creating categories...');
     const categoriesData = [
-      {
-        name: 'Finished Perfumes',
-        nameArabic: 'العطور الجاهزة',
-        description: 'Ready-to-sell perfume products',
-        isActive: true,
-        tenantId: tenant.id,
-      },
-      {
-        name: 'Oud Wood',
-        nameArabic: 'خشب العود',
-        description: 'Raw oud wood materials',
-        isActive: true,
-        tenantId: tenant.id,
-      },
-      {
-        name: 'Essential Oils',
-        nameArabic: 'الزيوت الأساسية',
-        description: 'Essential oils and extracts',
-        isActive: true,
-        tenantId: tenant.id,
-      },
-      {
-        name: 'Packaging Materials',
-        nameArabic: 'مواد التعبئة',
-        description: 'Bottles, boxes, and packaging',
-        isActive: true,
-        tenantId: tenant.id,
-      },
-      {
-        name: 'Raw Materials',
-        nameArabic: 'المواد الخام',
-        description: 'Other raw materials',
-        isActive: true,
-        tenantId: tenant.id,
-      },
+      { name: 'Finished Perfumes', nameArabic: 'العطور الجاهزة', description: 'Ready-to-sell perfume products' },
+      { name: 'Oud Wood', nameArabic: 'خشب العود', description: 'Raw oud wood materials' },
+      { name: 'Essential Oils', nameArabic: 'الزيوت الأساسية', description: 'Essential oils and extracts' },
+      { name: 'Packaging Materials', nameArabic: 'مواد التعبئة', description: 'Bottles, boxes, and packaging' },
+      { name: 'Raw Materials', nameArabic: 'المواد الخام', description: 'Other raw materials' },
     ];
 
-    const categories = await prisma.category.createMany({
-      data: categoriesData,
-      skipDuplicates: true,
-    });
+    for (const cat of categoriesData) {
+      try {
+        await prisma.category.create({
+          data: {
+            ...cat,
+            isActive: true,
+            tenantId: tenant.id,
+          },
+        });
+        categoriesCount++;
+      } catch (error: any) {
+        // Skip if already exists
+        if (error.code === 'P2002') {
+          console.log(`Category "${cat.name}" already exists, skipping...`);
+        } else {
+          console.error(`Error creating category "${cat.name}":`, error.message);
+        }
+      }
+    }
 
-    const categoriesCount = categories.count || categoriesData.length;
     console.log('✅ Categories created:', categoriesCount);
 
-    // 4. Create Brands
+    // 4. Create Brands (one by one to avoid count issue)
     console.log('Creating brands...');
     const brandsData = [
-      {
-        name: 'Oud Palace',
-        nameArabic: 'قصر العود',
-        description: 'Premium oud perfumes',
-        isActive: true,
-        tenantId: tenant.id,
-      },
-      {
-        name: 'Royal Collection',
-        nameArabic: 'المجموعة الملكية',
-        description: 'Luxury perfume collection',
-        isActive: true,
-        tenantId: tenant.id,
-      },
-      {
-        name: 'Arabian Nights',
-        nameArabic: 'ليالي العرب',
-        description: 'Traditional Arabian fragrances',
-        isActive: true,
-        tenantId: tenant.id,
-      },
+      { name: 'Oud Palace', nameArabic: 'قصر العود', description: 'Premium oud perfumes' },
+      { name: 'Royal Collection', nameArabic: 'المجموعة الملكية', description: 'Luxury perfume collection' },
+      { name: 'Arabian Nights', nameArabic: 'ليالي العرب', description: 'Traditional Arabian fragrances' },
     ];
 
-    const brands = await prisma.brand.createMany({
-      data: brandsData,
-      skipDuplicates: true,
-    });
+    for (const brand of brandsData) {
+      try {
+        await prisma.brand.create({
+          data: {
+            ...brand,
+            isActive: true,
+            tenantId: tenant.id,
+          },
+        });
+        brandsCount++;
+      } catch (error: any) {
+        // Skip if already exists
+        if (error.code === 'P2002') {
+          console.log(`Brand "${brand.name}" already exists, skipping...`);
+        } else {
+          console.error(`Error creating brand "${brand.name}":`, error.message);
+        }
+      }
+    }
 
-    const brandsCount = brands.count || brandsData.length;
     console.log('✅ Brands created:', brandsCount);
 
     // 5. Create Default Store
     console.log('Creating default store...');
-    const store = await prisma.store.create({
-      data: {
-        name: 'Main Store',
-        nameArabic: 'المتجر الرئيسي',
-        code: 'MAIN-001',
-        address: 'Dubai Mall, Dubai',
-        emirate: 'Dubai',
-        city: 'Dubai',
-        phone: '+971501234567',
-        email: 'store@oudpalace.ae',
-        isActive: true,
-        createdById: adminUser.id,
-        tenantId: tenant.id,
-      },
-    });
+    let store;
+    try {
+      store = await prisma.store.create({
+        data: {
+          name: 'Main Store',
+          nameArabic: 'المتجر الرئيسي',
+          code: 'MAIN-001',
+          address: 'Dubai Mall, Dubai',
+          emirate: 'Dubai',
+          city: 'Dubai',
+          phone: '+971501234567',
+          email: 'store@oudpalace.ae',
+          isActive: true,
+          createdById: adminUser.id,
+          tenantId: tenant.id,
+        },
+      });
+      storesCount = 1;
+      console.log('✅ Store created:', store.id);
 
-    console.log('✅ Store created:', store.id);
+      // 6. Assign user to store
+      await prisma.userStore.create({
+        data: {
+          userId: adminUser.id,
+          storeId: store.id,
+          role: 'MANAGER',
+          tenantId: tenant.id,
+        },
+      });
 
-    // 6. Assign user to store
-    await prisma.userStore.create({
-      data: {
-        userId: adminUser.id,
-        storeId: store.id,
-        role: 'MANAGER',
-        tenantId: tenant.id,
-      },
-    });
-
-    console.log('✅ User assigned to store');
+      console.log('✅ User assigned to store');
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        console.log('Store already exists, skipping...');
+        store = await prisma.store.findFirst({ where: { tenantId: tenant.id } });
+        storesCount = await prisma.store.count({ where: { tenantId: tenant.id } });
+      } else {
+        throw error;
+      }
+    }
 
     return NextResponse.json({
       success: true,
