@@ -63,77 +63,85 @@ export async function POST(req: NextRequest) {
 
     // 3. Create Categories
     console.log('Creating categories...');
+    const categoriesData = [
+      {
+        name: 'Finished Perfumes',
+        nameArabic: 'العطور الجاهزة',
+        description: 'Ready-to-sell perfume products',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+      {
+        name: 'Oud Wood',
+        nameArabic: 'خشب العود',
+        description: 'Raw oud wood materials',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+      {
+        name: 'Essential Oils',
+        nameArabic: 'الزيوت الأساسية',
+        description: 'Essential oils and extracts',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+      {
+        name: 'Packaging Materials',
+        nameArabic: 'مواد التعبئة',
+        description: 'Bottles, boxes, and packaging',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+      {
+        name: 'Raw Materials',
+        nameArabic: 'المواد الخام',
+        description: 'Other raw materials',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+    ];
+
     const categories = await prisma.category.createMany({
-      data: [
-        {
-          name: 'Finished Perfumes',
-          nameArabic: 'العطور الجاهزة',
-          description: 'Ready-to-sell perfume products',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-        {
-          name: 'Oud Wood',
-          nameArabic: 'خشب العود',
-          description: 'Raw oud wood materials',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-        {
-          name: 'Essential Oils',
-          nameArabic: 'الزيوت الأساسية',
-          description: 'Essential oils and extracts',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-        {
-          name: 'Packaging Materials',
-          nameArabic: 'مواد التعبئة',
-          description: 'Bottles, boxes, and packaging',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-        {
-          name: 'Raw Materials',
-          nameArabic: 'المواد الخام',
-          description: 'Other raw materials',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-      ],
+      data: categoriesData,
+      skipDuplicates: true,
     });
 
-    console.log('✅ Categories created:', categories.count);
+    const categoriesCount = categories.count || categoriesData.length;
+    console.log('✅ Categories created:', categoriesCount);
 
     // 4. Create Brands
     console.log('Creating brands...');
+    const brandsData = [
+      {
+        name: 'Oud Palace',
+        nameArabic: 'قصر العود',
+        description: 'Premium oud perfumes',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+      {
+        name: 'Royal Collection',
+        nameArabic: 'المجموعة الملكية',
+        description: 'Luxury perfume collection',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+      {
+        name: 'Arabian Nights',
+        nameArabic: 'ليالي العرب',
+        description: 'Traditional Arabian fragrances',
+        isActive: true,
+        tenantId: tenant.id,
+      },
+    ];
+
     const brands = await prisma.brand.createMany({
-      data: [
-        {
-          name: 'Oud Palace',
-          nameArabic: 'قصر العود',
-          description: 'Premium oud perfumes',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-        {
-          name: 'Royal Collection',
-          nameArabic: 'المجموعة الملكية',
-          description: 'Luxury perfume collection',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-        {
-          name: 'Arabian Nights',
-          nameArabic: 'ليالي العرب',
-          description: 'Traditional Arabian fragrances',
-          isActive: true,
-          tenantId: tenant.id,
-        },
-      ],
+      data: brandsData,
+      skipDuplicates: true,
     });
 
-    console.log('✅ Brands created:', brands.count);
+    const brandsCount = brands.count || brandsData.length;
+    console.log('✅ Brands created:', brandsCount);
 
     // 5. Create Default Store
     console.log('Creating default store...');
@@ -180,8 +188,8 @@ export async function POST(req: NextRequest) {
           email: adminUser.email,
           password: 'admin123', // Show password for first login
         },
-        categoriesCreated: categories.count,
-        brandsCreated: brands.count,
+        categoriesCreated: categoriesCount,
+        brandsCreated: brandsCount,
         storesCreated: 1,
       },
       nextSteps: [
