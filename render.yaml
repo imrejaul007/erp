@@ -13,11 +13,11 @@ services:
           name: oud-erp-db
           property: connectionString
       - key: NEXTAUTH_URL
-        value: https://oud-erp.onrender.com
+        sync: false  # UPDATE THIS IN RENDER DASHBOARD WITH YOUR ACTUAL URL
       - key: NEXTAUTH_SECRET
         generateValue: true
       - key: NEXT_PUBLIC_APP_URL
-        value: https://oud-erp.onrender.com
+        sync: false  # UPDATE THIS IN RENDER DASHBOARD WITH YOUR ACTUAL URL
       - key: NEXT_PUBLIC_APP_NAME
         value: Oud & Perfume ERP
 
