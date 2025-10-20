@@ -19,14 +19,14 @@ export async function POST(req: NextRequest) {
     let storesCount = 0;
 
     // Check if already seeded
-    const existingTenant = await prisma.tenant.findFirst();
+    const existingTenant = await prisma.tenants.findFirst();
     if (existingTenant) {
       tenant = existingTenant;
 
       // Count existing data
-      categoriesCount = await prisma.category.count({ where: { tenantId: tenant.id } });
-      brandsCount = await prisma.brand.count({ where: { tenantId: tenant.id } });
-      storesCount = await prisma.store.count({ where: { tenantId: tenant.id } });
+      categoriesCount = await prisma.categories.count({ where: { tenantId: tenant.id } });
+      brandsCount = await prisma.brands.count({ where: { tenantId: tenant.id } });
+      storesCount = await prisma.stores.count({ where: { tenantId: tenant.id } });
 
       return NextResponse.json({
         message: 'Database already seeded!',
@@ -41,21 +41,21 @@ export async function POST(req: NextRequest) {
 
     // 1. Create Tenant
     console.log('Creating tenant...');
-    tenant = await prisma.tenant.create({
+    tenant = await prisma.tenants.create({
       data: {
         name: 'Oud Palace',
         slug: 'oud-palace',
-        email: 'admin@oudpalace.ae',
-        phone: '+971501234567',
+        ownerName: 'Admin User',
+        ownerEmail: 'admin@oudpalace.ae',
+        ownerPhone: '+971501234567',
         address: 'Dubai, UAE',
-        country: 'AE',
-        timezone: 'Asia/Dubai',
-        currency: 'AED',
+        emirate: 'Dubai',
+        city: 'Dubai',
         businessType: 'RETAIL',
-        subscriptionPlan: 'PROFESSIONAL',
-        subscriptionStatus: 'ACTIVE',
+        plan: 'PROFESSIONAL',
         isActive: true,
         status: 'ACTIVE',
+        features: {},
       },
     });
 
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     console.log('Creating admin user...');
     const hashedPassword = await hash('admin123', 12);
 
-    adminUser = await prisma.user.create({
+    adminUser = await prisma.users.create({
       data: {
         name: 'Admin User',
         email: 'admin@oudpalace.ae',
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     for (const cat of categoriesData) {
       try {
-        await prisma.category.create({
+        await prisma.categories.create({
           data: {
             ...cat,
             isActive: true,
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
 
     for (const brand of brandsData) {
       try {
-        await prisma.brand.create({
+        await prisma.brands.create({
           data: {
             ...brand,
             isActive: true,
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
     console.log('Creating default store...');
     let store;
     try {
-      store = await prisma.store.create({
+      store = await prisma.stores.create({
         data: {
           name: 'Main Store',
           nameArabic: 'المتجر الرئيسي',
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
       console.log('✅ Store created:', store.id);
 
       // 6. Assign user to store
-      await prisma.userStore.create({
+      await prisma.user_stores.create({
         data: {
           userId: adminUser.id,
           storeId: store.id,
@@ -177,8 +177,8 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
       if (error.code === 'P2002') {
         console.log('Store already exists, skipping...');
-        store = await prisma.store.findFirst({ where: { tenantId: tenant.id } });
-        storesCount = await prisma.store.count({ where: { tenantId: tenant.id } });
+        store = await prisma.stores.findFirst({ where: { tenantId: tenant.id } });
+        storesCount = await prisma.stores.count({ where: { tenantId: tenant.id } });
       } else {
         throw error;
       }
@@ -230,11 +230,11 @@ export async function POST(req: NextRequest) {
 // GET method to check if seeded
 export async function GET() {
   try {
-    const tenantCount = await prisma.tenant.count();
-    const categoryCount = await prisma.category.count();
-    const brandCount = await prisma.brand.count();
-    const userCount = await prisma.user.count();
-    const storeCount = await prisma.store.count();
+    const tenantCount = await prisma.tenants.count();
+    const categoryCount = await prisma.categories.count();
+    const brandCount = await prisma.brands.count();
+    const userCount = await prisma.users.count();
+    const storeCount = await prisma.stores.count();
 
     const isSeeded = tenantCount > 0 && categoryCount > 0;
 
