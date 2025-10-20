@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Create Tenant
     console.log('Creating tenant...');
-    const tenant = await prisma.tenant.create({
+    tenant = await prisma.tenant.create({
       data: {
         name: 'Oud Palace',
         slug: 'oud-palace',
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     console.log('Creating admin user...');
     const hashedPassword = await hash('admin123', 12);
 
-    const adminUser = await prisma.user.create({
+    adminUser = await prisma.user.create({
       data: {
         name: 'Admin User',
         email: 'admin@oudpalace.ae',
