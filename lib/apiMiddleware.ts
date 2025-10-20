@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth-simple';
-import { prisma } from '@/lib/database/prisma';
+import { prisma } from '@/lib/prisma';
 import { handleError, AppError, ErrorCode, ErrorHelpers } from '@/lib/errorHandler';
 import { RequestLogger } from '@/lib/requestLogger';
 import { rateLimit, RateLimits } from '@/lib/rateLimit';
