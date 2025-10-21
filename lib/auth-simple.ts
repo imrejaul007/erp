@@ -62,9 +62,9 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
-            name: user.name,
-            image: user.image,
-            role: user.role,
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+            image: user.avatar || null,
+            role: 'USER', // Default role since table doesn't have role column
             tenantId: user.tenantId,
           };
         } catch (error) {
@@ -82,7 +82,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (dbUser) {
-          token.role = dbUser.role;
+          token.role = 'USER'; // Default role since table doesn't have role column
           token.isActive = dbUser.isActive;
           token.tenantId = dbUser.tenantId;
 
