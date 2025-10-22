@@ -564,7 +564,7 @@ function buildWhereClause(tenantId: string, params: any, start: Date, end: Date)
 async function getAverageProductCost(tenantId: string, productId: string, start: Date, end: Date): Promise<number> {
   // This would get the weighted average cost from stock movements or production batches
   // For simplicity, using cost_price from product table
-  const product = await prisma.product.findUnique({
+  const product = await prisma.products.findUnique({
     where: {
       tenantId,
       id: productId
@@ -597,7 +597,7 @@ async function getStoreInventoryCost(tenantId: string, storeId: string, start: D
 async function getStoreOperationalCosts(tenantId: string, storeId: string, start: Date, end: Date): Promise<number> {
   // This would typically come from expense tracking
   // For now, returning a placeholder calculation
-  const store = await prisma.store.findUnique({
+  const store = await prisma.stores.findUnique({
     where: {
       tenantId,
       id: storeId

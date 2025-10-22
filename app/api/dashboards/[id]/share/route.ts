@@ -34,7 +34,7 @@ export const POST = withTenant(async (
     }
 
     // Check if user exists in tenant
-    const targetUser = await prisma.user.findFirst({
+    const targetUser = await prisma.users.findFirst({
       where: {
         id: validated.userId,
         tenantId,

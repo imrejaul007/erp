@@ -63,7 +63,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
     // Fetch stores from database
     const [stores, total] = await Promise.all([
-      prisma.store.findMany({
+      prisma.stores.findMany({
         where: whereClause,
         include: {
           createdBy: {
@@ -87,7 +87,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
         skip: (filters.page - 1) * filters.limit,
         take: filters.limit
       }),
-      prisma.store.count({ where: whereClause })
+      prisma.stores.count({ where: whereClause })
     ]);
 
     // Enrich with computed fields
@@ -129,7 +129,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     const storeData = StoreCreateSchema.parse(body);
 
     // Check if store code is unique within tenant
-    const existingStore = await prisma.store.findFirst({
+    const existingStore = await prisma.stores.findFirst({
       where: { code: storeData.code, tenantId }
     });
 
@@ -138,7 +138,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Create store in database
-    const newStore = await prisma.store.create({
+    const newStore = await prisma.stores.create({
       data: {
         ...storeData,
         createdById: user.id,
@@ -183,7 +183,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Bulk update stores (only within tenant)
-    const result = await prisma.store.updateMany({
+    const result = await prisma.stores.updateMany({
       where: {
         id: { in: storeIds },
         tenantId
@@ -217,7 +217,7 @@ export const DELETE = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Soft delete by setting isActive to false (only within tenant)
-    const result = await prisma.store.updateMany({
+    const result = await prisma.stores.updateMany({
       where: {
         id: { in: storeIds },
         tenantId

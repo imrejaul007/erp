@@ -11,7 +11,7 @@ const BrandCreateSchema = z.object({
 // GET /api/brands
 export const GET = withTenant(async (req, { tenantId, user }) => {
   try {
-    const brands = await prisma.brand.findMany({
+    const brands = await prisma.brands.findMany({
       where: { tenantId },
       orderBy: {
         name: 'asc'
@@ -41,7 +41,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     const body = await req.json();
     const brandData = BrandCreateSchema.parse(body);
 
-    const brand = await prisma.brand.create({
+    const brand = await prisma.brands.create({
       data: {
         ...brandData,
         tenantId

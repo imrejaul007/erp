@@ -124,7 +124,7 @@ export const GET = withTenant(async (req: NextRequest, { tenantId }) => {
     // Enrich with customer names
     const topCustomersWithNames = await Promise.all(
       topCustomers.map(async (item: any) => {
-        const customer = await prisma.customer.findUnique({
+        const customer = await prisma.customers.findUnique({
           where: { id: item.customerId },
           select: { id: true, name: true, email: true },
         });

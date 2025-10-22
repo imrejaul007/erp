@@ -86,7 +86,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId }) => {
     const validated = TicketCreateSchema.parse(body);
 
     // Verify customer exists
-    const customer = await prisma.customer.findFirst({
+    const customer = await prisma.customers.findFirst({
       where: {
         id: validated.customerId,
         tenantId,

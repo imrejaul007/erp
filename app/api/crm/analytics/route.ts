@@ -16,11 +16,11 @@ export const GET = withTenant(async (request: NextRequest, { tenantId }) => {
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
       // Overview Statistics
-      const totalCustomers = await prisma.customer.count({
+      const totalCustomers = await prisma.customers.count({
         where: { tenantId }
       });
 
-      const activeCustomers = await prisma.customer.count({
+      const activeCustomers = await prisma.customers.count({
         where: {
           tenantId,
           lastOrderDate: {
@@ -29,7 +29,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId }) => {
         }
       });
 
-      const newCustomers = await prisma.customer.count({
+      const newCustomers = await prisma.customers.count({
         where: {
           tenantId,
           createdAt: {
@@ -38,7 +38,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId }) => {
         }
       });
 
-      const vipCustomers = await prisma.customer.count({
+      const vipCustomers = await prisma.customers.count({
         where: {
           tenantId,
           isVIP: true
@@ -61,7 +61,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId }) => {
       });
 
       // Loyalty Program Statistics
-      const loyaltyStats = await prisma.customer.aggregate({
+      const loyaltyStats = await prisma.customers.aggregate({
         where: {
           tenantId,
           loyaltyPoints: { gt: 0 }
@@ -79,7 +79,7 @@ export const GET = withTenant(async (request: NextRequest, { tenantId }) => {
       const redemptionRate = totalEarned > 0 ? Math.round((totalRedeemed / totalEarned) * 100) : 0;
 
       // Customer Segmentation
-      const segments = await prisma.customer.groupBy({
+      const segments = await prisma.customers.groupBy({
         by: ['segment'],
         where: { tenantId },
         _count: {

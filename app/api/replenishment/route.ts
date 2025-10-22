@@ -179,7 +179,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
         return apiError('Invalid stock levels. Max must be greater than min, and both must be non-negative.', 400);
       }
 
-      const product = await prisma.product.update({
+      const product = await prisma.products.update({
         where: { id: productId, tenantId },
         data: {
           minStock,
@@ -207,8 +207,8 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
 
       // Verify stores exist
       const [fromStore, toStore] = await Promise.all([
-        prisma.store.findFirst({ where: { id: createTransfer.fromStoreId, tenantId } }),
-        prisma.store.findFirst({ where: { id: createTransfer.toStoreId, tenantId } })
+        prisma.stores.findFirst({ where: { id: createTransfer.fromStoreId, tenantId } }),
+        prisma.stores.findFirst({ where: { id: createTransfer.toStoreId, tenantId } })
       ]);
 
       if (!fromStore || !toStore) {
@@ -226,7 +226,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
         });
 
         if (!inventory || inventory.quantity < item.quantity) {
-          const product = await prisma.product.findFirst({ where: { id: item.productId, tenantId } });
+          const product = await prisma.products.findFirst({ where: { id: item.productId, tenantId } });
           return apiError(`Insufficient stock for product ${product?.name || item.productId}. Available: ${inventory?.quantity || 0}, Requested: ${item.quantity}`, 400);
         }
       }

@@ -94,7 +94,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
 
     // Verify supervisor if provided
     if (validated.supervisorId) {
-      const supervisor = await prisma.user.findFirst({
+      const supervisor = await prisma.users.findFirst({
         where: {
           id: validated.supervisorId,
           tenantId,

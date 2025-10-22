@@ -146,7 +146,7 @@ export const POST = withTenant(async (
     }
 
     // Verify customer exists and belongs to tenant
-    const customer = await prisma.customer.findFirst({
+    const customer = await prisma.customers.findFirst({
       where: {
         id: validated.customerId,
         tenantId,

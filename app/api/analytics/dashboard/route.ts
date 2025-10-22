@@ -66,11 +66,11 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
       : '0.0';
 
     // Get customer metrics
-    const totalCustomers = await prisma.customer.count({ where: { tenantId } });
-    const newCustomers = await prisma.customer.count({
+    const totalCustomers = await prisma.customers.count({ where: { tenantId } });
+    const newCustomers = await prisma.customers.count({
       where: { tenantId, createdAt: { gte: startDate, lte: endDate } },
     });
-    const previousNewCustomers = await prisma.customer.count({
+    const previousNewCustomers = await prisma.customers.count({
       where: { tenantId, createdAt: { gte: previousStartDate, lte: startDate } },
     });
 
@@ -79,12 +79,12 @@ export const GET = withTenant(async (request: NextRequest, { tenantId, user }) =
       : '0.0';
 
     // Get inventory value
-    const products = await prisma.product.aggregate({
+    const products = await prisma.products.aggregate({
       where: { tenantId },
       _sum: { stock: true },
     });
 
-    const productsWithCost = await prisma.product.findMany({
+    const productsWithCost = await prisma.products.findMany({
       where: { tenantId },
       select: { stock: true, cost: true },
     });

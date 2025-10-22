@@ -93,7 +93,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
     const validated = ExpenseCreateSchema.parse(body);
 
     // Verify employee exists
-    const employee = await prisma.user.findFirst({
+    const employee = await prisma.users.findFirst({
       where: {
         id: validated.employeeId,
         tenantId,

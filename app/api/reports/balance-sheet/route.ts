@@ -16,7 +16,7 @@ export const GET = withTenant(async (req: NextRequest, { tenantId }) => {
     // ASSETS
 
     // Current Assets - Inventory
-    const products = await prisma.product.findMany({
+    const products = await prisma.products.findMany({
       where: { tenantId },
       select: {
         stockQuantity: true,

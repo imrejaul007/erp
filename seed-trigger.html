@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #0070f3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #0051cc;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Seed Database</h1>
+        <p>Click the button below to seed your database with initial data.</p>
+
+        <button id="seedBtn" onclick="seedDatabase()">
+            🚀 Seed Database Now
+        </button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://oud-erp.onrender.com/api/admin/seed';
+
+        async function seedDatabase() {
+            const btn = document.getElementById('seedBtn');
+            const result = document.getElementById('result');
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = '⏳ Seeding...';
+            result.className = 'loading';
+            result.textContent = 'Sending POST request to seed endpoint...\n\nPlease wait...';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    result.className = 'success';
+                    result.textContent = '✅ SUCCESS!\n\n' + JSON.stringify(data, null, 2);
+                    btn.textContent = '✅ Seeded Successfully!';
+                } else {
+                    result.className = 'error';
+                    result.textContent = '❌ ERROR:\n\n' + JSON.stringify(data, null, 2);
+                    btn.textContent = '❌ Seeding Failed';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                result.className = 'error';
+                result.textContent = '❌ NETWORK ERROR:\n\n' + error.message;
+                btn.textContent = '🔄 Try Again';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

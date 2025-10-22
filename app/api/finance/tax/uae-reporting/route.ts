@@ -280,7 +280,7 @@ async function generateCorporateTaxReport(taxPeriod: any, entityInfo: any, curre
 
 async function generateExciseTaxReport(taxPeriod: any, entityInfo: any, currency: string, includeDetails: boolean) {
   // Excise tax applies to specific goods like tobacco, energy drinks, carbonated drinks
-  const excisableProducts = await prisma.product.findMany({
+  const excisableProducts = await prisma.products.findMany({
     where: {
       category: {
         name: {

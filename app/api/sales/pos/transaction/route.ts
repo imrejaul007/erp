@@ -262,7 +262,7 @@ export const POST = withTenant(async (request, { tenantId, user }) => {
     const transactionData = TransactionDataSchema.parse(body);
 
     // Verify store exists and belongs to tenant
-    const store = await prisma.store.findFirst({
+    const store = await prisma.stores.findFirst({
       where: {
         id: transactionData.storeId,
         tenantId
@@ -275,7 +275,7 @@ export const POST = withTenant(async (request, { tenantId, user }) => {
 
     // Verify customer belongs to tenant if customerId is provided
     if (transactionData.customerId) {
-      const customer = await prisma.customer.findFirst({
+      const customer = await prisma.customers.findFirst({
         where: {
           id: transactionData.customerId,
           tenantId

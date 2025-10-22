@@ -115,7 +115,7 @@ export const GET = withTenant(async (request: NextRequest, context: { tenantId: 
     }
 
     // Search for product by SKU (using as barcode)
-    const product = await prisma.product.findFirst({
+    const product = await prisma.products.findFirst({
       where: {
         tenantId,
         OR: [
@@ -157,7 +157,7 @@ export const GET = withTenant(async (request: NextRequest, context: { tenantId: 
 
     // Include alternative/related products if requested
     if (includeAlternatives) {
-      const alternatives = await prisma.product.findMany({
+      const alternatives = await prisma.products.findMany({
         where: {
           tenantId,
           id: { not: product.id },
@@ -216,7 +216,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Fetch all products matching the barcodes/SKUs
-    const products = await prisma.product.findMany({
+    const products = await prisma.products.findMany({
       where: {
         tenantId,
         sku: { in: barcodes },

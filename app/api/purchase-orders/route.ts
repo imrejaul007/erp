@@ -235,7 +235,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
 
     // Validate store if provided and belongs to tenant
     if (validatedData.storeId) {
-      const store = await prisma.store.findFirst({
+      const store = await prisma.stores.findFirst({
         where: {
           id: validatedData.storeId,
           tenantId
@@ -262,7 +262,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
       }
 
       if (item.productId) {
-        const product = await prisma.product.findFirst({
+        const product = await prisma.products.findFirst({
           where: {
             id: item.productId,
             tenantId

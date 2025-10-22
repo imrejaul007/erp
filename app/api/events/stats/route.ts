@@ -120,7 +120,7 @@ export const GET = withTenant(async (req, { tenantId }) => {
     // Enrich top staff with user details
     const enrichedTopStaff = await Promise.all(
       topStaff.map(async (staff) => {
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
           where: { id: staff.userId },
           select: {
             id: true,
@@ -155,7 +155,7 @@ export const GET = withTenant(async (req, { tenantId }) => {
     // Enrich top products with product details
     const enrichedTopProducts = await Promise.all(
       topProducts.map(async (item) => {
-        const product = await prisma.product.findUnique({
+        const product = await prisma.products.findUnique({
           where: { id: item.productId },
           select: {
             id: true,

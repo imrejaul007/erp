@@ -12,7 +12,7 @@ const CategoryCreateSchema = z.object({
 // GET /api/categories
 export const GET = withTenant(async (req, { tenantId, user }) => {
   try {
-    const categories = await prisma.category.findMany({
+    const categories = await prisma.categories.findMany({
       where: { tenantId },
       orderBy: {
         name: 'asc'
@@ -43,7 +43,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     const body = await req.json();
     const categoryData = CategoryCreateSchema.parse(body);
 
-    const category = await prisma.category.create({
+    const category = await prisma.categories.create({
       data: {
         ...categoryData,
         tenantId

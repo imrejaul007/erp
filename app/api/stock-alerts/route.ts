@@ -62,7 +62,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId }) => {
     const validated = AlertCreateSchema.parse(body);
 
     // Verify product exists
-    const product = await prisma.product.findFirst({
+    const product = await prisma.products.findFirst({
       where: {
         id: validated.productId,
         tenantId,

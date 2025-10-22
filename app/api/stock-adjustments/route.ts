@@ -74,7 +74,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
     const validated = AdjustmentCreateSchema.parse(body);
 
     // Verify product exists
-    const product = await prisma.product.findFirst({
+    const product = await prisma.products.findFirst({
       where: {
         id: validated.productId,
         tenantId,
@@ -140,7 +140,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
       }),
       // Update product stock if doesn't require approval
       ...(!validated.requiresApproval ? [
-        prisma.product.update({
+        prisma.products.update({
           where: { id: validated.productId },
           data: { stockQuantity: quantityAfter },
         }),

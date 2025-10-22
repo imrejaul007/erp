@@ -59,7 +59,7 @@ export const GET = withTenant(async (req, { tenantId }) => {
     // Enrich top ingredients with product details
     const enrichedTopIngredients = await Promise.all(
       topIngredients.map(async (ing) => {
-        const product = await prisma.product.findUnique({
+        const product = await prisma.products.findUnique({
           where: { id: ing.productId },
           select: {
             id: true,

@@ -84,7 +84,7 @@ export const PUT = withTenant(async (request: NextRequest, { tenantId, user }) =
     }
 
     // Verify product belongs to tenant
-    const product = await prisma.product.findUnique({
+    const product = await prisma.products.findUnique({
       where: { id: productId },
     });
 

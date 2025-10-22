@@ -199,13 +199,13 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
     // Verify stores exist and belong to tenant
     const [fromStore, toStore] = await Promise.all([
-      prisma.store.findFirst({
+      prisma.stores.findFirst({
         where: {
           id: transferData.fromStoreId,
           tenantId
         }
       }),
-      prisma.store.findFirst({
+      prisma.stores.findFirst({
         where: {
           id: transferData.toStoreId,
           tenantId
@@ -229,7 +229,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
       });
 
       if (!inventory || inventory.quantity < item.quantity) {
-        const product = await prisma.product.findFirst({
+        const product = await prisma.products.findFirst({
           where: {
             id: item.productId,
             tenantId

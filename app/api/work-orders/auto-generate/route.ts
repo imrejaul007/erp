@@ -124,7 +124,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
       let product, recipe;
 
       if (validated.productId) {
-        product = await prisma.product.findFirst({
+        product = await prisma.products.findFirst({
           where: { id: validated.productId, tenantId },
         });
       }

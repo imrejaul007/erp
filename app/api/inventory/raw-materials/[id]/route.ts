@@ -113,7 +113,7 @@ export const PUT = withTenant(async (
 
     // If updating category, verify it belongs to tenant
     if (validatedData.categoryId) {
-      const category = await prisma.category.findUnique({
+      const category = await prisma.categories.findUnique({
         where: { id: validatedData.categoryId },
       })
 

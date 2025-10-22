@@ -50,7 +50,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
     // Fetch customers with relations
     const [customers, total] = await Promise.all([
-      prisma.customer.findMany({
+      prisma.customers.findMany({
         where: whereClause,
         include: {
           orders: {
@@ -66,7 +66,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
         skip: (page - 1) * limit,
         take: limit
       }),
-      prisma.customer.count({ where: whereClause })
+      prisma.customers.count({ where: whereClause })
     ]);
 
     return apiResponse({
@@ -94,7 +94,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
     // Check if email or phone already exists within tenant
     if (customerData.email) {
-      const existingCustomer = await prisma.customer.findFirst({
+      const existingCustomer = await prisma.customers.findFirst({
         where: { email: customerData.email, tenantId }
       });
 
@@ -104,7 +104,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     }
 
     if (customerData.phone) {
-      const existingCustomer = await prisma.customer.findFirst({
+      const existingCustomer = await prisma.customers.findFirst({
         where: { phone: customerData.phone, tenantId }
       });
 
@@ -114,7 +114,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Create customer
-    const customer = await prisma.customer.create({
+    const customer = await prisma.customers.create({
       data: {
         name: customerData.name,
         nameArabic: customerData.nameArabic,
@@ -156,7 +156,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Check if customer exists and belongs to tenant
-    const existingCustomer = await prisma.customer.findFirst({
+    const existingCustomer = await prisma.customers.findFirst({
       where: { id, tenantId }
     });
 
@@ -165,7 +165,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Update customer
-    const customer = await prisma.customer.update({
+    const customer = await prisma.customers.update({
       where: { id },
       data: {
         ...updateData,
@@ -197,7 +197,7 @@ export const DELETE = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Delete customer (hard delete - consider soft delete if needed) with tenant check
-    const result = await prisma.customer.deleteMany({
+    const result = await prisma.customers.deleteMany({
       where: { id, tenantId }
     });
 

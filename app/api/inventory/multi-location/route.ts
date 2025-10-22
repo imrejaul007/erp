@@ -72,7 +72,7 @@ async function getHandler(req: NextRequest, { tenantId, user }: { tenantId: stri
 
     if (filters.storeId) {
       // Verify store belongs to tenant
-      const store = await prisma.store.findFirst({
+      const store = await prisma.stores.findFirst({
         where: {
           id: filters.storeId,
           tenantId
@@ -86,7 +86,7 @@ async function getHandler(req: NextRequest, { tenantId, user }: { tenantId: stri
 
     if (filters.productId) {
       // Verify product belongs to tenant
-      const product = await prisma.product.findFirst({
+      const product = await prisma.products.findFirst({
         where: {
           id: filters.productId,
           tenantId
@@ -278,7 +278,7 @@ async function postHandler(req: NextRequest, { tenantId, user }: { tenantId: str
         const movementData = StockMovementSchema.parse(data);
 
         // Verify store belongs to tenant
-        const store = await prisma.store.findFirst({
+        const store = await prisma.stores.findFirst({
           where: {
             id: movementData.storeId,
             tenantId
@@ -304,7 +304,7 @@ async function postHandler(req: NextRequest, { tenantId, user }: { tenantId: str
         }
 
         // Verify product belongs to tenant
-        const product = await prisma.product.findFirst({
+        const product = await prisma.products.findFirst({
           where: {
             id: movementData.productId,
             tenantId
@@ -399,7 +399,7 @@ async function postHandler(req: NextRequest, { tenantId, user }: { tenantId: str
         const allStoreIds = [...new Set(updates.map(u => u.storeId))];
 
         // Verify all stores belong to tenant
-        const stores = await prisma.store.findMany({
+        const stores = await prisma.stores.findMany({
           where: {
             id: { in: allStoreIds },
             tenantId
@@ -428,7 +428,7 @@ async function postHandler(req: NextRequest, { tenantId, user }: { tenantId: str
 
         // Verify all products belong to tenant
         const allProductIds = [...new Set(updates.map(u => u.productId))];
-        const products = await prisma.product.findMany({
+        const products = await prisma.products.findMany({
           where: {
             id: { in: allProductIds },
             tenantId
@@ -464,7 +464,7 @@ async function postHandler(req: NextRequest, { tenantId, user }: { tenantId: str
 
               // Update product min/max stock if provided
               if (update.minLevel !== undefined || update.maxLevel !== undefined) {
-                await prisma.product.update({
+                await prisma.products.update({
                   where: {
                     id: update.productId,
                     tenantId

@@ -120,7 +120,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, user }) => {
     // Get first store if storeId not provided
     let storeId = validated.storeId;
     if (!storeId) {
-      const firstStore = await prisma.store.findFirst({ where: { tenantId } });
+      const firstStore = await prisma.stores.findFirst({ where: { tenantId } });
       if (!firstStore) {
         return apiError('No store found. Please create a store first.', 400);
       }

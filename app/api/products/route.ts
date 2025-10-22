@@ -62,7 +62,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
 
     // Fetch products with relations
     const [products, total] = await Promise.all([
-      prisma.product.findMany({
+      prisma.products.findMany({
         where: whereClause,
         include: {
           category: {
@@ -78,7 +78,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
         skip: (page - 1) * limit,
         take: limit
       }),
-      prisma.product.count({ where: whereClause })
+      prisma.products.count({ where: whereClause })
     ]);
 
     return apiResponse({
@@ -110,7 +110,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     const productData = ProductCreateSchema.parse(body);
 
     // Check if SKU is unique within tenant
-    const existingProduct = await prisma.product.findFirst({
+    const existingProduct = await prisma.products.findFirst({
       where: { sku: productData.sku, tenantId }
     });
 
@@ -119,7 +119,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Verify category exists and belongs to tenant
-    const category = await prisma.category.findFirst({
+    const category = await prisma.categories.findFirst({
       where: { id: productData.categoryId, tenantId }
     });
 
@@ -129,7 +129,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
 
     // Verify brand exists and belongs to tenant if provided
     if (productData.brandId) {
-      const brand = await prisma.brand.findFirst({
+      const brand = await prisma.brands.findFirst({
         where: { id: productData.brandId, tenantId }
       });
 
@@ -139,7 +139,7 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Create product
-    const product = await prisma.product.create({
+    const product = await prisma.products.create({
       data: {
         name: productData.name,
         nameArabic: productData.nameArabic,
@@ -199,7 +199,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Check if product exists and belongs to tenant
-    const existingProduct = await prisma.product.findFirst({
+    const existingProduct = await prisma.products.findFirst({
       where: { id, tenantId }
     });
 
@@ -208,7 +208,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Update product
-    const product = await prisma.product.update({
+    const product = await prisma.products.update({
       where: { id },
       data: {
         ...updateData,
@@ -249,7 +249,7 @@ export const DELETE = withTenant(async (req, { tenantId, user }) => {
     }
 
     // Soft delete by setting isActive to false (with tenant check)
-    const product = await prisma.product.updateMany({
+    const product = await prisma.products.updateMany({
       where: { id, tenantId },
       data: { isActive: false }
     });

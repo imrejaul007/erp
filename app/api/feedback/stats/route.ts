@@ -98,7 +98,7 @@ export const GET = withTenant(async (req, { tenantId }) => {
     // Enrich products with negative feedback
     const enrichedNegativeProducts = await Promise.all(
       productsWithNegativeFeedback.map(async (item) => {
-        const product = await prisma.product.findUnique({
+        const product = await prisma.products.findUnique({
           where: { id: item.productId },
           select: {
             id: true,

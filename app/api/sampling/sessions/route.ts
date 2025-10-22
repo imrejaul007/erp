@@ -13,7 +13,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Verify store belongs to tenant
-    const store = await prisma.store.findFirst({
+    const store = await prisma.stores.findFirst({
       where: {
         id: sessionData.storeId,
         tenantId
@@ -25,7 +25,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Verify staff belongs to tenant
-    const staff = await prisma.user.findFirst({
+    const staff = await prisma.users.findFirst({
       where: {
         id: sessionData.staffId,
         tenantId
@@ -39,7 +39,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     // Verify products belong to tenant
     for (const product of sessionData.testedProducts) {
       if (product.productId) {
-        const productExists = await prisma.product.findFirst({
+        const productExists = await prisma.products.findFirst({
           where: {
             id: product.productId,
             tenantId
@@ -219,7 +219,7 @@ async function deductTesterStock(tenantId: string, productId: string, quantityUs
       });
     } else {
       // Verify product belongs to tenant before creating tester stock
-      const product = await prisma.product.findFirst({
+      const product = await prisma.products.findFirst({
         where: {
           id: productId,
           tenantId

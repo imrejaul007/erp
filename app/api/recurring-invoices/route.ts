@@ -119,7 +119,7 @@ export const POST = withTenant(async (req: NextRequest, { tenantId, userId }) =>
     const validated = RecurringInvoiceSchema.parse(body);
 
     // Verify customer exists and belongs to tenant
-    const customer = await prisma.customer.findFirst({
+    const customer = await prisma.customers.findFirst({
       where: {
         id: validated.customerId,
         tenantId,

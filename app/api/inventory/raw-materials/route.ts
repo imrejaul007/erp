@@ -183,7 +183,7 @@ export const POST = withTenant(async (request: NextRequest, { tenantId, user }) 
     }
 
     // Verify category belongs to tenant
-    const category = await prisma.category.findUnique({
+    const category = await prisma.categories.findUnique({
       where: { id: validatedData.categoryId },
     })
 

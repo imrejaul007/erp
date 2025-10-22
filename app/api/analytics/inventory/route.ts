@@ -8,25 +8,25 @@ import { apiResponse, apiError } from '@/lib/api-response';
  */
 export const GET = withTenant(async (req: NextRequest, { tenantId }) => {
   try {
-    const totalProducts = await prisma.product.count({ where: { tenantId } });
+    const totalProducts = await prisma.products.count({ where: { tenantId } });
 
-    const inventoryValue = await prisma.product.aggregate({
+    const inventoryValue = await prisma.products.aggregate({
       where: { tenantId },
       _sum: { stock: true },
     });
 
-    const lowStockProducts = await prisma.product.count({
+    const lowStockProducts = await prisma.products.count({
       where: {
         tenantId,
-        stock: { lte: prisma.product.fields.lowStockThreshold },
+        stock: { lte: prisma.products.fields.lowStockThreshold },
       },
     });
 
-    const outOfStockProducts = await prisma.product.count({
+    const outOfStockProducts = await prisma.products.count({
       where: { tenantId, stock: { lte: 0 } },
     });
 
-    const stockByCategory = await prisma.product.groupBy({
+    const stockByCategory = await prisma.products.groupBy({
       by: ['categoryId'],
       where: { tenantId },
       _sum: { stock: true },

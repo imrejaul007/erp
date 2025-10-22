@@ -65,7 +65,7 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
     const employeesWithDetails = await Promise.all(
       employees.map(async (employee) => {
         // Fetch user details
-        const userDetails = await prisma.user.findUnique({
+        const userDetails = await prisma.users.findUnique({
           where: { id: employee.userId },
           select: {
             id: true,

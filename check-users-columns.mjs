@@ -13,14 +13,24 @@ async function checkColumns() {
     const columns = await prisma.$queryRaw`
       SELECT column_name, data_type
       FROM information_schema.columns
-      WHERE table_name = 'products'
+      WHERE table_name = 'users'
       ORDER BY ordinal_position
     `;
 
-    console.log('📋 Products table columns:');
+    console.log('📋 Users table columns:');
     columns.forEach(col => {
       console.log(`  - ${col.column_name}: ${col.data_type}`);
     });
+
+    // Try to get all users
+    const users = await prisma.$queryRaw`SELECT * FROM users LIMIT 1`;
+    
+    if (users.length > 0) {
+      console.log('\n✅ User exists:');
+      console.log('Columns:', Object.keys(users[0]).join(', '));
+    } else {
+      console.log('\n❌ No users in table');
+    }
 
   } catch (error) {
     console.error('❌ Error:', error.message);

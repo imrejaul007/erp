@@ -56,7 +56,7 @@ export const GET = withTenant(async (req, { tenantId }) => {
       // Enrich with user details
       const leaderboard = await Promise.all(
         salesByUser.map(async (entry, index) => {
-          const user = await prisma.user.findUnique({
+          const user = await prisma.users.findUnique({
             where: { id: entry.createdById },
             select: {
               id: true,
@@ -105,7 +105,7 @@ export const GET = withTenant(async (req, { tenantId }) => {
 
       const leaderboard = await Promise.all(
         ordersByUser.map(async (entry, index) => {
-          const user = await prisma.user.findUnique({
+          const user = await prisma.users.findUnique({
             where: { id: entry.createdById },
             select: {
               id: true,
@@ -173,7 +173,7 @@ export const GET = withTenant(async (req, { tenantId }) => {
           .sort((a, b) => b[1].size - a[1].size)
           .slice(0, limit)
           .map(async ([userId, customerSet], index) => {
-            const user = await prisma.user.findUnique({
+            const user = await prisma.users.findUnique({
               where: { id: userId },
               select: {
                 id: true,

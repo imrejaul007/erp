@@ -14,7 +14,7 @@ async function handler(request: NextRequest, { tenantId, user }: { tenantId: str
     }
 
     // Check if product exists and belongs to tenant
-    const product = await prisma.product.findFirst({
+    const product = await prisma.products.findFirst({
       where: {
         id: productId,
         tenantId

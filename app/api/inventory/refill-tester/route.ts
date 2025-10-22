@@ -19,7 +19,7 @@ async function handler(request: NextRequest, { tenantId, user }: { tenantId: str
     }
 
     // Check if product exists and belongs to tenant
-    const product = await prisma.product.findFirst({
+    const product = await prisma.products.findFirst({
       where: {
         id: productId,
         tenantId
@@ -31,7 +31,7 @@ async function handler(request: NextRequest, { tenantId, user }: { tenantId: str
     }
 
     // Verify refillBy user belongs to tenant
-    const refillUser = await prisma.user.findFirst({
+    const refillUser = await prisma.users.findFirst({
       where: {
         id: refillBy,
         tenantId
@@ -50,7 +50,7 @@ async function handler(request: NextRequest, { tenantId, user }: { tenantId: str
       }
 
       // Deduct from main inventory
-      await prisma.product.update({
+      await prisma.products.update({
         where: {
           id: productId,
           tenantId
