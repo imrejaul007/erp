@@ -34,7 +34,7 @@ export const POST = withTenant(async (
     const body = await req.json();
     const validated = ProcessReturnSchema.parse(body);
 
-    const returnOrder = await prisma.returnOrder.findFirst({
+    const returnOrder = await prisma.return_orders.findFirst({
       where: { id, tenantId },
     });
 
@@ -102,21 +102,16 @@ export const POST = withTenant(async (
       updateData.internalNotes = validated.internalNotes;
     }
 
-    const updatedReturn = await prisma.returnOrder.update({
+    const updatedReturn = await prisma.return_orders.update({
       where: { id },
       data: updateData,
       include: {
         customer: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
-          },
-        },
-        order: {
-          select: {
-            id: true,
-            orderNumber: true,
           },
         },
       },

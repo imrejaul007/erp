@@ -235,11 +235,11 @@ async function testAllFeatures() {
     // ============= TEST 8: RETURNS =============
     console.log('\n🔄 TEST 8: Returns System');
     try {
-      await prisma.returnOrder.findMany({ take: 1 });
+      await prisma.return_orders.findMany({ take: 1 });
       console.log('   ✅ TABLE EXISTS: Returns table available');
       results.push({ feature: 'Returns', status: 'WORKING', critical: true });
     } catch (error) {
-      if (error.message.includes('returnOrder') || error.message.includes('does not exist')) {
+      if (error.message.includes('return_orders') || error.message.includes('does not exist')) {
         console.log('   ❌ TABLE MISSING: Returns table does not exist');
         results.push({ feature: 'Returns', status: 'TABLE MISSING', critical: true });
       } else {
@@ -275,7 +275,8 @@ async function testAllFeatures() {
           phone: '+971502222222',
           country: 'UAE',
           category: 'Perfumes',
-          status: 'ACTIVE',
+          type: 'LOCAL',
+          isActive: true,
           tenantId,
           updatedAt: new Date()
         }
@@ -338,7 +339,15 @@ async function testAllFeatures() {
     // ============= TEST 15: TRANSFERS =============
     console.log('\n🔄 TEST 15: Stock Transfers');
     try {
-      const transfers = await prisma.transfers.findMany({ where: { tenantId }, take: 1 });
+      // transfers table doesn't have tenantId directly, must query through stores relation
+      const transfers = await prisma.transfers.findMany({
+        where: {
+          stores_transfers_fromStoreIdTostores: {
+            tenantId: tenantId
+          }
+        },
+        take: 1
+      });
       console.log(`   ✅ READ: ${transfers.length} transfers found`);
       results.push({ feature: 'Stock Transfers', status: 'WORKING', critical: false });
     } catch (error) {
@@ -349,7 +358,15 @@ async function testAllFeatures() {
     // ============= TEST 16: PRODUCTION =============
     console.log('\n🏭 TEST 16: Production Batches');
     try {
-      const batches = await prisma.production_batches.findMany({ where: { tenantId }, take: 1 });
+      // production_batches doesn't have tenantId, query through products relation
+      const batches = await prisma.production_batches.findMany({
+        where: {
+          products: {
+            tenantId: tenantId
+          }
+        },
+        take: 1
+      });
       console.log(`   ✅ READ: ${batches.length} batches found`);
       results.push({ feature: 'Production', status: 'WORKING', critical: false });
     } catch (error) {
@@ -371,7 +388,8 @@ async function testAllFeatures() {
     // ============= TEST 18: PROMOTIONS =============
     console.log('\n🎉 TEST 18: Promotions');
     try {
-      const promos = await prisma.promotions.findMany({ where: { tenantId }, take: 1 });
+      // promotions table doesn't have tenantId field, query without it
+      const promos = await prisma.promotions.findMany({ take: 1 });
       console.log(`   ✅ READ: ${promos.length} promotions found`);
       results.push({ feature: 'Promotions', status: 'WORKING', critical: false });
     } catch (error) {

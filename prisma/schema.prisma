@@ -244,6 +244,7 @@ model customers {
   customer_segment_members customer_segment_members[]
   tenants                  tenants                    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_customers_tenant")
   sales                    sales[]
+  return_orders            return_orders[]
 }
 
 model goods_receipt_items {
@@ -787,6 +788,49 @@ model sales {
   @@index([status])
 }
 
+model return_orders {
+  id                String    @id @default(uuid())
+  rmaNumber         String    @unique
+  orderId           String?
+  shipmentId        String?
+  customerId        String
+  returnType        ReturnType
+  returnReason      ReturnReason
+  reasonDetails     String?
+  items             Json
+  totalValue        Decimal
+  status            ReturnStatus  @default(REQUESTED)
+  resolutionType    String?
+  refundAmount      Decimal?
+  restockingFee     Decimal?      @default(0)
+  customerNotes     String?
+  internalNotes     String?
+  inspectionNotes   String?
+  itemsAccepted     Json?
+  itemsRejected     Json?
+  photos            String[]
+  approvedAt        DateTime?
+  approvedBy        String?
+  inspectedAt       DateTime?
+  inspectedBy       String?
+  completedAt       DateTime?
+  restocked         Boolean?      @default(false)
+  restockedAt       DateTime?
+  restockedBy       String?
+  tenantId          String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  customer          customers     @relation(fields: [customerId], references: [id])
+  tenant            tenants       @relation(fields: [tenantId], references: [id])
+  users_approvedBy  users?        @relation("return_orders_approvedBy", fields: [approvedBy], references: [id])
+  users_inspectedBy users?        @relation("return_orders_inspectedBy", fields: [inspectedBy], references: [id])
+  users_restockedBy users?        @relation("return_orders_restockedBy", fields: [restockedBy], references: [id])
+
+  @@index([status])
+  @@index([customerId])
+  @@index([tenantId])
+}
+
 model shipment_documents {
   id           String       @id
   shipmentId   String
@@ -1091,12 +1135,13 @@ model tenants {
   settings   Json?
   createdAt  DateTime     @default(now()) @db.Timestamp(6)
   updatedAt  DateTime     @default(now()) @db.Timestamp(6)
-  brands     brands[]
-  categories categories[]
-  customers  customers[]
-  products   products[]
-  stores     stores[]
-  suppliers  suppliers[]
+  brands        brands[]
+  categories    categories[]
+  customers     customers[]
+  products      products[]
+  stores        stores[]
+  suppliers     suppliers[]
+  return_orders return_orders[]
 }
 
 model transactions {
@@ -1211,6 +1256,9 @@ model users {
   transactions_transactions_updatedByIdTousers                   transactions[]         @relation("transactions_updatedByIdTousers")
   user_roles                                                     user_roles[]
   user_stores                                                    user_stores[]
+  return_orders_approvedBy                                       return_orders[]        @relation("return_orders_approvedBy")
+  return_orders_inspectedBy                                      return_orders[]        @relation("return_orders_inspectedBy")
+  return_orders_restockedBy                                      return_orders[]        @relation("return_orders_restockedBy")
 }
 
 model vat_records {
@@ -1484,4 +1532,33 @@ enum VATStatus {
 enum VATType {
   INPUT
   OUTPUT
+}
+
+enum ReturnType {
+  REFUND
+  REPLACEMENT
+  EXCHANGE
+  STORE_CREDIT
+  REPAIR
+}
+
+enum ReturnReason {
+  DEFECTIVE
+  WRONG_ITEM
+  NOT_AS_DESCRIBED
+  QUALITY_ISSUE
+  CHANGED_MIND
+  SIZE_ISSUE
+  LATE_DELIVERY
+  OTHER
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  RECEIVED
+  INSPECTING
+  COMPLETED
+  CANCELLED
 }

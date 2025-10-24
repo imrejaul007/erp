@@ -38,28 +38,16 @@ export const GET = withTenant(async (req: NextRequest, { tenantId }) => {
     if (customerId) where.customerId = customerId;
     if (returnType) where.returnType = returnType;
 
-    const returns = await prisma.returnOrder.findMany({
+    const returns = await prisma.return_orders.findMany({
       where,
       include: {
         customer: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
             phone: true,
-          },
-        },
-        order: {
-          select: {
-            id: true,
-            orderNumber: true,
-          },
-        },
-        shipment: {
-          select: {
-            id: true,
-            shipmentNumber: true,
-            trackingNumber: true,
           },
         },
       },
@@ -102,10 +90,10 @@ export const POST = withTenant(async (req: NextRequest, { tenantId }) => {
     }
 
     // Generate RMA number
-    const count = await prisma.returnOrder.count({ where: { tenantId } });
+    const count = await prisma.return_orders.count({ where: { tenantId } });
     const rmaNumber = `RMA-${String(count + 1).padStart(6, '0')}`;
 
-    const returnOrder = await prisma.returnOrder.create({
+    const returnOrder = await prisma.return_orders.create({
       data: {
         rmaNumber,
         orderId: validated.orderId,
@@ -125,15 +113,10 @@ export const POST = withTenant(async (req: NextRequest, { tenantId }) => {
         customer: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
             phone: true,
-          },
-        },
-        order: {
-          select: {
-            id: true,
-            orderNumber: true,
           },
         },
       },
