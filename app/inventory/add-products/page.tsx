@@ -475,92 +475,32 @@ export default function AddProductPage() {
 
     setIsSubmitting(true);
     try {
-      // First, get or create the category
-      let categoryId = '';
-      try {
-        // Try to find existing category
-        const categoriesResponse = await fetch('/api/categories');
-        const categoriesData = await categoriesResponse.json();
-
-        let existingCategory = categoriesData.categories?.find(
-          (cat: any) => cat.name.toLowerCase() === formData.category.toLowerCase()
-        );
-
-        if (!existingCategory) {
-          // Create new category
-          const createCategoryResponse = await fetch('/api/categories', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: formData.category || 'General',
-              description: `Auto-created category for ${formData.category}`
-            })
-          });
-          const newCategory = await createCategoryResponse.json();
-          categoryId = newCategory.id;
-        } else {
-          categoryId = existingCategory.id;
-        }
-      } catch (error) {
-        console.error('Error handling category:', error);
-        throw new Error('Failed to process category');
-      }
-
-      // Get or create brand if specified
-      let brandId = undefined;
-      if (formData.brand && formData.brand !== '') {
-        try {
-          const brandsResponse = await fetch('/api/brands');
-          const brandsData = await brandsResponse.json();
-
-          let existingBrand = brandsData.brands?.find(
-            (brand: any) => brand.name.toLowerCase() === formData.brand.toLowerCase()
-          );
-
-          if (!existingBrand) {
-            const createBrandResponse = await fetch('/api/brands', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name: formData.brand,
-                description: `Auto-created brand for ${formData.brand}`
-              })
-            });
-            const newBrand = await createBrandResponse.json();
-            brandId = newBrand.id;
-          } else {
-            brandId = existingBrand.id;
-          }
-        } catch (error) {
-          console.error('Error handling brand:', error);
-          // Continue without brand if it fails
-        }
-      }
+      // Note: Categories and brands are now stored as strings, not foreign keys
+      // No need to create category/brand records separately
 
       // Create the product
       const productResponse = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          code: formData.sku || `PROD-${Date.now()}`,
           name: formData.name,
-          nameArabic: formData.nameArabic,
-          sku: formData.sku || `SKU-${Date.now()}`,
-          barcode: formData.barcode || null,
-          categoryId: categoryId,
-          brandId: brandId,
+          nameAr: formData.nameArabic,
           description: formData.description,
-          unit: formData.unit,
-          unitPrice: formData.retailPrice,
-          costPrice: formData.costPerUnit,
-          stockQuantity: 0, // Start with 0, add via inventory
-          minStock: formData.minimumStock,
-          maxStock: formData.maximumStock,
-          weight: formData.weight,
-          volume: formData.size,
-          images: formData.images,
-          tags: formData.tags,
-          isActive: true,
-          isFeatured: false
+          category: formData.category || 'General',
+          subcategory: formData.subcategory || null,
+          baseUnit: formData.unit || 'piece',
+          costPrice: formData.costPerUnit || 0,
+          sellingPrice: formData.retailPrice,
+          currency: formData.currency || 'AED',
+          vatRate: formData.taxRate || 5,
+          minStockLevel: formData.minimumStock || 0,
+          maxStockLevel: formData.maximumStock || null,
+          shelfLife: formData.shelfLife ? formData.shelfLife * 30 : null, // Convert months to days
+          barcode: formData.barcode || null,
+          sku: formData.sku || null,
+          imageUrl: formData.images && formData.images.length > 0 ? formData.images[0] : null,
+          isActive: true
         })
       });
 
