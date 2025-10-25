@@ -1285,6 +1285,7 @@ model users {
   petty_cash_transactions_petty_cash_transactions_approvedByIdTousers petty_cash_transactions[] @relation("petty_cash_transactions_approvedByIdTousers")
   opening_balances                                               opening_balances[]
   cost_centers                                                   cost_centers[]
+  vat_returns                                                    vat_returns[]
 }
 
 model vat_records {
@@ -1661,6 +1662,36 @@ enum BudgetStatus {
   ACTIVE
   COMPLETED
   REVISED
+}
+
+enum GCCCountry {
+  UAE
+  SAUDI_ARABIA
+  BAHRAIN
+  OMAN
+  QATAR
+  KUWAIT
+}
+
+enum VATReturnStatus {
+  DRAFT
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  AMENDED
+}
+
+enum VATTransactionType {
+  STANDARD_RATED_SALES
+  ZERO_RATED_SALES
+  EXEMPT_SALES
+  OUT_OF_SCOPE_SALES
+  STANDARD_RATED_PURCHASES
+  ZERO_RATED_PURCHASES
+  EXEMPT_PURCHASES
+  IMPORTS
+  EXPORTS
+  REVERSE_CHARGE
 }
 
 // ==================== JOURNAL ENTRIES ====================
@@ -2104,4 +2135,95 @@ model cost_centers {
   expenses            expenses[]
   fixed_assets        fixed_assets[]
   journal_entry_lines journal_entry_lines[]
+}
+
+// ==================== GCC VAT RETURNS ====================
+model vat_returns {
+  id                      String            @id
+  returnNo                String            @unique
+  country                 GCCCountry
+  taxPeriod               String
+  periodStart             DateTime
+  periodEnd               DateTime
+  filingDeadline          DateTime
+  status                  VATReturnStatus   @default(DRAFT)
+
+  // Sales (Output VAT)
+  standardRatedSales      Decimal           @default(0)
+  standardRatedVAT        Decimal           @default(0)
+  zeroRatedSales          Decimal           @default(0)
+  exemptSales             Decimal           @default(0)
+  exportsToGCC            Decimal           @default(0)
+  exportsOutsideGCC       Decimal           @default(0)
+  totalSales              Decimal           @default(0)
+  totalOutputVAT          Decimal           @default(0)
+
+  // Purchases (Input VAT)
+  standardRatedPurchases  Decimal           @default(0)
+  standardRatedInputVAT   Decimal           @default(0)
+  importsSubjectToVAT     Decimal           @default(0)
+  importsSubjectToRCM     Decimal           @default(0)
+  zeroRatedPurchases      Decimal           @default(0)
+  exemptPurchases         Decimal           @default(0)
+  totalPurchases          Decimal           @default(0)
+  totalInputVAT           Decimal           @default(0)
+
+  // Adjustments
+  corrections             Decimal           @default(0)
+  vatOnBadDebts           Decimal           @default(0)
+
+  // Net VAT
+  netVAT                  Decimal           @default(0)
+  vatDueOrRefund          String?
+
+  // Filing Details
+  submittedAt             DateTime?
+  submittedById           String?
+  acceptedAt              DateTime?
+  referenceNumber         String?
+  notes                   String?
+
+  tenantId                String
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime
+
+  vat_return_lines        vat_return_lines[]
+  users                   users?            @relation(fields: [submittedById], references: [id])
+
+  @@index([country])
+  @@index([taxPeriod])
+  @@index([status])
+}
+
+model vat_return_lines {
+  id                String              @id
+  vatReturnId       String
+  lineNumber        Int
+  transactionType   VATTransactionType
+  description       String
+  amount            Decimal
+  vatRate           Decimal
+  vatAmount         Decimal
+  referenceType     String?
+  referenceId       String?
+  vat_returns       vat_returns         @relation(fields: [vatReturnId], references: [id], onDelete: Cascade)
+
+  @@index([vatReturnId])
+}
+
+model gcc_vat_config {
+  id                String     @id
+  country           GCCCountry @unique
+  countryName       String
+  taxAuthority      String
+  standardRate      Decimal
+  reducedRates      Json?
+  filingFrequency   String
+  returnFormat      String
+  apiEndpoint       String?
+  isActive          Boolean    @default(true)
+  effectiveFrom     DateTime
+  notes             String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime
 }
