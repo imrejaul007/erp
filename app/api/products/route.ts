@@ -5,25 +5,24 @@ import { withTenant, apiResponse, apiError } from '@/lib/apiMiddleware';
 
 // Validation schema for product creation
 const ProductCreateSchema = z.object({
+  code: z.string().min(1, 'Product code is required'),
   name: z.string().min(2, 'Product name must be at least 2 characters'),
-  nameArabic: z.string().optional(),
-  sku: z.string().min(1, 'SKU is required'),
-  barcode: z.string().optional(),
-  categoryId: z.string().min(1, 'Category is required'),
-  brandId: z.string().optional(),
+  nameAr: z.string().optional(),
   description: z.string().optional(),
-  unit: z.string().default('piece'),
-  unitPrice: z.number().min(0, 'Unit price must be non-negative'),
-  costPrice: z.number().min(0).optional(),
-  stockQuantity: z.number().min(0).default(0),
-  minStock: z.number().min(0).default(0),
-  maxStock: z.number().min(0).optional(),
-  weight: z.number().optional(),
-  volume: z.number().optional(),
-  images: z.array(z.string()).optional(),
-  tags: z.array(z.string()).optional(),
-  isActive: z.boolean().default(true),
-  isFeatured: z.boolean().default(false)
+  category: z.string().min(1, 'Category is required'),
+  subcategory: z.string().optional(),
+  baseUnit: z.string().default('piece'),
+  costPrice: z.number().min(0).default(0),
+  sellingPrice: z.number().min(0, 'Selling price must be non-negative'),
+  currency: z.string().default('AED'),
+  vatRate: z.number().min(0).default(5),
+  minStockLevel: z.number().min(0).default(0),
+  maxStockLevel: z.number().min(0).optional(),
+  shelfLife: z.number().int().optional(),
+  barcode: z.string().optional(),
+  sku: z.string().optional(),
+  imageUrl: z.string().optional(),
+  isActive: z.boolean().default(true)
 });
 
 // GET /api/products - List all products
@@ -43,35 +42,24 @@ export const GET = withTenant(async (req, { tenantId, user }) => {
     if (search) {
       whereClause.OR = [
         { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
         { sku: { contains: search, mode: 'insensitive' } },
-        { nameArabic: { contains: search, mode: 'insensitive' } }
+        { nameAr: { contains: search, mode: 'insensitive' } }
       ];
     }
 
     if (categoryId) {
-      whereClause.categoryId = categoryId;
-    }
-
-    if (brandId) {
-      whereClause.brandId = brandId;
+      whereClause.category = categoryId;
     }
 
     if (isActive !== null && isActive !== undefined) {
       whereClause.isActive = isActive === 'true';
     }
 
-    // Fetch products with relations
+    // Fetch products
     const [products, total] = await Promise.all([
       prisma.products.findMany({
         where: whereClause,
-        include: {
-          category: {
-            select: { id: true, name: true, nameArabic: true }
-          },
-          brand: {
-            select: { id: true, name: true }
-          }
-        },
         orderBy: {
           createdAt: 'desc'
         },
@@ -109,65 +97,51 @@ export const POST = withTenant(async (req, { tenantId, user }) => {
     const body = await req.json();
     const productData = ProductCreateSchema.parse(body);
 
-    // Check if SKU is unique within tenant
+    // Check if code is unique within tenant
     const existingProduct = await prisma.products.findFirst({
-      where: { sku: productData.sku, tenantId }
+      where: { code: productData.code, tenantId }
     });
 
     if (existingProduct) {
-      return apiError('Product with this SKU already exists', 409);
+      return apiError('Product with this code already exists', 409);
     }
 
-    // Verify category exists and belongs to tenant
-    const category = await prisma.categories.findFirst({
-      where: { id: productData.categoryId, tenantId }
-    });
-
-    if (!category) {
-      return apiError('Category not found', 404);
-    }
-
-    // Verify brand exists and belongs to tenant if provided
-    if (productData.brandId) {
-      const brand = await prisma.brands.findFirst({
-        where: { id: productData.brandId, tenantId }
+    // Check if SKU is unique within tenant (if provided)
+    if (productData.sku) {
+      const existingBySku = await prisma.products.findFirst({
+        where: { sku: productData.sku, tenantId }
       });
 
-      if (!brand) {
-        return apiError('Brand not found', 404);
+      if (existingBySku) {
+        return apiError('Product with this SKU already exists', 409);
       }
     }
 
     // Create product
     const product = await prisma.products.create({
       data: {
+        id: `prod-${Date.now()}`,
+        code: productData.code,
         name: productData.name,
-        nameArabic: productData.nameArabic,
-        sku: productData.sku,
-        categoryId: productData.categoryId,
-        brandId: productData.brandId,
+        nameAr: productData.nameAr,
         description: productData.description,
-        unit: productData.unit,
-        unitPrice: productData.unitPrice,
+        category: productData.category,
+        subcategory: productData.subcategory,
+        baseUnit: productData.baseUnit,
         costPrice: productData.costPrice,
-        stockQuantity: productData.stockQuantity,
-        minStock: productData.minStock,
-        maxStock: productData.maxStock,
-        weight: productData.weight,
-        volume: productData.volume,
-        images: productData.images ? JSON.stringify(productData.images) : null,
-        tags: productData.tags ? JSON.stringify(productData.tags) : null,
+        sellingPrice: productData.sellingPrice,
+        currency: productData.currency,
+        vatRate: productData.vatRate,
+        minStockLevel: productData.minStockLevel,
+        maxStockLevel: productData.maxStockLevel,
+        shelfLife: productData.shelfLife,
+        barcode: productData.barcode,
+        sku: productData.sku,
+        imageUrl: productData.imageUrl,
         isActive: productData.isActive,
-        isFeatured: productData.isFeatured,
-        tenantId
-      },
-      include: {
-        category: {
-          select: { id: true, name: true, nameArabic: true }
-        },
-        brand: {
-          select: { id: true, name: true }
-        }
+        tenantId,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     });
 
@@ -212,16 +186,7 @@ export const PUT = withTenant(async (req, { tenantId, user }) => {
       where: { id },
       data: {
         ...updateData,
-        images: updateData.images ? JSON.stringify(updateData.images) : undefined,
-        tags: updateData.tags ? JSON.stringify(updateData.tags) : undefined
-      },
-      include: {
-        category: {
-          select: { id: true, name: true, nameArabic: true }
-        },
-        brand: {
-          select: { id: true, name: true }
-        }
+        updatedAt: new Date()
       }
     });
 
