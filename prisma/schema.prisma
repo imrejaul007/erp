@@ -8,20 +8,29 @@ datasource db {
 }
 
 model accounts {
-  id             String         @id
-  code           String         @unique
-  name           String
-  nameAr         String?
-  type           AccountType
-  currency       String         @default("AED")
-  balance        Decimal        @default(0)
-  isActive       Boolean        @default(true)
-  parentId       String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime
-  accounts       accounts?      @relation("accountsToaccounts", fields: [parentId], references: [id])
-  other_accounts accounts[]     @relation("accountsToaccounts")
-  transactions   transactions[]
+  id                                                        String                @id
+  code                                                      String                @unique
+  name                                                      String
+  nameAr                                                    String?
+  type                                                      AccountType
+  currency                                                  String                @default("AED")
+  balance                                                   Decimal               @default(0)
+  isActive                                                  Boolean               @default(true)
+  parentId                                                  String?
+  createdAt                                                 DateTime              @default(now())
+  updatedAt                                                 DateTime
+  accounts                                                  accounts?             @relation("accountsToaccounts", fields: [parentId], references: [id])
+  other_accounts                                            accounts[]            @relation("accountsToaccounts")
+  transactions                                              transactions[]
+  journal_entry_lines                                       journal_entry_lines[]
+  bank_accounts                                             bank_accounts[]
+  expense_categories                                        expense_categories[]
+  expenses                                                  expenses[]
+  fixed_assets_fixed_assets_accountIdToaccounts             fixed_assets[]        @relation("fixed_assets_accountIdToaccounts")
+  fixed_assets_fixed_assets_depreciationAccountIdToaccounts fixed_assets[]        @relation("fixed_assets_depreciationAccountIdToaccounts")
+  budget_lines                                              budget_lines[]
+  petty_cash                                                petty_cash[]
+  opening_balances                                          opening_balances[]
 }
 
 model batches {
@@ -1259,6 +1268,23 @@ model users {
   return_orders_approvedBy                                       return_orders[]        @relation("return_orders_approvedBy")
   return_orders_inspectedBy                                      return_orders[]        @relation("return_orders_inspectedBy")
   return_orders_restockedBy                                      return_orders[]        @relation("return_orders_restockedBy")
+  journal_entries_journal_entries_createdByIdTousers             journal_entries[]      @relation("journal_entries_createdByIdTousers")
+  journal_entries_journal_entries_approvedByIdTousers            journal_entries[]      @relation("journal_entries_approvedByIdTousers")
+  journal_entries_journal_entries_reversedByTousers              journal_entries[]      @relation("journal_entries_reversedByTousers")
+  bank_reconciliations                                           bank_reconciliations[]
+  expenses_expenses_requestedByIdTousers                         expenses[]             @relation("expenses_requestedByIdTousers")
+  expenses_expenses_approvedByIdTousers                          expenses[]             @relation("expenses_approvedByIdTousers")
+  payroll_runs_payroll_runs_processedByIdTousers                 payroll_runs[]         @relation("payroll_runs_processedByIdTousers")
+  payroll_runs_payroll_runs_approvedByIdTousers                  payroll_runs[]         @relation("payroll_runs_approvedByIdTousers")
+  budgets_budgets_createdByIdTousers                             budgets[]              @relation("budgets_createdByIdTousers")
+  budgets_budgets_approvedByIdTousers                            budgets[]              @relation("budgets_approvedByIdTousers")
+  financial_periods_financial_periods_closedByIdTousers          financial_periods[]    @relation("financial_periods_closedByIdTousers")
+  financial_periods_financial_periods_lockedByIdTousers          financial_periods[]    @relation("financial_periods_lockedByIdTousers")
+  petty_cash                                                     petty_cash[]
+  petty_cash_transactions_petty_cash_transactions_createdByIdTousers  petty_cash_transactions[] @relation("petty_cash_transactions_createdByIdTousers")
+  petty_cash_transactions_petty_cash_transactions_approvedByIdTousers petty_cash_transactions[] @relation("petty_cash_transactions_approvedByIdTousers")
+  opening_balances                                               opening_balances[]
+  cost_centers                                                   cost_centers[]
 }
 
 model vat_records {
@@ -1561,4 +1587,521 @@ enum ReturnStatus {
   INSPECTING
   COMPLETED
   CANCELLED
+}
+
+enum JournalEntryStatus {
+  DRAFT
+  POSTED
+  REVERSED
+  CANCELLED
+}
+
+enum DepreciationMethod {
+  STRAIGHT_LINE
+  DECLINING_BALANCE
+  DOUBLE_DECLINING
+  UNITS_OF_PRODUCTION
+}
+
+enum AssetStatus {
+  ACTIVE
+  DISPOSED
+  SOLD
+  RETIRED
+  UNDER_MAINTENANCE
+}
+
+enum ExpenseStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum PayrollStatus {
+  DRAFT
+  PROCESSING
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERN
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+  RESIGNED
+}
+
+enum PeriodStatus {
+  OPEN
+  CLOSED
+  LOCKED
+}
+
+enum ReconciliationStatus {
+  PENDING
+  MATCHED
+  RECONCILED
+  DISCREPANCY
+}
+
+enum BudgetStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  REVISED
+}
+
+// ==================== JOURNAL ENTRIES ====================
+model journal_entries {
+  id                                         String                 @id
+  entryNo                                    String                 @unique
+  entryDate                                  DateTime               @default(now())
+  description                                String
+  referenceType                              String?
+  referenceId                                String?
+  status                                     JournalEntryStatus     @default(DRAFT)
+  totalDebit                                 Decimal                @default(0)
+  totalCredit                                Decimal                @default(0)
+  notes                                      String?
+  createdById                                String
+  approvedById                               String?
+  postedAt                                   DateTime?
+  reversedAt                                 DateTime?
+  reversedBy                                 String?
+  tenantId                                   String
+  createdAt                                  DateTime               @default(now())
+  updatedAt                                  DateTime
+  journal_entry_lines                        journal_entry_lines[]
+  users_journal_entries_createdByIdTousers   users                  @relation("journal_entries_createdByIdTousers", fields: [createdById], references: [id])
+  users_journal_entries_approvedByIdTousers  users?                 @relation("journal_entries_approvedByIdTousers", fields: [approvedById], references: [id])
+  users_journal_entries_reversedByTousers    users?                 @relation("journal_entries_reversedByTousers", fields: [reversedBy], references: [id])
+
+  @@index([entryDate])
+  @@index([status])
+}
+
+model journal_entry_lines {
+  id              String          @id
+  journalEntryId  String
+  accountId       String
+  description     String?
+  debit           Decimal         @default(0)
+  credit          Decimal         @default(0)
+  costCenterId    String?
+  lineNumber      Int
+  accounts        accounts        @relation(fields: [accountId], references: [id])
+  journal_entries journal_entries @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  cost_centers    cost_centers?   @relation(fields: [costCenterId], references: [id])
+}
+
+// ==================== BANK ACCOUNTS ====================
+model bank_accounts {
+  id                    String                  @id
+  accountNo             String                  @unique
+  bankName              String
+  bankBranch            String?
+  accountName           String
+  accountType           String                  @default("CURRENT")
+  currency              String                  @default("AED")
+  openingBalance        Decimal                 @default(0)
+  currentBalance        Decimal                 @default(0)
+  ibanNumber            String?
+  swiftCode             String?
+  isActive              Boolean                 @default(true)
+  accountId             String?
+  tenantId              String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  accounts              accounts?               @relation(fields: [accountId], references: [id])
+  bank_transactions     bank_transactions[]
+  bank_reconciliations  bank_reconciliations[]
+}
+
+model bank_transactions {
+  id                 String         @id
+  bankAccountId      String
+  transactionDate    DateTime
+  description        String
+  referenceNo        String?
+  debit              Decimal        @default(0)
+  credit             Decimal        @default(0)
+  balance            Decimal
+  isReconciled       Boolean        @default(false)
+  reconciledAt       DateTime?
+  reconciliationId   String?
+  createdAt          DateTime       @default(now())
+  bank_accounts      bank_accounts  @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+
+  @@index([transactionDate])
+  @@index([bankAccountId])
+}
+
+model bank_reconciliations {
+  id                 String                 @id
+  reconciliationNo   String                 @unique
+  bankAccountId      String
+  statementDate      DateTime
+  statementBalance   Decimal
+  bookBalance        Decimal
+  difference         Decimal                @default(0)
+  status             ReconciliationStatus   @default(PENDING)
+  reconciliationDate DateTime?
+  reconciledById     String?
+  notes              String?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime
+  bank_accounts      bank_accounts          @relation(fields: [bankAccountId], references: [id])
+  users              users?                 @relation(fields: [reconciledById], references: [id])
+
+  @@index([statementDate])
+}
+
+// ==================== EXPENSES ====================
+model expense_categories {
+  id                      String                    @id
+  code                    String                    @unique
+  name                    String
+  nameAr                  String?
+  description             String?
+  accountId               String?
+  isActive                Boolean                   @default(true)
+  tenantId                String
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime
+  accounts                accounts?                 @relation(fields: [accountId], references: [id])
+  expenses                expenses[]
+  petty_cash_transactions petty_cash_transactions[]
+}
+
+model expenses {
+  id                                   String             @id
+  expenseNo                            String             @unique
+  categoryId                           String
+  date                                 DateTime           @default(now())
+  vendor                               String?
+  description                          String
+  amount                               Decimal
+  vatAmount                            Decimal            @default(0)
+  totalAmount                          Decimal
+  currency                             String             @default("AED")
+  paymentMethod                        String?
+  referenceNo                          String?
+  receiptUrl                           String?
+  status                               ExpenseStatus      @default(DRAFT)
+  requestedById                        String
+  approvedById                         String?
+  approvedAt                           DateTime?
+  paidAt                               DateTime?
+  accountId                            String?
+  costCenterId                         String?
+  notes                                String?
+  isRecurring                          Boolean            @default(false)
+  recurringFrequency                   String?
+  tenantId                             String
+  createdAt                            DateTime           @default(now())
+  updatedAt                            DateTime
+  accounts                             accounts?          @relation(fields: [accountId], references: [id])
+  expense_categories                   expense_categories @relation(fields: [categoryId], references: [id])
+  cost_centers                         cost_centers?      @relation(fields: [costCenterId], references: [id])
+  users_expenses_requestedByIdTousers  users              @relation("expenses_requestedByIdTousers", fields: [requestedById], references: [id])
+  users_expenses_approvedByIdTousers   users?             @relation("expenses_approvedByIdTousers", fields: [approvedById], references: [id])
+
+  @@index([date])
+  @@index([status])
+}
+
+// ==================== PAYROLL ====================
+model employees {
+  id                   String            @id
+  employeeNo           String            @unique
+  firstName            String
+  lastName             String
+  email                String            @unique
+  phone                String?
+  dateOfBirth          DateTime?
+  nationality          String?
+  passportNo           String?
+  emiratesId           String?
+  designation          String
+  department           String?
+  employmentType       EmploymentType    @default(FULL_TIME)
+  employmentStatus     EmploymentStatus  @default(ACTIVE)
+  joinDate             DateTime
+  confirmationDate     DateTime?
+  resignationDate      DateTime?
+  terminationDate      DateTime?
+  bankName             String?
+  bankAccountNo        String?
+  ibanNumber           String?
+  basicSalary          Decimal           @default(0)
+  allowances           Decimal           @default(0)
+  currency             String            @default("AED")
+  wpsId                String?
+  isActive             Boolean           @default(true)
+  tenantId             String
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime
+  payroll_items        payroll_items[]
+  salary_components    salary_components[]
+}
+
+model payroll_runs {
+  id              String          @id
+  payrollNo       String          @unique
+  period          String
+  payPeriodStart  DateTime
+  payPeriodEnd    DateTime
+  paymentDate     DateTime?
+  status          PayrollStatus   @default(DRAFT)
+  totalGross      Decimal         @default(0)
+  totalDeductions Decimal         @default(0)
+  totalNet        Decimal         @default(0)
+  currency        String          @default("AED")
+  processedById   String?
+  approvedById    String?
+  paidAt          DateTime?
+  notes           String?
+  tenantId        String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  payroll_items   payroll_items[]
+  users_payroll_runs_processedByIdTousers users?   @relation("payroll_runs_processedByIdTousers", fields: [processedById], references: [id])
+  users_payroll_runs_approvedByIdTousers  users?   @relation("payroll_runs_approvedByIdTousers", fields: [approvedById], references: [id])
+
+  @@index([period])
+}
+
+model payroll_items {
+  id               String        @id
+  payrollRunId     String
+  employeeId       String
+  basicSalary      Decimal       @default(0)
+  allowances       Decimal       @default(0)
+  overtime         Decimal       @default(0)
+  bonus            Decimal       @default(0)
+  grossPay         Decimal       @default(0)
+  deductions       Decimal       @default(0)
+  netPay           Decimal       @default(0)
+  workingDays      Decimal       @default(0)
+  absentDays       Decimal       @default(0)
+  notes            String?
+  employees        employees     @relation(fields: [employeeId], references: [id])
+  payroll_runs     payroll_runs  @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+}
+
+model salary_components {
+  id            String    @id
+  employeeId    String
+  componentType String
+  componentName String
+  amount        Decimal
+  isRecurring   Boolean   @default(true)
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  createdAt     DateTime  @default(now())
+  employees     employees @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+// ==================== FIXED ASSETS ====================
+model fixed_assets {
+  id                      String                    @id
+  assetNo                 String                    @unique
+  name                    String
+  description             String?
+  category                String
+  purchaseDate            DateTime
+  purchasePrice           Decimal
+  residualValue           Decimal                   @default(0)
+  usefulLife              Int
+  depreciationMethod      DepreciationMethod        @default(STRAIGHT_LINE)
+  accumulatedDepreciation Decimal                   @default(0)
+  netBookValue            Decimal
+  status                  AssetStatus               @default(ACTIVE)
+  location                String?
+  serialNumber            String?
+  supplier                String?
+  warrantyExpiry          DateTime?
+  disposalDate            DateTime?
+  disposalPrice           Decimal?
+  accountId               String?
+  depreciationAccountId   String?
+  costCenterId            String?
+  notes                   String?
+  tenantId                String
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime
+  accounts_fixed_assets_accountIdToaccounts                  accounts?  @relation("fixed_assets_accountIdToaccounts", fields: [accountId], references: [id])
+  accounts_fixed_assets_depreciationAccountIdToaccounts      accounts?  @relation("fixed_assets_depreciationAccountIdToaccounts", fields: [depreciationAccountId], references: [id])
+  cost_centers            cost_centers?             @relation(fields: [costCenterId], references: [id])
+  depreciation_schedules  depreciation_schedules[]
+
+  @@index([status])
+  @@index([category])
+}
+
+model depreciation_schedules {
+  id                  String       @id
+  assetId             String
+  period              String
+  depreciationDate    DateTime
+  openingValue        Decimal
+  depreciationAmount  Decimal
+  closingValue        Decimal
+  isPosted            Boolean      @default(false)
+  postedAt            DateTime?
+  journalEntryId      String?
+  createdAt           DateTime     @default(now())
+  fixed_assets        fixed_assets @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([period])
+  @@index([assetId])
+}
+
+// ==================== BUDGETS ====================
+model budgets {
+  id           String        @id
+  budgetNo     String        @unique
+  name         String
+  fiscalYear   String
+  startDate    DateTime
+  endDate      DateTime
+  status       BudgetStatus  @default(DRAFT)
+  totalAmount  Decimal       @default(0)
+  notes        String?
+  createdById  String
+  approvedById String?
+  tenantId     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  budget_lines budget_lines[]
+  users_budgets_createdByIdTousers  users   @relation("budgets_createdByIdTousers", fields: [createdById], references: [id])
+  users_budgets_approvedByIdTousers users?  @relation("budgets_approvedByIdTousers", fields: [approvedById], references: [id])
+
+  @@index([fiscalYear])
+}
+
+model budget_lines {
+  id            String    @id
+  budgetId      String
+  accountId     String
+  period        String
+  budgetAmount  Decimal
+  actualAmount  Decimal   @default(0)
+  variance      Decimal   @default(0)
+  notes         String?
+  budgets       budgets   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  accounts      accounts  @relation(fields: [accountId], references: [id])
+
+  @@unique([budgetId, accountId, period])
+}
+
+// ==================== FINANCIAL PERIODS ====================
+model financial_periods {
+  id         String       @id
+  periodNo   String       @unique
+  name       String
+  fiscalYear String
+  startDate  DateTime
+  endDate    DateTime
+  status     PeriodStatus @default(OPEN)
+  closedAt   DateTime?
+  closedById String?
+  lockedAt   DateTime?
+  lockedById String?
+  tenantId   String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime
+  users_financial_periods_closedByIdTousers users? @relation("financial_periods_closedByIdTousers", fields: [closedById], references: [id])
+  users_financial_periods_lockedByIdTousers users? @relation("financial_periods_lockedByIdTousers", fields: [lockedById], references: [id])
+
+  @@index([fiscalYear])
+  @@index([status])
+}
+
+// ==================== PETTY CASH ====================
+model petty_cash {
+  id                      String                    @id
+  cashBoxNo               String                    @unique
+  name                    String
+  location                String?
+  openingBalance          Decimal                   @default(0)
+  currentBalance          Decimal                   @default(0)
+  limit                   Decimal                   @default(1000)
+  custodianId             String?
+  accountId               String?
+  isActive                Boolean                   @default(true)
+  tenantId                String
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime
+  accounts                accounts?                 @relation(fields: [accountId], references: [id])
+  users                   users?                    @relation(fields: [custodianId], references: [id])
+  petty_cash_transactions petty_cash_transactions[]
+}
+
+model petty_cash_transactions {
+  id            String     @id
+  transactionNo String     @unique
+  pettyCashId   String
+  date          DateTime   @default(now())
+  type          String
+  amount        Decimal
+  description   String
+  categoryId    String?
+  receiptUrl    String?
+  approvedById  String?
+  createdById   String
+  createdAt     DateTime   @default(now())
+  petty_cash    petty_cash @relation(fields: [pettyCashId], references: [id], onDelete: Cascade)
+  expense_categories expense_categories? @relation(fields: [categoryId], references: [id])
+  users_petty_cash_transactions_createdByIdTousers  users  @relation("petty_cash_transactions_createdByIdTousers", fields: [createdById], references: [id])
+  users_petty_cash_transactions_approvedByIdTousers users? @relation("petty_cash_transactions_approvedByIdTousers", fields: [approvedById], references: [id])
+
+  @@index([date])
+  @@index([pettyCashId])
+}
+
+// ==================== OPENING BALANCES ====================
+model opening_balances {
+  id            String   @id
+  accountId     String   @unique
+  fiscalYear    String
+  debit         Decimal  @default(0)
+  credit        Decimal  @default(0)
+  balance       Decimal
+  balanceType   String
+  enteredById   String
+  enteredAt     DateTime @default(now())
+  tenantId      String
+  accounts      accounts @relation(fields: [accountId], references: [id])
+  users         users    @relation(fields: [enteredById], references: [id])
+}
+
+// ==================== COST CENTERS ====================
+model cost_centers {
+  id                  String                @id
+  code                String                @unique
+  name                String
+  nameAr              String?
+  description         String?
+  managerId           String?
+  isActive            Boolean               @default(true)
+  tenantId            String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  users               users?                @relation(fields: [managerId], references: [id])
+  expenses            expenses[]
+  fixed_assets        fixed_assets[]
+  journal_entry_lines journal_entry_lines[]
 }
