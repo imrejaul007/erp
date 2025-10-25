@@ -54,6 +54,7 @@ model batches {
   raw_materials                  raw_materials                    @relation(fields: [rawMaterialId], references: [id])
   production_batch_raw_materials production_batch_raw_materials[]
   stock_movements                stock_movements[]
+  product_serial_numbers         product_serial_numbers[]
 }
 
 model bill_of_materials {
@@ -254,6 +255,12 @@ model customers {
   tenants                  tenants                    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_customers_tenant")
   sales                    sales[]
   return_orders            return_orders[]
+  leads                    leads[]
+  opportunities            opportunities[]
+  activities               activities[]
+  gift_cards               gift_cards[]
+  voucher_usages           voucher_usages[]
+  warranties               warranties[]
 }
 
 model goods_receipt_items {
@@ -497,6 +504,9 @@ model products {
   store_inventory           store_inventory[]
   supplier_products         supplier_products[]
   transfer_items            transfer_items[]
+  vouchers                  vouchers[]
+  warranties                warranties[]
+  product_serial_numbers    product_serial_numbers[]
 }
 
 model profit_tracking {
@@ -765,33 +775,37 @@ model sale_promotions {
 }
 
 model sales {
-  id                             String            @id
-  saleNo                         String            @unique
+  id                             String                       @id
+  saleNo                         String                       @unique
   storeId                        String
   customerId                     String?
-  status                         SaleStatus        @default(PENDING)
-  saleDate                       DateTime          @default(now())
+  status                         SaleStatus                   @default(PENDING)
+  saleDate                       DateTime                     @default(now())
   dueDate                        DateTime?
-  subtotal                       Decimal           @default(0)
-  discountAmount                 Decimal           @default(0)
-  vatAmount                      Decimal           @default(0)
-  totalAmount                    Decimal           @default(0)
-  currency                       String            @default("AED")
-  paymentStatus                  PaymentStatus     @default(PENDING)
+  subtotal                       Decimal                      @default(0)
+  discountAmount                 Decimal                      @default(0)
+  vatAmount                      Decimal                      @default(0)
+  totalAmount                    Decimal                      @default(0)
+  currency                       String                       @default("AED")
+  paymentStatus                  PaymentStatus                @default(PENDING)
   paymentMethod                  String?
   notes                          String?
   createdById                    String
   updatedById                    String?
-  createdAt                      DateTime          @default(now())
+  createdAt                      DateTime                     @default(now())
   updatedAt                      DateTime
   invoices                       invoices[]
   payments                       payments[]
   sale_items                     sale_items[]
   sale_promotions                sale_promotions[]
-  users_sales_createdByIdTousers users             @relation("sales_createdByIdTousers", fields: [createdById], references: [id])
-  customers                      customers?        @relation(fields: [customerId], references: [id])
-  stores                         stores            @relation(fields: [storeId], references: [id])
-  users_sales_updatedByIdTousers users?            @relation("sales_updatedByIdTousers", fields: [updatedById], references: [id])
+  users_sales_createdByIdTousers users                        @relation("sales_createdByIdTousers", fields: [createdById], references: [id])
+  customers                      customers?                   @relation(fields: [customerId], references: [id])
+  stores                         stores                       @relation(fields: [storeId], references: [id])
+  users_sales_updatedByIdTousers users?                       @relation("sales_updatedByIdTousers", fields: [updatedById], references: [id])
+  gift_card_transactions         gift_card_transactions[]
+  voucher_usages                 voucher_usages[]
+  warranties                     warranties[]
+  product_serial_numbers         product_serial_numbers[]
 
   @@index([saleDate])
   @@index([status])
@@ -1286,6 +1300,12 @@ model users {
   opening_balances                                               opening_balances[]
   cost_centers                                                   cost_centers[]
   vat_returns                                                    vat_returns[]
+  leads_leads_assignedToIdTousers                                leads[]                   @relation("leads_assignedToIdTousers")
+  leads_leads_createdByIdTousers                                 leads[]                   @relation("leads_createdByIdTousers")
+  opportunities                                                  opportunities[]
+  activities_activities_assignedToIdTousers                      activities[]              @relation("activities_assignedToIdTousers")
+  activities_activities_createdByIdTousers                       activities[]              @relation("activities_createdByIdTousers")
+  warranty_claims                                                warranty_claims[]
 }
 
 model vat_records {
@@ -1692,6 +1712,79 @@ enum VATTransactionType {
   IMPORTS
   EXPORTS
   REVERSE_CHARGE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  WALK_IN
+  PHONE
+  EMAIL
+  SOCIAL_MEDIA
+  ADVERTISING
+  OTHER
+}
+
+enum OpportunityStage {
+  PROSPECTING
+  QUALIFICATION
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum ActivityType {
+  CALL
+  EMAIL
+  MEETING
+  TASK
+  NOTE
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  DELIVERED
+  READ
+}
+
+enum VoucherType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_PRODUCT
+}
+
+enum VoucherStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  CANCELLED
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRED
+  CLAIMED
+  VOID
 }
 
 // ==================== JOURNAL ENTRIES ====================
@@ -2226,4 +2319,280 @@ model gcc_vat_config {
   notes             String?
   createdAt         DateTime   @default(now())
   updatedAt         DateTime
+}
+
+// ==================== CRM (CUSTOMER RELATIONSHIP MANAGEMENT) ====================
+model leads {
+  id                String          @id
+  leadNo            String          @unique
+  source            LeadSource
+  status            LeadStatus      @default(NEW)
+  firstName         String
+  lastName          String
+  companyName       String?
+  title             String?
+  email             String?
+  phone             String?
+  whatsapp          String?
+  address           String?
+  city              String?
+  country           String          @default("UAE")
+  estimatedValue    Decimal?
+  expectedCloseDate DateTime?
+  notes             String?
+  assignedToId      String?
+  createdById       String
+  convertedAt       DateTime?
+  convertedToId     String?
+  tenantId          String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime
+  users_leads_assignedToIdTousers   users?          @relation("leads_assignedToIdTousers", fields: [assignedToId], references: [id])
+  users_leads_createdByIdTousers    users           @relation("leads_createdByIdTousers", fields: [createdById], references: [id])
+  customers                         customers?      @relation(fields: [convertedToId], references: [id])
+  opportunities                     opportunities[]
+  activities                        activities[]
+
+  @@index([status])
+  @@index([assignedToId])
+}
+
+model opportunities {
+  id               String            @id
+  opportunityNo    String            @unique
+  name             String
+  leadId           String?
+  customerId       String?
+  stage            OpportunityStage  @default(PROSPECTING)
+  amount           Decimal
+  probability      Int               @default(0)
+  expectedCloseDate DateTime
+  closeDate        DateTime?
+  assignedToId     String?
+  description      String?
+  notes            String?
+  lostReason       String?
+  tenantId         String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime
+  leads            leads?            @relation(fields: [leadId], references: [id])
+  customers        customers?        @relation(fields: [customerId], references: [id])
+  users            users?            @relation(fields: [assignedToId], references: [id])
+  activities       activities[]
+
+  @@index([stage])
+  @@index([assignedToId])
+}
+
+model activities {
+  id               String        @id
+  type             ActivityType
+  subject          String
+  description      String?
+  dueDate          DateTime?
+  completedAt      DateTime?
+  leadId           String?
+  opportunityId    String?
+  customerId       String?
+  assignedToId     String?
+  createdById      String
+  tenantId         String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime
+  leads            leads?        @relation(fields: [leadId], references: [id])
+  opportunities    opportunities? @relation(fields: [opportunityId], references: [id])
+  customers        customers?    @relation(fields: [customerId], references: [id])
+  users_activities_assignedToIdTousers users? @relation("activities_assignedToIdTousers", fields: [assignedToId], references: [id])
+  users_activities_createdByIdTousers  users  @relation("activities_createdByIdTousers", fields: [createdById], references: [id])
+
+  @@index([type])
+  @@index([dueDate])
+}
+
+// ==================== NOTIFICATIONS ====================
+model notification_templates {
+  id            String            @id
+  code          String            @unique
+  name          String
+  type          NotificationType
+  subject       String?
+  bodyTemplate  String
+  variables     Json?
+  isActive      Boolean           @default(true)
+  tenantId      String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime
+  notifications notifications[]
+}
+
+model notifications {
+  id                        String                   @id
+  templateId                String?
+  type                      NotificationType
+  recipient                 String
+  subject                   String?
+  body                      String
+  status                    NotificationStatus       @default(PENDING)
+  sentAt                    DateTime?
+  deliveredAt               DateTime?
+  readAt                    DateTime?
+  error                     String?
+  retryCount                Int                      @default(0)
+  referenceType             String?
+  referenceId               String?
+  tenantId                  String
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime
+  notification_templates    notification_templates?  @relation(fields: [templateId], references: [id])
+
+  @@index([status])
+  @@index([type])
+  @@index([recipient])
+}
+
+// ==================== GIFT CARDS & VOUCHERS ====================
+model gift_cards {
+  id             String        @id
+  cardNo         String        @unique
+  initialValue   Decimal
+  currentBalance Decimal
+  issuedDate     DateTime      @default(now())
+  expiryDate     DateTime?
+  customerId     String?
+  isActive       Boolean       @default(true)
+  tenantId       String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime
+  customers      customers?    @relation(fields: [customerId], references: [id])
+  gift_card_transactions gift_card_transactions[]
+
+  @@index([cardNo])
+}
+
+model gift_card_transactions {
+  id            String     @id
+  giftCardId    String
+  saleId        String?
+  transactionType String
+  amount        Decimal
+  balanceBefore Decimal
+  balanceAfter  Decimal
+  createdAt     DateTime   @default(now())
+  gift_cards    gift_cards @relation(fields: [giftCardId], references: [id])
+  sales         sales?     @relation(fields: [saleId], references: [id])
+
+  @@index([giftCardId])
+}
+
+model vouchers {
+  id                String         @id
+  code              String         @unique
+  name              String
+  type              VoucherType
+  discountPercent   Decimal?
+  discountAmount    Decimal?
+  freeProductId     String?
+  minPurchaseAmount Decimal?
+  maxDiscountAmount Decimal?
+  usageLimit        Int?
+  usageCount        Int            @default(0)
+  validFrom         DateTime
+  validTo           DateTime
+  status            VoucherStatus  @default(ACTIVE)
+  isActive          Boolean        @default(true)
+  tenantId          String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime
+  products          products?      @relation(fields: [freeProductId], references: [id])
+  voucher_usages    voucher_usages[]
+
+  @@index([code])
+  @@index([status])
+}
+
+model voucher_usages {
+  id          String    @id
+  voucherId   String
+  saleId      String
+  customerId  String?
+  usedAt      DateTime  @default(now())
+  discountAmount Decimal
+  vouchers    vouchers  @relation(fields: [voucherId], references: [id])
+  sales       sales     @relation(fields: [saleId], references: [id])
+  customers   customers? @relation(fields: [customerId], references: [id])
+
+  @@index([voucherId])
+  @@index([saleId])
+}
+
+// ==================== WARRANTY MANAGEMENT ====================
+model warranties {
+  id               String          @id
+  warrantyNo       String          @unique
+  productId        String
+  saleId           String?
+  customerId       String
+  serialNumber     String?
+  purchaseDate     DateTime
+  warrantyPeriod   Int
+  expiryDate       DateTime
+  status           WarrantyStatus  @default(ACTIVE)
+  terms            String?
+  notes            String?
+  tenantId         String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  products         products        @relation(fields: [productId], references: [id])
+  sales            sales?          @relation(fields: [saleId], references: [id])
+  customers        customers       @relation(fields: [customerId], references: [id])
+  warranty_claims  warranty_claims[]
+
+  @@index([status])
+  @@index([expiryDate])
+}
+
+model warranty_claims {
+  id              String     @id
+  claimNo         String     @unique
+  warrantyId      String
+  issueDescription String
+  claimDate       DateTime   @default(now())
+  status          String     @default("PENDING")
+  resolution      String?
+  resolvedAt      DateTime?
+  resolvedById    String?
+  cost            Decimal?
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime
+  warranties      warranties @relation(fields: [warrantyId], references: [id])
+  users           users?     @relation(fields: [resolvedById], references: [id])
+
+  @@index([warrantyId])
+  @@index([status])
+}
+
+// ==================== BARCODES & SERIAL NUMBERS ====================
+model product_serial_numbers {
+  id            String   @id
+  productId     String
+  serialNumber  String   @unique
+  batchId       String?
+  status        String   @default("AVAILABLE")
+  manufactureDate DateTime?
+  expiryDate    DateTime?
+  saleId        String?
+  soldAt        DateTime?
+  warrantyId    String?
+  notes         String?
+  tenantId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  products      products @relation(fields: [productId], references: [id])
+  batches       batches? @relation(fields: [batchId], references: [id])
+  sales         sales?   @relation(fields: [saleId], references: [id])
+
+  @@index([serialNumber])
+  @@index([productId])
+  @@index([status])
 }
