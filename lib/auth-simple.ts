@@ -33,13 +33,20 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // Find user by email or phone
+          // Find user by email or phone with roles
           const user = await prisma.users.findFirst({
             where: {
               OR: [
                 { email: loginIdentifier },
                 { phone: loginIdentifier },
               ]
+            },
+            include: {
+              user_roles: {
+                include: {
+                  roles: true
+                }
+              }
             }
           });
 
@@ -58,13 +65,18 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          // Get user's role (use first role or default to 'USER')
+          const userRole = user.user_roles && user.user_roles.length > 0
+            ? user.user_roles[0].roles.name
+            : 'USER';
+
           // Return user data (password excluded)
           return {
             id: user.id,
             email: user.email,
             name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
             image: user.avatar || null,
-            role: 'USER', // Default role since table doesn't have role column
+            role: userRole,
             tenantId: user.tenantId,
           };
         } catch (error) {
@@ -79,10 +91,22 @@ export const authOptions: NextAuthOptions = {
       if (account && user) {
         const dbUser = await prisma.users.findUnique({
           where: { id: user.id },
+          include: {
+            user_roles: {
+              include: {
+                roles: true
+              }
+            }
+          }
         });
 
         if (dbUser) {
-          token.role = 'USER'; // Default role since table doesn't have role column
+          // Get user's role from user_roles relationship
+          const userRole = dbUser.user_roles && dbUser.user_roles.length > 0
+            ? dbUser.user_roles[0].roles.name
+            : 'USER';
+
+          token.role = userRole;
           token.isActive = dbUser.isActive;
           token.tenantId = dbUser.tenantId;
 
@@ -94,9 +118,12 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // For credentials login, get tenantId from user object
+      // For credentials login, get tenantId and role from user object
       if (user && 'tenantId' in user) {
         token.tenantId = user.tenantId;
+      }
+      if (user && 'role' in user) {
+        token.role = user.role;
       }
 
       return token;
